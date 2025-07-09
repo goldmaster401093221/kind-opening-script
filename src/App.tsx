@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import DiscoverCollaborators from "./pages/DiscoverCollaborators";
 import SavedCollaborators from "./pages/SavedCollaborators";
 import Collaboration from "./pages/Collaboration";
+import Chat from "./pages/Chat";
+import DataCenter from "./pages/DataCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/discover-collaborators" element={<DiscoverCollaborators />} />
           <Route path="/saved-collaborators" element={<SavedCollaborators />} />
           <Route path="/collaboration" element={<Collaboration />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/data-center" element={<DataCenter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
