@@ -190,6 +190,10 @@ const SavedCollaborators = () => {
                     navigate('/dashboard');
                   } else if (item.label === 'Discover Collaborators') {
                     navigate('/discover-collaborators');
+                  } else if (item.label === 'Saved Collaborators') {
+                    navigate('/saved-collaborators');
+                  } else if (item.label === 'Home') {
+                    navigate('/');
                   }
                 }}
               >
@@ -206,10 +210,18 @@ const SavedCollaborators = () => {
             {collaborationItems.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
                 onClick={() => {
                   if (item.label === 'Collaboration') {
                     navigate('/collaboration');
+                  } else if (item.label === 'Chat') {
+                    navigate('/chat');
+                  } else if (item.label === 'Data Center') {
+                    navigate('/data-center');
                   }
                 }}
               >
@@ -226,7 +238,20 @@ const SavedCollaborators = () => {
             {supportingServices.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => {
+                  if (item.label === 'Shipment') {
+                    navigate('/shipment');
+                  } else if (item.label === 'Quotation') {
+                    navigate('/quotation');
+                  } else if (item.label === 'Equipment') {
+                    navigate('/equipment');
+                  }
+                }}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="text-sm">{item.label}</span>
@@ -237,7 +262,9 @@ const SavedCollaborators = () => {
 
         {/* Settings */}
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100">
+          <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+            onClick={() => navigate('/settings')}
+          >
             <Settings className="w-5 h-5" />
             <span className="text-sm">Settings</span>
           </div>

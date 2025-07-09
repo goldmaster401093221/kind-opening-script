@@ -129,10 +129,14 @@ const Dashboard = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
                 onClick={() => {
-                  if (item.label === 'Discover Collaborators') {
+                  if (item.label === 'Dashboard') {
+                    navigate('/dashboard');
+                  } else if (item.label === 'Discover Collaborators') {
                     navigate('/discover-collaborators');
                   } else if (item.label === 'Saved Collaborators') {
                     navigate('/saved-collaborators');
+                  } else if (item.label === 'Home') {
+                    navigate('/');
                   }
                 }}
               >
@@ -149,7 +153,11 @@ const Dashboard = () => {
             {collaborationItems.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
                 onClick={() => {
                   if (item.label === 'Collaboration') {
                     navigate('/collaboration');
@@ -173,7 +181,11 @@ const Dashboard = () => {
             {supportingServices.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
                 onClick={() => {
                   if (item.label === 'Shipment') {
                     navigate('/shipment');

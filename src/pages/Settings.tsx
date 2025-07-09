@@ -77,6 +77,8 @@ const Settings = () => {
                     navigate('/discover-collaborators');
                   } else if (item.label === 'Saved Collaborators') {
                     navigate('/saved-collaborators');
+                  } else if (item.label === 'Home') {
+                    navigate('/');
                   }
                 }}
               >
