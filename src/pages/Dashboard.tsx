@@ -174,6 +174,15 @@ const Dashboard = () => {
               <div
                 key={index}
                 className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  if (item.label === 'Shipment') {
+                    navigate('/shipment');
+                  } else if (item.label === 'Quotation') {
+                    navigate('/quotation');
+                  } else if (item.label === 'Equipment') {
+                    navigate('/equipment');
+                  }
+                }}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="text-sm">{item.label}</span>
@@ -184,9 +193,14 @@ const Dashboard = () => {
 
         {/* Settings */}
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100">
+          <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+            onClick={() => {
+              navigate('/settings');
+            }}
+          >
             <Settings className="w-5 h-5" />
             <span className="text-sm">Settings</span>
+            
           </div>
         </div>
 
