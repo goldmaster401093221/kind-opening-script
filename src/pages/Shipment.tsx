@@ -141,6 +141,8 @@ const Shipment = () => {
                     navigate('/discover-collaborators');
                   } else if (item.label === 'Saved Collaborators') {
                     navigate('/saved-collaborators');
+                  } else if (item.label === 'Home') {
+                    navigate('/');
                   }
                 }}
               >
@@ -191,7 +193,9 @@ const Shipment = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
                 onClick={() => {
-                  if (item.label === 'Quotation') {
+                  if (item.label === 'Shipment') {
+                    navigate('/shipment');
+                  } else if (item.label === 'Quotation') {
                     navigate('/quotation');
                   } else if (item.label === 'Equipment') {
                     navigate('/equipment');

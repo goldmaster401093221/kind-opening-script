@@ -142,6 +142,8 @@ const Quotation = () => {
                     navigate('/discover-collaborators');
                   } else if (item.label === 'Saved Collaborators') {
                     navigate('/saved-collaborators');
+                  } else if (item.label === 'Home') {
+                    navigate('/');
                   }
                 }}
               >
@@ -194,6 +196,8 @@ const Quotation = () => {
                 onClick={() => {
                   if (item.label === 'Shipment') {
                     navigate('/shipment');
+                  } else if (item.label === 'Quotation') {
+                    navigate('/quotation');
                   } else if (item.label === 'Equipment') {
                     navigate('/equipment');
                   }

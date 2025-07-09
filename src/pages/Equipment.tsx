@@ -123,6 +123,8 @@ const Equipment = () => {
                     navigate('/discover-collaborators');
                   } else if (item.label === 'Saved Collaborators') {
                     navigate('/saved-collaborators');
+                  } else if (item.label === 'Home') {
+                    navigate('/');
                   }
                 }}
               >
@@ -177,6 +179,8 @@ const Equipment = () => {
                     navigate('/shipment');
                   } else if (item.label === 'Quotation') {
                     navigate('/quotation');
+                  } else if (item.label === 'Equipment') {
+                    navigate('/equipment');
                   }
                 }}
               >
