@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -152,6 +153,10 @@ const Dashboard = () => {
                 onClick={() => {
                   if (item.label === 'Collaboration') {
                     navigate('/collaboration');
+                  } else if (item.label === 'Chat') {
+                    navigate('/chat');
+                  } else if (item.label === 'Data Center') {
+                    navigate('/data-center');
                   }
                 }}
               >

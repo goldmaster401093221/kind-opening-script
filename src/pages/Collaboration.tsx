@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -156,6 +155,13 @@ const Collaboration = () => {
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
+                onClick={() => {
+                  if (item.label === 'Chat') {
+                    navigate('/chat');
+                  } else if (item.label === 'Data Center') {
+                    navigate('/data-center');
+                  }
+                }}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="text-sm">{item.label}</span>
@@ -297,10 +303,10 @@ const Collaboration = () => {
 
                   {/* Action Buttons */}
                   <div className="flex justify-between">
-                    <Button variant="outline" className="text-blue-600 border-blue-600">
+                    <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/data-center')}>
                       Go to Data Center
                     </Button>
-                    <Button variant="outline" className="text-blue-600 border-blue-600">
+                    <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/chat')}>
                       Go to Chat Room
                     </Button>
                   </div>
