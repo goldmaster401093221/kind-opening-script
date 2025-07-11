@@ -59,7 +59,7 @@ const Chat = () => {
     },
     {
       name: 'Kevin Rashy',
-      lastMessage: 'Lorem ipsum dolor sit amet,consectetur adipiscing',
+      lastMessage: '👋 Lorem ipsum dolor sit amet,consectetur adipiscing',
       time: '12:00 pm',
       unread: 0,
       avatar: 'KR',
@@ -67,7 +67,7 @@ const Chat = () => {
     },
     {
       name: 'Group Members',
-      lastMessage: 'Lorem ipsum dolor sit amet,consectetur adipiscing',
+      lastMessage: '👋 Lorem ipsum dolor sit amet,consectetur adipiscing',
       time: '12:00 pm',
       unread: 0,
       avatar: 'GM',
@@ -78,7 +78,7 @@ const Chat = () => {
   const messages = [
     {
       sender: 'Anna Krylova',
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      content: '👋 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
       time: '12 : 00 pm',
       isOwn: false
     },
@@ -90,7 +90,7 @@ const Chat = () => {
     },
     {
       sender: 'You',
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      content: '👋 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
       time: '12 : 00 pm',
       isOwn: true
     },
@@ -102,7 +102,7 @@ const Chat = () => {
     },
     {
       sender: 'You',
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      content: '👋 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
       time: '12 : 00 pm',
       isOwn: true
     },
@@ -256,17 +256,17 @@ const Chat = () => {
         {/* Chat Content */}
         <div className="flex-1 flex">
           {/* Left Panel - Conversations */}
-          <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+          <div className="w-100 bg-white border-r border-gray-200 flex flex-col">
             {/* Filter Tabs */}
-            <div className="border-b border-gray-200">
-              <div className="flex">
+            <div className="border-b border-gray-200 px-2 py-2">
+              <div className="flex bg-gray-200 rounded-lg py-2 px-2">
                 {['In Progress', 'Upcoming', 'Requests', 'History'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`px-4 py-3 text-sm font-medium ${
                       activeTab === tab
-                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        ? 'border-b-2 text-blue-600 bg-white rounded-lg'
                         : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
@@ -292,13 +292,18 @@ const Chat = () => {
                   className="flex items-center space-x-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
                 >
                   <div className="relative">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className={`${
+                    <Avatar className="w-12 h-12">
+                      {/* <AvatarFallback className={`${
                         conversation.name === 'Anna Krylova' ? 'bg-orange-500' : 
                         conversation.name === 'Kevin Rashy' ? 'bg-yellow-500' : 'bg-blue-500'
                       } text-white text-sm`}>
                         {conversation.avatar}
-                      </AvatarFallback>
+                      </AvatarFallback> */}
+                       <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                     </Avatar>
                     {conversation.online && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -314,7 +319,7 @@ const Chat = () => {
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-600 truncate">{conversation.lastMessage}</div>
                       {conversation.unread > 0 && (
-                        <div className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        <div className="bg-gray-100 text-gray-900 text-xs rounded-full w-5 h-5 flex items-center justify-center">
                           {conversation.unread}
                         </div>
                       )}
@@ -331,8 +336,13 @@ const Chat = () => {
             <div className="bg-white border-b border-gray-200 px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback>
+                  <Avatar className="w-12 h-12">
+                    {/* <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback> */}
+                     <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                   </Avatar>
                   <div>
                     <div className="font-medium">Anna Krylova</div>
@@ -360,7 +370,7 @@ const Chat = () => {
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                       msg.isOwn
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-gray-100 text-gray-900'
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >

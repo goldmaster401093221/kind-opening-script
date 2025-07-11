@@ -70,27 +70,6 @@ const Shipment = () => {
       avatar: 'BM'
     },
     {
-      sender: 'Bot',
-      content: '👋 Hi, for what are you looking for shipment service today? Let me know so that I can help you.',
-      time: '12:00 pm',
-      isOwn: false,
-      avatar: 'AI'
-    },
-    {
-      sender: 'User',
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      time: '12:00 pm',
-      isOwn: true,
-      avatar: 'BM'
-    },
-    {
-      sender: 'Bot',
-      content: '👋 Hi, for what are you looking for shipment service today? Let me know so that I can help you.',
-      time: '12:00 pm',
-      isOwn: false,
-      avatar: 'AI'
-    },
-    {
       sender: 'Amazon Logistics',
       content: 'Amazon Logistics',
       time: '',
@@ -259,7 +238,7 @@ const Shipment = () => {
                   <div className="flex justify-start">
                     <div className="max-w-2xl">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Avatar className="w-8 h-8">
+                        <Avatar className="w-12 h-12">
                           <AvatarFallback className="bg-gray-800 text-white text-sm">
                             {msg.avatar}
                           </AvatarFallback>
@@ -291,7 +270,7 @@ const Shipment = () => {
                     <div className="max-w-xs lg:max-w-md">
                       {!msg.isOwn && (
                         <div className="flex items-center space-x-2 mb-1">
-                          <Avatar className="w-6 h-6">
+                          <Avatar className="w-12 h-12">
                             <AvatarFallback className="bg-gray-800 text-white text-xs">
                               {msg.avatar}
                             </AvatarFallback>
@@ -301,7 +280,7 @@ const Shipment = () => {
                       <div
                         className={`px-4 py-2 rounded-lg ${
                           msg.isOwn
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-gray-200 text-gray-900'
                             : 'bg-gray-100 text-gray-900'
                         }`}
                       >
@@ -314,7 +293,7 @@ const Shipment = () => {
                       </div>
                       {msg.isOwn && (
                         <div className="flex justify-end mt-1">
-                          <Avatar className="w-6 h-6">
+                          <Avatar className="w-12 h-12">
                             <AvatarFallback className="bg-gray-800 text-white text-xs">
                               {msg.avatar}
                             </AvatarFallback>

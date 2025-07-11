@@ -115,46 +115,6 @@ const DataCenter = () => {
       views: 2,
       comments: 5,
       status: 'active'
-    },
-    {
-      name: 'Experiment Report #001',
-      format: 'PDF',
-      uploader: 'Anna Krylova',
-      uploaderAvatar: 'AK',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Image',
-      format: 'JPG',
-      uploader: 'Bashair Mussa',
-      uploaderAvatar: 'BM',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Experiment Report #001',
-      format: 'PDF',
-      uploader: 'Anna Krylova',
-      uploaderAvatar: 'AK',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Image',
-      format: 'JPG',
-      uploader: 'Bashair Mussa',
-      uploaderAvatar: 'BM',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
     }
   ];
 
@@ -374,42 +334,51 @@ const DataCenter = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{file.name}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{file.format}</div>
+                      <td className="px-6 py-4 whitespace-nowrap bg-gray-100">
+                        <div className="text-sm text-gray-900 ">{file.format}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
-                          <Avatar className="w-8 h-8">
-                            <AvatarFallback className={`${
+                          <Avatar className="w-12 h-12">
+                            {/* <AvatarFallback className={`${
                               file.uploaderAvatar === 'AK' ? 'bg-orange-500' : 'bg-gray-800'
                             } text-white text-xs`}>
                               {file.uploaderAvatar}
-                            </AvatarFallback>
+                            </AvatarFallback> */}
+                      <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                           </Avatar>
                           <div className="text-sm text-gray-900">{file.uploader}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap  bg-gray-100">
                         <div className="text-sm text-gray-900">{file.uploadedDate}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-4">
                           <div className="flex items-center space-x-1">
                             <Eye className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm text-gray-900">{file.views} Views</span>
+                            <span className="text-sm text-gray-900 underline">{file.views} Views</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <MessageCircle className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm text-gray-900">{file.comments} Comments</span>
+                            {/* <MessageCircle className="w-4 h-4 text-gray-500" /> */}
+<svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0.833008 0.650391H15.833C16.2103 0.650391 16.5164 0.955765 16.5166 1.33301V13C16.5166 13.3774 16.2104 13.6836 15.833 13.6836H3.66016L3.62012 13.7158L0.150391 16.4404V1.33301C0.150567 0.955875 0.455876 0.650566 0.833008 0.650391ZM1.5166 13.6289L1.75977 13.4385L3.1875 12.3164H15.1504V2.0166H1.5166V13.6289ZM7.25684 4.70117C5.93247 5.49858 5.95312 6.70755 5.95312 6.9707V7.14258L6.12305 7.11914C6.24021 7.10297 6.36462 7.1008 6.48828 7.1123C7.16629 7.17522 7.69629 7.73087 7.69629 8.41699C7.69611 9.13942 7.11018 9.72461 6.3877 9.72461C5.98409 9.72452 5.59571 9.53926 5.35254 9.28125C4.95092 8.85494 4.73344 8.38061 4.7334 7.58789C4.7334 6.24081 5.65623 5.01145 7.04102 4.36719L7.25684 4.70117ZM11.4238 4.70117C10.0992 5.49858 10.1191 6.70754 10.1191 6.9707V7.14258L10.29 7.11914C10.407 7.10302 10.5308 7.10086 10.6543 7.1123H10.6553C11.3331 7.17535 11.8633 7.73097 11.8633 8.41699C11.8631 9.13941 11.2771 9.7246 10.5547 9.72461C10.1508 9.72461 9.76179 9.53949 9.51855 9.28125C9.11695 8.85493 8.90043 8.3806 8.90039 7.58789C8.90039 6.24098 9.82258 5.01152 11.207 4.36719L11.4238 4.70117Z" fill="#161616" stroke="white" stroke-width="0.3"/>
+</svg>
+
+                            <span className="text-sm text-gray-900 underline">{file.comments} Comments</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap  bg-gray-100">
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className='bg-gray-300'>
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className='bg-gray-300'>
                             <ExternalLink className="w-4 h-4" />
                           </Button>
                         </div>

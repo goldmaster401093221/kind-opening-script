@@ -82,58 +82,13 @@ const DiscoverCollaborators = () => {
       contacted: false
     },
     {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: 'Best Match',
-      contacted: true
-    },
-    {
       name: 'Anna Krylova',
       role: 'Researcher Role',
       totalCollaborations: 24,
       rating: '4.9/5',
       skills: ['Equipment', 'Experiment'],
       status: 'Best Match',
-      contacted: false
-    },
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: 'Best Match',
       contacted: true
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      contacted: false
-    },
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: 'Best Match',
-      contacted: true
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      contacted: false
     }
   ];
 
@@ -279,15 +234,15 @@ const DiscoverCollaborators = () => {
         {/* Content */}
         <div className="flex-1 p-6">
           {/* Filter Tabs */}
-          <div className="mb-6">
-            <div className="flex space-x-4">
+          <div className="mb-6 w-80 h-12 flex justify-between ">
+            <div className="flex space-x-4 bg-gray-200 px-2 py-2 rounded-lg">
               {['Best Matching', 'Search More'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
                     activeTab === tab
-                      ? 'bg-blue-100 text-blue-700'
+                      ? 'bg-white text-blue-700'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -332,7 +287,7 @@ const DiscoverCollaborators = () => {
           {/* Table */}
           <Card>
             <Table>
-              <TableHeader className="bg-gray-50">
+              <TableHeader className="bg-gray-300">
                 <TableRow>
                   <TableHead>Researcher</TableHead>
                   <TableHead>Total Collaborations</TableHead>
@@ -346,16 +301,24 @@ const DiscoverCollaborators = () => {
                   <TableRow key={index} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarFallback className={index % 2 === 0 ? "bg-gray-800 text-white" : "bg-orange-500 text-white"}>
-                            {collaborator.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
+                        <Avatar className="w-14 h-14">
+                      <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                         </Avatar>
                         <div>
                           <div className="font-medium">{collaborator.name}</div>
                           <div className="text-sm text-gray-500">{collaborator.role}</div>
                           <div className="flex items-center space-x-2 mt-1">
-                            <Badge className="bg-blue-100 text-blue-800 text-xs">
+                            
+                            <Badge className="bg-blue-500 text-white text-xs">
+
+<svg width="16" height="16" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.2999 4.00016H10.5C11.0523 4.00016 11.5 4.44788 11.5 5.00015V6.05235C11.5 6.18295 11.4744 6.3123 11.4247 6.4331L9.8775 10.1905C9.80035 10.3779 9.61775 10.5001 9.41515 10.5001H1C0.72386 10.5001 0.5 10.2763 0.5 10.0001V5.00015C0.5 4.72402 0.72386 4.50016 1 4.50016H2.74092C2.90339 4.50016 3.05572 4.42123 3.14941 4.28851L5.8761 0.425678C5.94735 0.324743 6.08165 0.290989 6.19215 0.346242L7.0992 0.799755C7.625 1.06267 7.89655 1.65646 7.75155 2.22618L7.2999 4.00016ZM3.5 5.2939V9.50015H9.0803L10.5 6.05235V5.00015H7.2999C6.64755 5.00015 6.1699 4.38564 6.3308 3.75346L6.78245 1.97947C6.81145 1.86553 6.75715 1.74677 6.65195 1.69419L6.3214 1.5289L3.96638 4.86519C3.84143 5.0422 3.6817 5.1873 3.5 5.2939ZM2.5 5.50015H1.5V9.50015H2.5V5.50015Z" fill="white"/>
+</svg>
+
                               {collaborator.status}
                             </Badge>
                             {collaborator.contacted && (
@@ -367,14 +330,14 @@ const DiscoverCollaborators = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center bg-gray-100">
                       <span className="font-medium">{collaborator.totalCollaborations}</span>
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="font-medium">{collaborator.rating}</span>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
+                    <TableCell className=' bg-gray-100'>
+                      <div className="flex flex-wrap gap-1 ">
                         {collaborator.skills.map((skill, skillIndex) => (
                           <Badge key={skillIndex} variant="outline" className="text-xs">
                             {skill}

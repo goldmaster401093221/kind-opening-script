@@ -230,7 +230,7 @@ const Collaboration = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-white">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -252,7 +252,7 @@ const Collaboration = () => {
                   onClick={() => setActiveTab(tab)}
                   className={`pb-4 text-sm font-medium ${
                     activeTab === tab
-                      ? 'border-b-2 border-gray-900 text-gray-900'
+                      ? 'bg-white border-b-2 border-gray-900 text-gray-900'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -262,10 +262,10 @@ const Collaboration = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-6 gap-4">
             {/* Main Collaboration Content */}
-            <div className="lg:col-span-2">
-              <Card className="border border-gray-200">
+            <div className="col-span-2 ">
+              <Card>
                 <CardContent className="p-6">
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
@@ -283,7 +283,7 @@ const Collaboration = () => {
 
                   {/* Calendar */}
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-4">
+                    {/* <div className="flex items-center justify-between mb-4">
                       <button className="p-1 hover:bg-gray-100 rounded">
                         <ChevronLeft className="w-4 h-4" />
                       </button>
@@ -291,12 +291,12 @@ const Collaboration = () => {
                       <button className="p-1 hover:bg-gray-100 rounded">
                         <ChevronRight className="w-4 h-4" />
                       </button>
-                    </div>
+                    </div> */}
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={setDate}
-                      className="rounded-md border w-full"
+                      className="rounded-md  flex"
                     />
                   </div>
 
@@ -334,16 +334,21 @@ const Collaboration = () => {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-6 col-span-2 col-start-4">
               {/* Collaborators */}
-              <Card className="border border-gray-200">
+              <Card className="">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
                   
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback>
+                      <Avatar className="w-12 h-12">
+                        {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
+                      <img 
+                            src="/lovable-uploads/avatar2.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                       </Avatar>
                       <div className="flex-1">
                         <div className="font-medium">Bashair Mussa (me)</div>
@@ -360,8 +365,13 @@ const Collaboration = () => {
                     </div>
 
                     <div className="flex items-start space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback>
+                      <Avatar className="w-12 h-12">
+                        {/* <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback> */}
+                      <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                       </Avatar>
                       <div className="flex-1">
                         <div className="font-medium">Anna Krylova</div>
@@ -384,7 +394,7 @@ const Collaboration = () => {
               </Card>
 
               {/* Supporting Services */}
-              <Card className="border border-gray-200">
+              <Card className="">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Supporting Services</h3>
                   
