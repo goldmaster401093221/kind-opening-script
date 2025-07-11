@@ -10,11 +10,11 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="bg-white py-16 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="bg-blue-100 py-16 px-4">
+      <div className="max-w-7xl mx-auto ">
+        <div className="grid lg:grid-cols-2 gap-12 items-center ">
           {/* Left Content */}
-          <div className="space-y-8">
+          <div className="space-y-8 ">
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Connect,{" "}

@@ -11,7 +11,7 @@ const collaborators = [
     institution: "MIT Computer Science",
     location: "Cambridge, MA",
     tags: ["Machine Learning", "Neural Networks", "Computer Vision", "Machine Learning"],
-    avatar: "/lovable-uploads/7a900c46-30e3-4c36-8da2-71c8f19d76c9.png"
+    avatar: "/lovable-uploads/avatar2.jpg"
   },
   {
     name: "Anna Ryan",
@@ -21,7 +21,7 @@ const collaborators = [
     institution: "MIT Computer Science",
     location: "Cambridge, MA",
     tags: ["Machine Learning", "Neural Networks", "Computer Vision"],
-    avatar: "/lovable-uploads/7a900c46-30e3-4c36-8da2-71c8f19d76c9.png"
+    avatar: "/lovable-uploads/avatar1.jpg"
   },
   {
     name: "Kevin Rashy",
@@ -31,7 +31,7 @@ const collaborators = [
     institution: "MIT Computer Science",
     location: "Cambridge, MA",
     tags: ["Machine Learning", "Neural Networks", "Computer Vision"],
-    avatar: "/lovable-uploads/7a900c46-30e3-4c36-8da2-71c8f19d76c9.png"
+    avatar: "/lovable-uploads/avatar2.jpg"
   }
 ];
 
@@ -40,7 +40,7 @@ const FeaturedCollaborators = () => {
     <section className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-blue-600 mb-4">
             Featured <span className="text-blue-600">Collaborators</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
