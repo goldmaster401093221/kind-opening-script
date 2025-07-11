@@ -59,7 +59,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 pt-8 text-center">
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-200 text-sm">
             © 2024 AIRCollab. All rights reserved. Empowering global research collaboration.
           </p>
         </div>
