@@ -33,39 +33,13 @@ const HeroSection = () => {
             </Button>
           </div>
 
-          {/* Right Images */}
-          <div className="relative">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-lg h-32 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="w-8 h-8 bg-white/20 rounded-full mx-auto mb-2"></div>
-                    <div className="text-sm font-medium">Research</div>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg h-48 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-green-400 opacity-90"></div>
-                  <div className="relative z-10 text-white text-center">
-                    <div className="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3"></div>
-                    <div className="text-lg font-semibold">Global Network</div>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4 pt-8">
-                <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg h-40 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="w-10 h-10 bg-white/20 rounded-full mx-auto mb-2"></div>
-                    <div className="text-base font-medium">Innovation</div>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-lg h-36 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="w-8 h-8 bg-white/20 rounded-full mx-auto mb-2"></div>
-                    <div className="text-sm font-medium">Discovery</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Right Image */}
+          <div className="relative flex justify-center">
+            <img 
+              src="/lovable-uploads/8c509090-2c71-4a15-989a-6a3f83d8f813.png" 
+              alt="Sidebar" 
+              className="max-w-full h-auto rounded-lg shadow-lg"
+            />
           </div>
         </div>
       </div>
