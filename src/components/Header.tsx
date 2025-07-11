@@ -46,7 +46,8 @@ const Header = () => {
           <Button variant="ghost" size="sm" className="p-2">
             <User className="w-4 h-4" />
           </Button>
-          <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+          {/* Changed from circular to rectangular */}
+          <div className="w-10 h-8 bg-gray-800 rounded-md flex items-center justify-center">
             <span className="text-white text-sm font-medium">BM</span>
           </div>
         </div>
