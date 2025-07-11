@@ -27,7 +27,7 @@ const Footer = () => {
           {/* Research Links */}
           <div>
             <h4 className="font-semibold mb-4">Research</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-gray-200">
               <li><a href="#" className="hover:text-white transition-colors underline">Browse Papers</a></li>
               <li><a href="#" className="hover:text-white transition-colors underline">Find Experts</a></li>
               <li><a href="#" className="hover:text-white transition-colors underline">Trending Topics</a></li>
@@ -38,7 +38,7 @@ const Footer = () => {
           {/* Collaborate Links */}
           <div>
             <h4 className="font-semibold mb-4">Collaborate</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-gray-200">
               <li><a href="#" className="hover:text-white transition-colors underline">Find Partners</a></li>
               <li><a href="#" className="hover:text-white transition-colors underline">Join Projects</a></li>
               <li><a href="#" className="hover:text-white transition-colors underline">Host Events</a></li>
@@ -49,7 +49,7 @@ const Footer = () => {
           {/* Duplicate Collaborate section to match the original */}
           <div>
             <h4 className="font-semibold mb-4">Collaborate</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-gray-200">
               <li><a href="#" className="hover:text-white transition-colors underline">Find Partners</a></li>
               <li><a href="#" className="hover:text-white transition-colors underline">Join Projects</a></li>
               <li><a href="#" className="hover:text-white transition-colors underline">Host Events</a></li>
