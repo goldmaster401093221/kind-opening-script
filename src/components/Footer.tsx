@@ -28,10 +28,10 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Research</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Browse Papers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Find Experts</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Trending Topics</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Research Tools</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Browse Papers</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Find Experts</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Trending Topics</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Research Tools</a></li>
             </ul>
           </div>
 
@@ -39,10 +39,10 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Collaborate</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Find Partners</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Join Projects</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Host Events</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Funding Opportunities</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Find Partners</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Join Projects</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Host Events</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Funding Opportunities</a></li>
             </ul>
           </div>
 
@@ -50,10 +50,10 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Collaborate</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Find Partners</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Join Projects</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Host Events</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Funding Opportunities</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Find Partners</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Join Projects</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Host Events</a></li>
+              <li><a href="#" className="hover:text-white transition-colors underline">Funding Opportunities</a></li>
             </ul>
           </div>
         </div>
