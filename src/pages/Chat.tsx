@@ -17,15 +17,12 @@ import {
   MoreHorizontal,
   Send,
   Phone,
-  MoreVertical,
-  Menu,
-  X
+  MoreVertical
 } from 'lucide-react';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -118,24 +115,9 @@ const Chat = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex relative">
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-200 ease-in-out`}>
-        {/* Mobile Close Button */}
-        <div className="lg:hidden flex justify-end p-4">
-          <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
@@ -167,7 +149,6 @@ const Chat = () => {
                   } else if (item.label === 'Home') {
                     navigate('/');
                   }
-                  setSidebarOpen(false);
                 }}
               >
                 <item.icon className="w-5 h-5" />
@@ -196,7 +177,6 @@ const Chat = () => {
                   } else if (item.label === 'Data Center') {
                     navigate('/data-center');
                   }
-                  setSidebarOpen(false);
                 }}
               >
                 <item.icon className="w-5 h-5" />
@@ -225,7 +205,6 @@ const Chat = () => {
                   } else if (item.label === 'Equipment') {
                     navigate('/equipment');
                   }
-                  setSidebarOpen(false);
                 }}
               >
                 <item.icon className="w-5 h-5" />
@@ -238,10 +217,7 @@ const Chat = () => {
         {/* Settings */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
-            onClick={() => {
-              navigate('/settings');
-              setSidebarOpen(false);
-            }}
+            onClick={() => navigate('/settings')}
           >
             <Settings className="w-5 h-5" />
             <span className="text-sm">Settings</span>
@@ -266,21 +242,11 @@ const Chat = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Chat</h1>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-900">Chat</h1>
             <Button onClick={handleSignOut} variant="outline" size="sm">
               Sign Out
             </Button>
@@ -288,17 +254,17 @@ const Chat = () => {
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+        <div className="flex-1 flex">
           {/* Left Panel - Conversations */}
-          <div className="w-full lg:w-100 bg-white border-r border-gray-200 flex flex-col">
+          <div className="w-100 bg-white border-r border-gray-200 flex flex-col">
             {/* Filter Tabs */}
             <div className="border-b border-gray-200 px-2 py-2">
-              <div className="flex bg-gray-200 rounded-lg py-2 px-2 overflow-x-auto">
+              <div className="flex bg-gray-200 rounded-lg py-2 px-2">
                 {['In Progress', 'Upcoming', 'Requests', 'History'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${
+                    className={`px-4 py-3 text-sm font-medium ${
                       activeTab === tab
                         ? 'border-b-2 text-blue-600 bg-white rounded-lg'
                         : 'text-gray-500 hover:text-gray-700'
@@ -325,12 +291,18 @@ const Chat = () => {
                   key={index}
                   className="flex items-center space-x-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
                 >
-                  <div className="relative flex-shrink-0">
+                  <div className="relative">
                     <Avatar className="w-12 h-12">
-                      <img 
-                        src="/lovable-uploads/avatar1.jpg" 
-                        alt={conversation.name}
-                        className="max-w-full h-auto rounded-lg shadow-lg"
+                      {/* <AvatarFallback className={`${
+                        conversation.name === 'Anna Krylova' ? 'bg-orange-500' : 
+                        conversation.name === 'Kevin Rashy' ? 'bg-yellow-500' : 'bg-blue-500'
+                      } text-white text-sm`}>
+                        {conversation.avatar}
+                      </AvatarFallback> */}
+                       <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
                       />
                     </Avatar>
                     {conversation.online && (
@@ -342,12 +314,12 @@ const Chat = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="font-medium text-gray-900 truncate">{conversation.name}</div>
-                      <div className="text-xs text-gray-500 flex-shrink-0 ml-2">{conversation.time}</div>
+                      <div className="text-xs text-gray-500">{conversation.time}</div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-600 truncate">{conversation.lastMessage}</div>
                       {conversation.unread > 0 && (
-                        <div className="bg-gray-100 text-gray-900 text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 ml-2">
+                        <div className="bg-gray-100 text-gray-900 text-xs rounded-full w-5 h-5 flex items-center justify-center">
                           {conversation.unread}
                         </div>
                       )}
@@ -359,24 +331,25 @@ const Chat = () => {
           </div>
 
           {/* Right Panel - Chat Messages */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col">
             {/* Chat Header */}
-            <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+            <div className="bg-white border-b border-gray-200 px-6 py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3 min-w-0">
-                  <Avatar className="w-12 h-12 flex-shrink-0">
-                    <img 
-                      src="/lovable-uploads/avatar1.jpg" 
-                      alt="Anna Krylova"
-                      className="max-w-full h-auto rounded-lg shadow-lg"
-                    />
+                <div className="flex items-center space-x-3">
+                  <Avatar className="w-12 h-12">
+                    {/* <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback> */}
+                     <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                   </Avatar>
-                  <div className="min-w-0">
-                    <div className="font-medium truncate">Anna Krylova</div>
+                  <div>
+                    <div className="font-medium">Anna Krylova</div>
                     <div className="text-sm text-green-600">Online</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 flex-shrink-0">
+                <div className="flex items-center space-x-2">
                   <Button variant="ghost" size="sm">
                     <Phone className="w-4 h-4" />
                   </Button>
@@ -388,7 +361,7 @@ const Chat = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.map((msg, index) => (
                 <div
                   key={index}
@@ -419,7 +392,7 @@ const Chat = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   className="flex-1"
                 />
-                <Button className="bg-blue-600 hover:bg-blue-700 flex-shrink-0">
+                <Button className="bg-blue-600 hover:bg-blue-700">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
