@@ -20,12 +20,15 @@ import {
   ChevronLeft,
   ChevronRight,
   File,
-  MessageCircle
+  MessageCircle,
+  Menu,
+  X
 } from 'lucide-react';
 
 const Collaboration = () => {
   const [activeTab, setActiveTab] = useState('In Progress');
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -103,9 +106,24 @@ const Collaboration = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex relative">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-200 ease-in-out`}>
+        {/* Mobile Close Button */}
+        <div className="lg:hidden flex justify-end p-4">
+          <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
@@ -137,6 +155,7 @@ const Collaboration = () => {
                   } else if (item.label === 'Home') {
                     navigate('/');
                   }
+                  setSidebarOpen(false);
                 }}
               >
                 <item.icon className="w-5 h-5" />
@@ -165,6 +184,7 @@ const Collaboration = () => {
                   } else if (item.label === 'Data Center') {
                     navigate('/data-center');
                   }
+                  setSidebarOpen(false);
                 }}
               >
                 <item.icon className="w-5 h-5" />
@@ -193,6 +213,7 @@ const Collaboration = () => {
                   } else if (item.label === 'Equipment') {
                     navigate('/equipment');
                   }
+                  setSidebarOpen(false);
                 }}
               >
                 <item.icon className="w-5 h-5" />
@@ -205,7 +226,10 @@ const Collaboration = () => {
         {/* Settings */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
-            onClick={() => navigate('/settings')}
+            onClick={() => {
+              navigate('/settings');
+              setSidebarOpen(false);
+            }}
           >
             <Settings className="w-5 h-5" />
             <span className="text-sm">Settings</span>
@@ -230,11 +254,21 @@ const Collaboration = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col bg-white min-w-0">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">Collaboration</h1>
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              <h1 className="text-xl font-semibold text-gray-900">Collaboration</h1>
+            </div>
             <Button onClick={handleSignOut} variant="outline" size="sm">
               Sign Out
             </Button>
@@ -242,15 +276,15 @@ const Collaboration = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 lg:p-6">
           {/* Filter Tabs */}
           <div className="mb-6">
-            <div className="flex space-x-8 border-b border-gray-200">
+            <div className="flex space-x-4 lg:space-x-8 border-b border-gray-200 overflow-x-auto">
               {['In Progress', 'Upcoming', 'Requests', 'History'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-4 text-sm font-medium ${
+                  className={`pb-4 text-sm font-medium whitespace-nowrap ${
                     activeTab === tab
                       ? 'bg-white border-b-2 border-gray-900 text-gray-900'
                       : 'text-gray-500 hover:text-gray-700'
@@ -262,11 +296,11 @@ const Collaboration = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 lg:gap-6">
             {/* Main Collaboration Content */}
-            <div className="col-span-2 ">
+            <div className="lg:col-span-2 order-1">
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 lg:p-6">
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold">Collaboration Status</h3>
@@ -283,20 +317,11 @@ const Collaboration = () => {
 
                   {/* Calendar */}
                   <div className="mb-6">
-                    {/* <div className="flex items-center justify-between mb-4">
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <span className="font-medium">2024 June</span>
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div> */}
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={setDate}
-                      className="rounded-md  flex"
+                      className="rounded-md flex justify-center"
                     />
                   </div>
 
@@ -306,13 +331,13 @@ const Collaboration = () => {
                     <div className="space-y-3">
                       {activities.map((activity, index) => (
                         <div key={index} className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
                             <File className="w-4 h-4 text-blue-600" />
                           </div>
-                          <span className="text-sm flex-1">
+                          <span className="text-sm flex-1 min-w-0">
                             <span className="font-medium">{activity.user}</span> {activity.action}
                           </span>
-                          <button className="text-blue-600 text-sm hover:underline">
+                          <button className="text-blue-600 text-sm hover:underline flex-shrink-0">
                             {activity.link}
                           </button>
                         </div>
@@ -321,7 +346,7 @@ const Collaboration = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/data-center')}>
                       Go to Data Center
                     </Button>
@@ -334,54 +359,52 @@ const Collaboration = () => {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-6 col-span-2 col-start-4">
+            <div className="space-y-6 lg:col-span-2 lg:col-start-4 order-2">
               {/* Collaborators */}
-              <Card className="">
-                <CardContent className="p-6">
+              <Card>
+                <CardContent className="p-4 lg:p-6">
                   <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
                   
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3">
-                      <Avatar className="w-12 h-12">
-                        {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
-                      <img 
-                            src="/lovable-uploads/avatar2.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
+                      <Avatar className="w-12 h-12 flex-shrink-0">
+                        <img 
+                          src="/lovable-uploads/avatar2.jpg" 
+                          alt="Bashair Mussa"
+                          className="max-w-full h-auto rounded-lg shadow-lg"
+                        />
                       </Avatar>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium">Bashair Mussa (me)</div>
                         <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
+                        <div className="flex flex-wrap gap-2 mt-2">
                           <Badge variant="outline" className="text-xs">Idea</Badge>
                           <Badge variant="outline" className="text-xs">Proposal</Badge>
                           <Badge variant="outline" className="text-xs">Grant Application</Badge>
                         </div>
                       </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded flex-shrink-0">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     </div>
 
                     <div className="flex items-start space-x-3">
-                      <Avatar className="w-12 h-12">
-                        {/* <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback> */}
-                      <img 
-                            src="/lovable-uploads/avatar1.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
+                      <Avatar className="w-12 h-12 flex-shrink-0">
+                        <img 
+                          src="/lovable-uploads/avatar1.jpg" 
+                          alt="Anna Krylova"
+                          className="max-w-full h-auto rounded-lg shadow-lg"
+                        />
                       </Avatar>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium">Anna Krylova</div>
                         <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
+                        <div className="flex flex-wrap gap-2 mt-2">
                           <Badge variant="outline" className="text-xs">Equipment</Badge>
                           <Badge variant="outline" className="text-xs">Experiment</Badge>
                         </div>
                       </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded flex-shrink-0">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     </div>
@@ -394,20 +417,20 @@ const Collaboration = () => {
               </Card>
 
               {/* Supporting Services */}
-              <Card className="">
-                <CardContent className="p-6">
+              <Card>
+                <CardContent className="p-4 lg:p-6">
                   <h3 className="text-lg font-semibold mb-4">Supporting Services</h3>
                   
                   <div className="space-y-3">
                     {supportingServicesData.map((service, index) => (
                       <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
                             <service.icon className="w-4 h-4 text-blue-600" />
                           </div>
-                          <span className="text-sm">{service.name}</span>
+                          <span className="text-sm truncate">{service.name}</span>
                         </div>
-                        <button className="text-blue-600 text-sm hover:underline">
+                        <button className="text-blue-600 text-sm hover:underline flex-shrink-0 ml-2">
                           {service.link}
                         </button>
                       </div>
