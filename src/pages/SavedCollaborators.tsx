@@ -24,6 +24,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { 
   Home, 
@@ -126,9 +127,9 @@ const SavedCollaborators = () => {
   ];
 
   const AppSidebar = () => (
-    <Sidebar>
+    <Sidebar className="border-r">
       <SidebarHeader>
-        <div className="flex items-center space-x-2 p-2">
+        <div className="flex items-center space-x-2 px-4 py-2">
           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
             <span className="text-white font-bold text-sm">A</span>
           </div>
@@ -142,10 +143,10 @@ const SavedCollaborators = () => {
             <SidebarMenu>
               {sidebarItems.map((item, index) => (
                 <SidebarMenuItem key={index}>
-                  <SidebarMenuButton 
+                  <SidebarMenuButton
                     onClick={() => navigate(item.path)}
                     isActive={item.active}
-                    className="w-full"
+                    className="w-full justify-start"
                   >
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
@@ -156,18 +157,18 @@ const SavedCollaborators = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarSeparator />
+
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Collaborations
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>Collaborations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {collaborationItems.map((item, index) => (
                 <SidebarMenuItem key={index}>
-                  <SidebarMenuButton 
+                  <SidebarMenuButton
                     onClick={() => navigate(item.path)}
                     isActive={item.active}
-                    className="w-full"
+                    className="w-full justify-start"
                   >
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
@@ -178,18 +179,18 @@ const SavedCollaborators = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarSeparator />
+
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Supporting Services
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>Supporting Services</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {supportingServices.map((item, index) => (
                 <SidebarMenuItem key={index}>
-                  <SidebarMenuButton 
+                  <SidebarMenuButton
                     onClick={() => navigate(item.path)}
                     isActive={item.active}
-                    className="w-full"
+                    className="w-full justify-start"
                   >
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
@@ -202,26 +203,34 @@ const SavedCollaborators = () => {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => navigate('/settings')}>
-              <Settings className="w-5 h-5" />
-              <span>Settings</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        
-        <div className="flex items-center space-x-3 p-2 border-t">
-          <Avatar className="w-8 h-8">
-            <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
-            <div className="text-xs text-gray-500">Researcher Role</div>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => navigate('/settings')}>
+                  <Settings className="w-5 h-5" />
+                  <span>Settings</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <div className="p-4">
+          <div className="flex items-center space-x-3">
+            <Avatar className="w-8 h-8">
+              <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
+              <div className="text-xs text-gray-500">Researcher Role</div>
+            </div>
+            <button className="text-gray-400 hover:text-gray-600">
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
           </div>
-          <button className="text-gray-400 hover:text-gray-600">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
         </div>
       </SidebarFooter>
     </Sidebar>
@@ -233,18 +242,20 @@ const SavedCollaborators = () => {
         <AppSidebar />
         <SidebarInset className="flex-1">
           {/* Header */}
-          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="md:hidden" />
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Saved Collaborators</h1>
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger className="md:hidden" />
+                <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Saved Collaborators</h1>
+              </div>
+              <Button onClick={handleSignOut} variant="outline" size="sm">
+                Sign Out
+              </Button>
             </div>
-            <Button onClick={handleSignOut} variant="outline" size="sm">
-              Sign Out
-            </Button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-4 sm:p-6">
+          <div className="flex-1 p-4 sm:p-6 space-y-6">
             {/* Filter Tabs */}
             <div className="mb-6">
               <div className="flex space-x-4 sm:space-x-8 border-b border-gray-200 overflow-x-auto">
@@ -278,30 +289,37 @@ const SavedCollaborators = () => {
                   />
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-700">
-                  <span className="whitespace-nowrap">Results per page</span>
-                  <Select value={resultsPerPage} onValueChange={setResultsPerPage}>
-                    <SelectTrigger className="w-16">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="whitespace-nowrap">Total Results: 15</span>
-                  <span>Sort</span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-24 sm:w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Relevant">Relevant</SelectItem>
-                      <SelectItem value="Rating">Rating</SelectItem>
-                      <SelectItem value="Collaborations">Collaborations</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600">Sort</span>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Relevant">Relevant</SelectItem>
+                        <SelectItem value="Rating">Rating</SelectItem>
+                        <SelectItem value="Collaborations">Collaborations</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-gray-600">Results per page</span>
+                      <Select value={resultsPerPage} onValueChange={setResultsPerPage}>
+                        <SelectTrigger className="w-16">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <span className="text-sm text-gray-600">Total Results: 15</span>
+                  </div>
                 </div>
               </div>
             </div>
