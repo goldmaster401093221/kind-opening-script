@@ -8,6 +8,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { 
   Home, 
   Users, 
   Bookmark, 
@@ -27,10 +35,16 @@ import {
 const Collaboration = () => {
   const [activeTab, setActiveTab] = useState('In Progress');
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [showEndCollaborationModal, setShowEndCollaborationModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleEndCollaboration = () => {
+    setShowEndCollaborationModal(false);
+    // Add logic to end collaboration here
   };
 
   const home = [
@@ -373,7 +387,11 @@ const Collaboration = () => {
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full mt-4">
+              <Button 
+                variant="outline" 
+                className="w-full mt-4"
+                onClick={() => setShowEndCollaborationModal(true)}
+              >
                 End Collaboration
               </Button>
             </CardContent>
@@ -572,6 +590,33 @@ const Collaboration = () => {
           {renderTabContent()}
         </div>
       </div>
+
+      {/* End Collaboration Modal */}
+      <Dialog open={showEndCollaborationModal} onOpenChange={setShowEndCollaborationModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">End Collaboration</DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-sm text-gray-600 mt-4">
+            Your collaboration has 2 days remaining, are you still going to end this collaboration?
+          </DialogDescription>
+          <DialogFooter className="mt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowEndCollaborationModal(false)}
+              className="mr-2"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleEndCollaboration}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Yes, End Collaboration
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
