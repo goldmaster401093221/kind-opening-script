@@ -127,7 +127,7 @@ const Dashboard = () => {
 
         {/* Navigation */}
         <div className="flex-1 p-4 space-y-6">
-          
+          <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
               Home
             </div>
