@@ -286,7 +286,7 @@ const DiscoverCollaborators = () => {
             </div>
 
             {/* Search Bar (appears only in Search More mode) */}
-            {activeTab === 'Search More' && (
+            {/* {activeTab === 'Search More' && (
               <div className="mb-6">
                 <Input
                   placeholder="Search"
@@ -295,7 +295,7 @@ const DiscoverCollaborators = () => {
                   className="max-w-md"
                 />
               </div>
-            )}
+            )} */}
 
             {/* Controls */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -317,10 +317,19 @@ const DiscoverCollaborators = () => {
               )}
               
               {/* Right side - Results controls */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <div className="flex flex-col item-center sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 {/* Sort field when in Search More mode */}
                 {activeTab === 'Search More' && (
                   <>
+                    <div className="flex item-center w-80">
+                      <Input
+                        placeholder="Search"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="max-w-md"
+                      />
+                    </div>
+
                     <span className="text-sm text-gray-600">Sort</span>
                     <Select value={sortBy} onValueChange={setSortBy}>
                       <SelectTrigger className="w-32">
