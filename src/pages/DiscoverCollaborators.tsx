@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Sidebar,
   SidebarContent,
@@ -36,7 +37,8 @@ import {
   MoreHorizontal,
   Heart,
   Copy,
-  Eye
+  Eye,
+  Star
 } from 'lucide-react';
 
 const AppSidebar = () => {
@@ -199,6 +201,8 @@ const DiscoverCollaborators = () => {
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -213,7 +217,25 @@ const DiscoverCollaborators = () => {
       rating: '4.8/5',
       skills: ['Idea', 'Proposal', 'Grant Application'],
       status: 'Best Match',
-      contacted: true
+      contacted: true,
+      profile: {
+        linkedin: 'https://linkedin.com/in/kevin-rashy-0234c12',
+        phone: '+1 (229) 690-9308',
+        researchGate: 'https://www.researchgate.info/kevinrashy',
+        googleScholar: 'https://www.googlescholar.info/kevinrashy',
+        institution: 'Institution name',
+        collage: 'Collage name',
+        department: 'Department name',
+        country: 'United States',
+        city: 'Los Angeles, CA',
+        postNumber: '98500',
+        researchExperience: '12',
+        primaryResearchField: 'Primary Research Field',
+        secondaryResearchField: 'Secondary Research Field',
+        keywords: ['Keyword1', 'Keyword2', 'Keyword3', 'Keyword4'],
+        whatIHave: ['Idea', 'Proposal', 'Grant Application'],
+        whatINeed: ['Equipment', 'Experiment']
+      }
     },
     {
       name: 'Anna Krylova',
@@ -222,7 +244,25 @@ const DiscoverCollaborators = () => {
       rating: '4.9/5',
       skills: ['Equipment', 'Experiment'],
       status: 'Best Match',
-      contacted: false
+      contacted: false,
+      profile: {
+        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
+        phone: '+1 (555) 123-4567',
+        researchGate: 'https://www.researchgate.info/annakrylova',
+        googleScholar: 'https://www.googlescholar.info/annakrylova',
+        institution: 'University name',
+        collage: 'Science Collage',
+        department: 'Physics Department',
+        country: 'United States',
+        city: 'New York, NY',
+        postNumber: '10001',
+        researchExperience: '15',
+        primaryResearchField: 'Quantum Physics',
+        secondaryResearchField: 'Materials Science',
+        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
+        whatIHave: ['Equipment', 'Experiment'],
+        whatINeed: ['Funding', 'Collaboration']
+      }
     },
     {
       name: 'Anna Krylova',
@@ -231,7 +271,25 @@ const DiscoverCollaborators = () => {
       rating: '4.9/5',
       skills: ['Equipment', 'Experiment'],
       status: 'Best Match',
-      contacted: false
+      contacted: false,
+      profile: {
+        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
+        phone: '+1 (555) 123-4567',
+        researchGate: 'https://www.researchgate.info/annakrylova',
+        googleScholar: 'https://www.googlescholar.info/annakrylova',
+        institution: 'University name',
+        collage: 'Science Collage',
+        department: 'Physics Department',
+        country: 'United States',
+        city: 'New York, NY',
+        postNumber: '10001',
+        researchExperience: '15',
+        primaryResearchField: 'Quantum Physics',
+        secondaryResearchField: 'Materials Science',
+        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
+        whatIHave: ['Equipment', 'Experiment'],
+        whatINeed: ['Funding', 'Collaboration']
+      }
     },
     {
       name: 'Anna Krylova',
@@ -240,9 +298,32 @@ const DiscoverCollaborators = () => {
       rating: '4.9/5',
       skills: ['Equipment', 'Experiment'],
       status: 'Best Match',
-      contacted: true
+      contacted: true,
+      profile: {
+        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
+        phone: '+1 (555) 123-4567',
+        researchGate: 'https://www.researchgate.info/annakrylova',
+        googleScholar: 'https://www.googlescholar.info/annakrylova',
+        institution: 'University name',
+        collage: 'Science Collage',
+        department: 'Physics Department',
+        country: 'United States',
+        city: 'New York, NY',
+        postNumber: '10001',
+        researchExperience: '15',
+        primaryResearchField: 'Quantum Physics',
+        secondaryResearchField: 'Materials Science',
+        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
+        whatIHave: ['Equipment', 'Experiment'],
+        whatINeed: ['Funding', 'Collaboration']
+      }
     }
   ];
+
+  const handleViewProfile = (collaborator) => {
+    setSelectedProfile(collaborator);
+    setIsProfileModalOpen(true);
+  };
 
   return (
     <SidebarProvider>
@@ -284,18 +365,6 @@ const DiscoverCollaborators = () => {
                 ))}
               </div>
             </div>
-
-            {/* Search Bar (appears only in Search More mode) */}
-            {/* {activeTab === 'Search More' && (
-              <div className="mb-6">
-                <Input
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="max-w-md"
-                />
-              </div>
-            )} */}
 
             {/* Controls */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -429,7 +498,10 @@ const DiscoverCollaborators = () => {
                             <button className="p-1 hover:bg-gray-100 rounded">
                               <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                             </button>
-                            <button className="p-1 hover:bg-gray-100 rounded">
+                            <button 
+                              className="p-1 hover:bg-gray-100 rounded"
+                              onClick={() => handleViewProfile(collaborator)}
+                            >
                               <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                             </button>
                           </div>
@@ -468,6 +540,171 @@ const DiscoverCollaborators = () => {
             </div>
           </div>
         </div>
+
+        {/* Profile Modal */}
+        <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>User Profile</DialogTitle>
+            </DialogHeader>
+            
+            {selectedProfile && (
+              <div className="space-y-6">
+                {/* Profile Header */}
+                <div className="flex items-center space-x-4">
+                  <Avatar className="w-16 h-16">
+                    <img 
+                      src="/lovable-uploads/avatar1.jpg" 
+                      alt={selectedProfile.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">{selectedProfile.name}</h3>
+                    <p className="text-gray-600">{selectedProfile.role}</p>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <Badge className="bg-blue-500 text-white">
+                        👍 Best Match
+                      </Badge>
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{selectedProfile.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button className="p-2 hover:bg-gray-100 rounded">
+                      <Heart className="w-5 h-5 text-gray-400" />
+                    </button>
+                    <button className="p-2 hover:bg-gray-100 rounded">
+                      <MessageSquare className="w-5 h-5 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">LinkedIn</label>
+                      <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.linkedin}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Phone</label>
+                      <p className="text-sm">{selectedProfile.profile.phone}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Research Gate Link</label>
+                      <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.researchGate}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Google Scholar Link</label>
+                    <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.googleScholar}</p>
+                  </div>
+                </div>
+
+                {/* Institution Information */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Institution</label>
+                      <p className="text-sm">{selectedProfile.profile.institution}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Collage</label>
+                      <p className="text-sm">{selectedProfile.profile.collage}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Department</label>
+                      <p className="text-sm">{selectedProfile.profile.department}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Country</label>
+                      <p className="text-sm">{selectedProfile.profile.country}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">City</label>
+                      <p className="text-sm">{selectedProfile.profile.city}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Post Number</label>
+                      <p className="text-sm">{selectedProfile.profile.postNumber}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Research Information */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Research Experience in Years</label>
+                      <p className="text-sm font-semibold">{selectedProfile.profile.researchExperience}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Primary Research Field</label>
+                      <p className="text-sm">{selectedProfile.profile.primaryResearchField}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Secondary Research Field</label>
+                      <p className="text-sm">{selectedProfile.profile.secondaryResearchField}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Keywords */}
+                <div>
+                  <label className="text-sm font-medium text-gray-600 mb-2 block">Specialization/Key words</label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProfile.profile.keywords.map((keyword, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* What I have */}
+                <div>
+                  <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProfile.profile.whatIHave.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* What I need */}
+                <div>
+                  <label className="text-sm font-medium text-gray-600 mb-2 block">What I need</label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProfile.profile.whatINeed.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsProfileModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    Send Collaboration Request
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );
