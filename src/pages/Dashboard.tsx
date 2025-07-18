@@ -93,8 +93,7 @@ const Dashboard = () => {
   );
 
   // Custom Icons End 
-  const sidebarItems = [
-    { icon: CustomHomeIcon, label: 'Home', active: false },
+  const home = [
     { icon: Users, label: 'Dashboard', active: true },
     { icon: Users, label: 'Discover Collaborators', active: false },
     { icon: Bookmark, label: 'Saved Collaborators', active: false },
@@ -128,8 +127,11 @@ const Dashboard = () => {
 
         {/* Navigation */}
         <div className="flex-1 p-4 space-y-6">
-          <div>
-            {sidebarItems.map((item, index) => (
+          
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
+              Home
+            </div>
+            {home.map((item, index) => (
               <div
                 key={index}
                 className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
