@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -203,6 +202,7 @@ const DiscoverCollaborators = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [savedCollaborators, setSavedCollaborators] = useState(new Set());
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -323,6 +323,18 @@ const DiscoverCollaborators = () => {
   const handleViewProfile = (collaborator) => {
     setSelectedProfile(collaborator);
     setIsProfileModalOpen(true);
+  };
+
+  const handleToggleHeart = (index) => {
+    setSavedCollaborators(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -492,8 +504,17 @@ const DiscoverCollaborators = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            <button className="p-1 hover:bg-gray-100 rounded">
-                              <Heart className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                            <button 
+                              className="p-1 hover:bg-gray-100 rounded"
+                              onClick={() => handleToggleHeart(index)}
+                            >
+                              <Heart 
+                                className={`w-4 h-4 ${
+                                  savedCollaborators.has(index) 
+                                    ? 'text-blue-600 fill-blue-600' 
+                                    : 'text-gray-400 hover:text-red-500'
+                                }`} 
+                              />
                             </button>
                             <button className="p-1 hover:bg-gray-100 rounded">
                               <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />

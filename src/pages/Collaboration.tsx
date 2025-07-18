@@ -158,8 +158,8 @@ const Collaboration = () => {
                           <Badge variant="outline" className="text-xs">Grant Application</Badge>
                         </div>
                       </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                        <MessageCircle className="w-4 h-4" />
+                      <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                        <MessageSquare className="w-5 h-5" />
                       </button>
                     </div>
 
@@ -178,8 +178,8 @@ const Collaboration = () => {
                           <Badge variant="outline" className="text-xs">Experiment</Badge>
                         </div>
                       </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                        <MessageCircle className="w-4 h-4" />
+                      <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                        <MessageSquare className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -234,8 +234,8 @@ const Collaboration = () => {
                         <Badge variant="outline" className="text-xs">Experiment</Badge>
                       </div>
                     </div>
-                    <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                      <MessageCircle className="w-4 h-4" />
+                    <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                      <MessageSquare className="w-5 h-5" />
                     </button>
                   </div>
 
@@ -361,8 +361,8 @@ const Collaboration = () => {
                       <Badge variant="outline" className="text-xs">Grant Application</Badge>
                     </div>
                   </div>
-                  <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                    <MessageCircle className="w-4 h-4" />
+                  <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                    <MessageSquare className="w-5 h-5" />
                   </button>
                 </div>
 
@@ -381,8 +381,8 @@ const Collaboration = () => {
                       <Badge variant="outline" className="text-xs">Experiment</Badge>
                     </div>
                   </div>
-                  <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                    <MessageCircle className="w-4 h-4" />
+                  <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                    <MessageSquare className="w-5 h-5" />
                   </button>
                 </div>
               </div>

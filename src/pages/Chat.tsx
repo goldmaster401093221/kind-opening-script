@@ -25,13 +25,18 @@ import {
   Mic,
   Video,
   PhoneOff,
-  MicOff
+  MicOff,
+  Expand,
+  Monitor,
+  MicIcon,
+  Minimize2
 } from 'lucide-react';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
   const [showCallingModal, setShowCallingModal] = useState(false);
+  const [showExpandedCalling, setShowExpandedCalling] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -40,10 +45,20 @@ const Chat = () => {
 
   const handlePhoneClick = () => {
     setShowCallingModal(true);
+    setShowExpandedCalling(false);
   };
 
   const handleEndCall = () => {
     setShowCallingModal(false);
+    setShowExpandedCalling(false);
+  };
+
+  const handleExpandCall = () => {
+    setShowExpandedCalling(true);
+  };
+
+  const handleMinimizeCall = () => {
+    setShowExpandedCalling(false);
   };
 
   const home = [
@@ -339,6 +354,81 @@ const Chat = () => {
                 </div>
               ))}
             </div>
+
+            {/* Small Calling Card - Only show when not expanded */}
+            {showCallingModal && !showExpandedCalling && (
+              <div className="p-4">
+                <div className="bg-gray-100 rounded-2xl p-6 relative">
+                  {/* Header with Calling text and expand icon */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="text-lg font-medium text-gray-800">Calling...</div>
+                    <button 
+                      onClick={handleExpandCall}
+                      className="text-gray-600 hover:text-gray-800"
+                    >
+                      <Expand className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {/* Avatars */}
+                  <div className="flex items-center justify-center space-x-8 mb-8">
+                    <div className="relative">
+                      <Avatar className="w-20 h-20">
+                        <img 
+                          src="/lovable-uploads/avatar1.jpg" 
+                          alt="Anna Krylova"
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      </Avatar>
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-100"></div>
+                    </div>
+                    
+                    <div className="relative">
+                      <div className="bg-gray-800 rounded-2xl w-20 h-20 flex items-center justify-center">
+                        <div className="text-xl font-bold text-white">BM</div>
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-100"></div>
+                    </div>
+                  </div>
+
+                  {/* Control Buttons */}
+                  <div className="flex items-center justify-center space-x-4">
+                    <Button
+                      variant="ghost" 
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600 rounded-2xl p-3 w-12 h-12"
+                    >
+                      <MicIcon className="w-5 h-5 text-white" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost" 
+                      size="sm"
+                      className="bg-red-500 hover:bg-red-600 rounded-2xl p-3 w-12 h-12"
+                    >
+                      <Video className="w-5 h-5 text-white" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost" 
+                      size="sm"
+                      className="bg-red-500 hover:bg-red-600 rounded-2xl p-3 w-12 h-12"
+                    >
+                      <Monitor className="w-5 h-5 text-white" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost" 
+                      size="sm"
+                      className="bg-red-500 hover:bg-red-600 rounded-2xl p-3 w-12 h-12"
+                      onClick={handleEndCall}
+                    >
+                      <PhoneOff className="w-5 h-5 text-white" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Panel - Chat Messages */}
@@ -414,68 +504,82 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Calling Modal */}
-      <Dialog open={showCallingModal} onOpenChange={setShowCallingModal}>
-        <DialogContent className="sm:max-w-[400px] p-0 bg-gray-900 text-white border-none">
-          <div className="flex flex-col items-center p-8 space-y-6">
-            <div className="text-center">
-              <div className="text-lg font-medium text-gray-300 mb-2">Calling...</div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Avatar className="w-16 h-16">
-                  <img 
-                    src="/lovable-uploads/avatar1.jpg" 
-                    alt="Anna Krylova"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </Avatar>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
+      {/* Expanded Calling Modal */}
+      {showExpandedCalling && (
+        <Dialog open={showExpandedCalling} onOpenChange={setShowExpandedCalling}>
+          <DialogContent className="max-w-2xl">
+            <div className="bg-gray-100 rounded-2xl p-8">
+              {/* Header with Calling text and minimize icon */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="text-2xl font-medium text-gray-800">Calling...</div>
+                <button 
+                  onClick={handleMinimizeCall}
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  <Minimize2 className="w-6 h-6" />
+                </button>
               </div>
               
-              <div className="bg-gray-800 rounded-full p-4">
-                <div className="text-2xl font-bold">BM</div>
+              {/* Large Avatars */}
+              <div className="flex items-center justify-center space-x-16 mb-12">
+                <div className="relative">
+                  <Avatar className="w-32 h-32">
+                    <img 
+                      src="/lovable-uploads/avatar1.jpg" 
+                      alt="Anna Krylova"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </Avatar>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-100"></div>
+                </div>
+                
+                <div className="relative">
+                  <div className="bg-gray-800 rounded-3xl w-32 h-32 flex items-center justify-center">
+                    <div className="text-3xl font-bold text-white">BM</div>
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-100"></div>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center space-x-6 mt-8">
-              <Button
-                variant="ghost" 
-                size="lg"
-                className="bg-green-600 hover:bg-green-700 rounded-full p-4 w-14 h-14"
-              >
-                <Mic className="w-6 h-6 text-white" />
-              </Button>
-              
-              <Button
-                onClick={handleEndCall}
-                variant="ghost" 
-                size="lg"
-                className="bg-red-600 hover:bg-red-700 rounded-full p-4 w-14 h-14"
-              >
-                <PhoneOff className="w-6 h-6 text-white" />
-              </Button>
-              
-              <Button
-                variant="ghost" 
-                size="lg"
-                className="bg-red-600 hover:bg-red-700 rounded-full p-4 w-14 h-14"
-              >
-                <Video className="w-6 h-6 text-white" />
-              </Button>
-              
-              <Button
-                variant="ghost" 
-                size="lg"
-                className="bg-red-600 hover:bg-red-700 rounded-full p-4 w-14 h-14"
-              >
-                <MicOff className="w-6 h-6 text-white" />
-              </Button>
+              {/* Control Buttons */}
+              <div className="flex items-center justify-center space-x-6">
+                <Button
+                  variant="ghost" 
+                  size="lg"
+                  className="bg-green-500 hover:bg-green-600 rounded-3xl p-4 w-16 h-16"
+                >
+                  <MicIcon className="w-8 h-8 text-white" />
+                </Button>
+                
+                <Button
+                  variant="ghost" 
+                  size="lg"
+                  className="bg-red-500 hover:bg-red-600 rounded-3xl p-4 w-16 h-16"
+                >
+                  <Video className="w-8 h-8 text-white" />
+                </Button>
+                
+                <Button
+                  variant="ghost" 
+                  size="lg"
+                  className="bg-red-500 hover:bg-red-600 rounded-3xl p-4 w-16 h-16"
+                >
+                  <Monitor className="w-8 h-8 text-white" />
+                </Button>
+                
+                <Button
+                  variant="ghost" 
+                  size="lg"
+                  className="bg-red-500 hover:bg-red-600 rounded-3xl p-4 w-16 h-16"
+                  onClick={handleEndCall}
+                >
+                  <PhoneOff className="w-8 h-8 text-white" />
+                </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
