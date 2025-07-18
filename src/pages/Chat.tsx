@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
+import { 
   Home, 
   Users, 
   Bookmark, 
@@ -17,16 +21,29 @@ import {
   MoreHorizontal,
   Send,
   Phone,
-  MoreVertical
+  MoreVertical,
+  Mic,
+  Video,
+  PhoneOff,
+  MicOff
 } from 'lucide-react';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
+  const [showCallingModal, setShowCallingModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handlePhoneClick = () => {
+    setShowCallingModal(true);
+  };
+
+  const handleEndCall = () => {
+    setShowCallingModal(false);
   };
 
   const sidebarItems = [
@@ -293,22 +310,14 @@ const Chat = () => {
                 >
                   <div className="relative">
                     <Avatar className="w-12 h-12">
-                      {/* <AvatarFallback className={`${
-                        conversation.name === 'Anna Krylova' ? 'bg-orange-500' : 
-                        conversation.name === 'Kevin Rashy' ? 'bg-yellow-500' : 'bg-blue-500'
-                      } text-white text-sm`}>
-                        {conversation.avatar}
-                      </AvatarFallback> */}
-                       <img 
-                            src="/lovable-uploads/avatar1.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
+                      <img 
+                        src="/lovable-uploads/avatar1.jpg" 
+                        alt={conversation.name}
+                        className="w-full h-full object-cover rounded-lg"
                       />
                     </Avatar>
                     {conversation.online && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                        <span className="text-xs text-white">Online</span>
-                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -336,21 +345,23 @@ const Chat = () => {
             <div className="bg-white border-b border-gray-200 px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Avatar className="w-12 h-12">
-                    {/* <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback> */}
-                     <img 
-                            src="/lovable-uploads/avatar1.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
+                  <div className="relative">
+                    <Avatar className="w-12 h-12">
+                      <img 
+                        src="/lovable-uploads/avatar1.jpg" 
+                        alt="Anna Krylova"
+                        className="w-full h-full object-cover rounded-lg"
                       />
-                  </Avatar>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                  </div>
                   <div>
                     <div className="font-medium">Anna Krylova</div>
                     <div className="text-sm text-green-600">Online</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={handlePhoneClick}>
                     <Phone className="w-4 h-4" />
                   </Button>
                   <Button variant="ghost" size="sm">
@@ -400,6 +411,69 @@ const Chat = () => {
           </div>
         </div>
       </div>
+
+      {/* Calling Modal */}
+      <Dialog open={showCallingModal} onOpenChange={setShowCallingModal}>
+        <DialogContent className="sm:max-w-[400px] p-0 bg-gray-900 text-white border-none">
+          <div className="flex flex-col items-center p-8 space-y-6">
+            <div className="text-center">
+              <div className="text-lg font-medium text-gray-300 mb-2">Calling...</div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Avatar className="w-16 h-16">
+                  <img 
+                    src="/lovable-uploads/avatar1.jpg" 
+                    alt="Anna Krylova"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
+              </div>
+              
+              <div className="bg-gray-800 rounded-full p-4">
+                <div className="text-2xl font-bold">BM</div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-6 mt-8">
+              <Button
+                variant="ghost" 
+                size="lg"
+                className="bg-green-600 hover:bg-green-700 rounded-full p-4 w-14 h-14"
+              >
+                <Mic className="w-6 h-6 text-white" />
+              </Button>
+              
+              <Button
+                onClick={handleEndCall}
+                variant="ghost" 
+                size="lg"
+                className="bg-red-600 hover:bg-red-700 rounded-full p-4 w-14 h-14"
+              >
+                <PhoneOff className="w-6 h-6 text-white" />
+              </Button>
+              
+              <Button
+                variant="ghost" 
+                size="lg"
+                className="bg-red-600 hover:bg-red-700 rounded-full p-4 w-14 h-14"
+              >
+                <Video className="w-6 h-6 text-white" />
+              </Button>
+              
+              <Button
+                variant="ghost" 
+                size="lg"
+                className="bg-red-600 hover:bg-red-700 rounded-full p-4 w-14 h-14"
+              >
+                <MicOff className="w-6 h-6 text-white" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
