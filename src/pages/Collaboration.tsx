@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Home, 
   Users, 
@@ -100,6 +101,310 @@ const Collaboration = () => {
       icon: Database
     }
   ];
+
+  const renderTabContent = () => {
+    if (activeTab === 'Upcoming') {
+      return (
+        <div className="grid grid-cols-6 gap-4">
+          {/* Main Collaboration Content */}
+          <div className="col-span-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Collaboration Status</h3>
+                    <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
+                      Upcoming
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
+                    <span>From 2025-06-04</span>
+                    <span>To 2025-06-25</span>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-medium mb-4">2 Collaborators</h4>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="w-12 h-12">
+                        <img 
+                          src="/lovable-uploads/avatar2.jpg" 
+                          className="max-w-full h-auto rounded-lg shadow-lg"
+                        />
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-medium">Bashair Mussa (me)</div>
+                        <div className="text-sm text-gray-500">Researcher Role</div>
+                        <div className="flex space-x-2 mt-2">
+                          <Badge variant="outline" className="text-xs">Idea</Badge>
+                          <Badge variant="outline" className="text-xs">Proposal</Badge>
+                          <Badge variant="outline" className="text-xs">Grant Application</Badge>
+                        </div>
+                      </div>
+                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="w-12 h-12">
+                        <img 
+                          src="/lovable-uploads/avatar1.jpg" 
+                          className="max-w-full h-auto rounded-lg shadow-lg"
+                        />
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-medium">Anna Krylova</div>
+                        <div className="text-sm text-gray-500">Researcher Role</div>
+                        <div className="flex space-x-2 mt-2">
+                          <Badge variant="outline" className="text-xs">Equipment</Badge>
+                          <Badge variant="outline" className="text-xs">Experiment</Badge>
+                        </div>
+                      </div>
+                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button variant="outline" className="w-full mt-4">
+                    Invite More
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'Requests') {
+      return (
+        <div className="grid grid-cols-6 gap-4">
+          {/* Main Collaboration Content */}
+          <div className="col-span-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Collaboration Status</h3>
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-200 px-3 py-1">
+                      Incoming Request
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
+                    <span>From 2025-06-04</span>
+                    <span>To 2025-06-25</span>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-medium mb-4">Collaborator</h4>
+                  
+                  <div className="flex items-start space-x-3 mb-6">
+                    <Avatar className="w-12 h-12">
+                      <img 
+                        src="/lovable-uploads/avatar1.jpg" 
+                        className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-medium">Anna Krylova</div>
+                      <div className="text-sm text-gray-500">Researcher Role</div>
+                      <div className="flex space-x-2 mt-2">
+                        <Badge variant="outline" className="text-xs">Equipment</Badge>
+                        <Badge variant="outline" className="text-xs">Experiment</Badge>
+                      </div>
+                    </div>
+                    <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="mb-6">
+                    <h4 className="font-medium mb-4">Terms of Collaboration</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="term1" defaultChecked />
+                        <label htmlFor="term1" className="text-sm">Term of collaboration</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="term2" />
+                        <label htmlFor="term2" className="text-sm">Term of collaboration</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="term3" defaultChecked />
+                        <label htmlFor="term3" className="text-sm">Term of collaboration</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-4">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      Accept Request
+                    </Button>
+                    <Button variant="outline" className="text-blue-600 border-blue-600">
+                      Reject Request
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    // Default "In Progress" content
+    return (
+      <div className="grid grid-cols-6 gap-4">
+        {/* Main Collaboration Content */}
+        <div className="col-span-2 ">
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Collaboration Status</h3>
+                  <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
+                    In Progress
+                  </Badge>
+                </div>
+                
+                <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
+                  <span>From 2025-06-04</span>
+                  <span>To 2025-06-25</span>
+                </div>
+              </div>
+
+              {/* Calendar */}
+              <div className="mb-6">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="rounded-md  flex"
+                />
+              </div>
+
+              {/* Today's Activity */}
+              <div className="mb-6">
+                <h4 className="font-medium mb-4">Jun 18th (Today) Activity</h4>
+                <div className="space-y-3">
+                  {activities.map((activity, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                        <File className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm flex-1">
+                        <span className="font-medium">{activity.user}</span> {activity.action}
+                      </span>
+                      <button className="text-blue-600 text-sm hover:underline">
+                        {activity.link}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-between">
+                <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/data-center')}>
+                  Go to Data Center
+                </Button>
+                <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/chat')}>
+                  Go to Chat Room
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="space-y-6 col-span-2 col-start-4">
+          {/* Collaborators */}
+          <Card className="">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <Avatar className="w-12 h-12">
+                    <img 
+                      src="/lovable-uploads/avatar2.jpg" 
+                      className="max-w-full h-auto rounded-lg shadow-lg"
+                    />
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="font-medium">Bashair Mussa (me)</div>
+                    <div className="text-sm text-gray-500">Researcher Role</div>
+                    <div className="flex space-x-2 mt-2">
+                      <Badge variant="outline" className="text-xs">Idea</Badge>
+                      <Badge variant="outline" className="text-xs">Proposal</Badge>
+                      <Badge variant="outline" className="text-xs">Grant Application</Badge>
+                    </div>
+                  </div>
+                  <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Avatar className="w-12 h-12">
+                    <img 
+                      src="/lovable-uploads/avatar1.jpg" 
+                      className="max-w-full h-auto rounded-lg shadow-lg"
+                    />
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="font-medium">Anna Krylova</div>
+                    <div className="text-sm text-gray-500">Researcher Role</div>
+                    <div className="flex space-x-2 mt-2">
+                      <Badge variant="outline" className="text-xs">Equipment</Badge>
+                      <Badge variant="outline" className="text-xs">Experiment</Badge>
+                    </div>
+                  </div>
+                  <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full mt-4">
+                End Collaboration
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Supporting Services */}
+          <Card className="">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Supporting Services</h3>
+              
+              <div className="space-y-3">
+                {supportingServicesData.map((service, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                        <service.icon className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm">{service.name}</span>
+                    </div>
+                    <button className="text-blue-600 text-sm hover:underline">
+                      {service.link}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -264,161 +569,7 @@ const Collaboration = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-6 gap-4">
-            {/* Main Collaboration Content */}
-            <div className="col-span-2 ">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold">Collaboration Status</h3>
-                      <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
-                        In Progress
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
-                      <span>From 2025-06-04</span>
-                      <span>To 2025-06-25</span>
-                    </div>
-                  </div>
-
-                  {/* Calendar */}
-                  <div className="mb-6">
-                    {/* <div className="flex items-center justify-between mb-4">
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <span className="font-medium">2024 June</span>
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div> */}
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      className="rounded-md  flex"
-                    />
-                  </div>
-
-                  {/* Today's Activity */}
-                  <div className="mb-6">
-                    <h4 className="font-medium mb-4">Jun 18th (Today) Activity</h4>
-                    <div className="space-y-3">
-                      {activities.map((activity, index) => (
-                        <div key={index} className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
-                            <File className="w-4 h-4 text-blue-600" />
-                          </div>
-                          <span className="text-sm flex-1">
-                            <span className="font-medium">{activity.user}</span> {activity.action}
-                          </span>
-                          <button className="text-blue-600 text-sm hover:underline">
-                            {activity.link}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-between">
-                    <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/data-center')}>
-                      Go to Data Center
-                    </Button>
-                    <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/chat')}>
-                      Go to Chat Room
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="space-y-6 col-span-2 col-start-4">
-              {/* Collaborators */}
-              <Card className="">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-12 h-12">
-                        {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
-                      <img 
-                            src="/lovable-uploads/avatar2.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">Bashair Mussa (me)</div>
-                        <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
-                          <Badge variant="outline" className="text-xs">Idea</Badge>
-                          <Badge variant="outline" className="text-xs">Proposal</Badge>
-                          <Badge variant="outline" className="text-xs">Grant Application</Badge>
-                        </div>
-                      </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                        <MessageCircle className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-12 h-12">
-                        {/* <AvatarFallback className="bg-orange-500 text-white">AK</AvatarFallback> */}
-                      <img 
-                            src="/lovable-uploads/avatar1.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">Anna Krylova</div>
-                        <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
-                          <Badge variant="outline" className="text-xs">Equipment</Badge>
-                          <Badge variant="outline" className="text-xs">Experiment</Badge>
-                        </div>
-                      </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                        <MessageCircle className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button variant="outline" className="w-full mt-4">
-                    End Collaboration
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Supporting Services */}
-              <Card className="">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Supporting Services</h3>
-                  
-                  <div className="space-y-3">
-                    {supportingServicesData.map((service, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
-                            <service.icon className="w-4 h-4 text-blue-600" />
-                          </div>
-                          <span className="text-sm">{service.name}</span>
-                        </div>
-                        <button className="text-blue-600 text-sm hover:underline">
-                          {service.link}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          {renderTabContent()}
         </div>
       </div>
     </div>
