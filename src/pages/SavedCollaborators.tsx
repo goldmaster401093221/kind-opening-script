@@ -32,7 +32,6 @@ const SavedCollaborators = () => {
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Add sidebar state
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -113,25 +112,20 @@ const SavedCollaborators = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar (drawer on mobile) */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>
-      )}
-      <div
-        className={
-          `fixed z-50 inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 md:static md:translate-x-0 md:flex ` +
-          (sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0')
-        }
-      >
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-sm">A</span>
+            </div>
+            <span className="font-semibold text-lg">AIRCollab</span>
           </div>
-          <span className="font-semibold text-lg">AIRCollab</span>
         </div>
+
         {/* Navigation */}
-        <div className="flex-1 p-4 space-y-6 overflow-y-auto">
+        <div className="flex-1 p-4 space-y-6">
           <div>
             {sidebarItems.map((item, index) => (
               <div
@@ -215,6 +209,7 @@ const SavedCollaborators = () => {
             ))}
           </div>
         </div>
+
         {/* Settings */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
@@ -224,6 +219,7 @@ const SavedCollaborators = () => {
             <span className="text-sm">Settings</span>
           </div>
         </div>
+
         {/* User Profile */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
@@ -240,35 +236,29 @@ const SavedCollaborators = () => {
           </div>
         </div>
       </div>
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between md:px-6">
-          <div className="flex items-center">
-            {/* Hamburger for mobile */}
-            <button
-              className="md:hidden mr-3 p-2 rounded hover:bg-gray-100 focus:outline-none"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open sidebar"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Saved Collaborators</h1>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              Sign Out
+            </Button>
           </div>
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            Sign Out
-          </Button>
         </div>
+
         {/* Content */}
-        <div className="flex-1 p-2 sm:p-4 md:p-6 overflow-x-auto">
+        <div className="flex-1 p-6">
           {/* Filter Tabs */}
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-wrap space-x-0 sm:space-x-8 border-b border-gray-200">
+          <div className="mb-6">
+            <div className="flex space-x-8 border-b border-gray-200">
               {['Saved', 'Contacted'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-2 sm:pb-4 text-sm font-medium w-1/2 sm:w-auto ${
+                  className={`pb-4 text-sm font-medium ${
                     activeTab === tab
                       ? 'border-b-2 border-gray-900 text-gray-900'
                       : 'text-gray-500 hover:text-gray-700'
@@ -279,10 +269,11 @@ const SavedCollaborators = () => {
               ))}
             </div>
           </div>
+
           {/* Search and Controls */}
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div className="relative w-full sm:w-64">
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
@@ -292,7 +283,8 @@ const SavedCollaborators = () => {
                   className="pl-10"
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-700">
+              
+              <div className="flex items-center space-x-4 text-sm text-gray-700">
                 <span>Results per page</span>
                 <Select value={resultsPerPage} onValueChange={setResultsPerPage}>
                   <SelectTrigger className="w-16">
@@ -319,16 +311,17 @@ const SavedCollaborators = () => {
               </div>
             </div>
           </div>
+
           {/* Table */}
-          <Card className="border border-gray-200 overflow-x-auto">
+          <Card className="border border-gray-200">
             <Table>
               <TableHeader className="bg-gray-100">
                 <TableRow>
-                  <TableHead className="text-gray-700 font-medium whitespace-nowrap">Researcher</TableHead>
-                  <TableHead className="text-center text-gray-700 font-medium whitespace-nowrap">Total Collaborations</TableHead>
-                  <TableHead className="text-center text-gray-700 font-medium whitespace-nowrap">Ratings</TableHead>
-                  <TableHead className="text-gray-700 font-medium whitespace-nowrap">Research</TableHead>
-                  <TableHead className="text-center text-gray-700 font-medium whitespace-nowrap">Actions</TableHead>
+                  <TableHead className="text-gray-700 font-medium">Researcher</TableHead>
+                  <TableHead className="text-center text-gray-700 font-medium">Total Collaborations</TableHead>
+                  <TableHead className="text-center text-gray-700 font-medium">Ratings</TableHead>
+                  <TableHead className="text-gray-700 font-medium">Research</TableHead>
+                  <TableHead className="text-center text-gray-700 font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -406,7 +399,7 @@ const SavedCollaborators = () => {
           </Card>
 
           {/* Pagination */}
-          <div className="mt-4 sm:mt-6 flex justify-center">
+          <div className="mt-6 flex justify-center">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>

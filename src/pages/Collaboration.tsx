@@ -26,7 +26,6 @@ import {
 const Collaboration = () => {
   const [activeTab, setActiveTab] = useState('In Progress');
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Add sidebar state
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -105,25 +104,20 @@ const Collaboration = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar (drawer on mobile) */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>
-      )}
-      <div
-        className={
-          `fixed z-50 inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 md:static md:translate-x-0 md:flex ` +
-          (sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0')
-        }
-      >
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-sm">A</span>
+            </div>
+            <span className="font-semibold text-lg">AIRCollab</span>
           </div>
-          <span className="font-semibold text-lg">AIRCollab</span>
         </div>
+
         {/* Navigation */}
-        <div className="flex-1 p-4 space-y-6 overflow-y-auto">
+        <div className="flex-1 p-4 space-y-6">
           <div>
             {sidebarItems.map((item, index) => (
               <div
@@ -234,35 +228,29 @@ const Collaboration = () => {
           </div>
         </div>
       </div>
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col bg-white">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between md:px-6">
-          <div className="flex items-center">
-            {/* Hamburger for mobile */}
-            <button
-              className="md:hidden mr-3 p-2 rounded hover:bg-gray-100 focus:outline-none"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open sidebar"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Collaboration</h1>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              Sign Out
+            </Button>
           </div>
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            Sign Out
-          </Button>
         </div>
+
         {/* Content */}
-        <div className="flex-1 p-2 sm:p-4 md:p-6 overflow-x-auto">
+        <div className="flex-1 p-6">
           {/* Filter Tabs */}
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-wrap space-x-0 sm:space-x-8 border-b border-gray-200">
+          <div className="mb-6">
+            <div className="flex space-x-8 border-b border-gray-200">
               {['In Progress', 'Upcoming', 'Requests', 'History'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-2 sm:pb-4 text-sm font-medium w-1/2 sm:w-auto ${
+                  className={`pb-4 text-sm font-medium ${
                     activeTab === tab
                       ? 'bg-white border-b-2 border-gray-900 text-gray-900'
                       : 'text-gray-500 hover:text-gray-700'
@@ -273,11 +261,12 @@ const Collaboration = () => {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+
+          <div className="grid grid-cols-6 gap-4">
             {/* Main Collaboration Content */}
-            <div className="lg:col-span-2">
+            <div className="col-span-2 ">
               <Card>
-                <CardContent className="p-4 sm:p-6">
+                <CardContent className="p-6">
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold">Collaboration Status</h3>
@@ -343,11 +332,12 @@ const Collaboration = () => {
                 </CardContent>
               </Card>
             </div>
+
             {/* Right Sidebar */}
-            <div className="space-y-6 lg:col-span-2 lg:col-start-4">
+            <div className="space-y-6 col-span-2 col-start-4">
               {/* Collaborators */}
               <Card className="">
-                <CardContent className="p-4 sm:p-6">
+                <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
                   
                   <div className="space-y-4">
@@ -405,7 +395,7 @@ const Collaboration = () => {
 
               {/* Supporting Services */}
               <Card className="">
-                <CardContent className="p-4 sm:p-6">
+                <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Supporting Services</h3>
                   
                   <div className="space-y-3">

@@ -37,7 +37,6 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Add sidebar state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -115,26 +114,20 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar (drawer on mobile) */}
-      {/* Overlay for mobile drawer */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>
-      )}
-      <div
-        className={
-          `fixed z-50 inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 md:static md:translate-x-0 md:flex ` +
-          (sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0')
-        }
-      >
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-sm">A</span>
+            </div>
+            <span className="font-semibold text-lg">AIRCollab</span>
           </div>
-          <span className="font-semibold text-lg">AIRCollab</span>
         </div>
+
         {/* Navigation */}
-        <div className="flex-1 p-4 space-y-6 overflow-y-auto">
+        <div className="flex-1 p-4 space-y-6">
           <div>
             {sidebarItems.map((item, index) => (
               <div
@@ -218,6 +211,7 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
+
         {/* Settings */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
@@ -227,8 +221,10 @@ const Dashboard = () => {
           >
             <Settings className="w-5 h-5" />
             <span className="text-sm">Settings</span>
+            
           </div>
         </div>
+
         {/* User Profile */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
@@ -249,35 +245,30 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between md:px-6">
-          <div className="flex items-center">
-            {/* Hamburger for mobile */}
-            <button
-              className="md:hidden mr-3 p-2 rounded hover:bg-gray-100 focus:outline-none"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open sidebar"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              Sign Out
+            </Button>
           </div>
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            Sign Out
-          </Button>
         </div>
+
         {/* Content */}
-        <div className="flex-1 p-2 sm:p-4 md:p-6 overflow-x-auto">
+        <div className="flex-1 p-6">
           {/* Greeting */}
-          <div className="mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">
               👋 Good Morning, {profile?.username || 'Bashair Mussa'} !
             </h2>
           </div>
+
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -343,20 +334,23 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:justify-end mb-4 sm:mb-6 gap-2">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
+          <div className="flex justify-end mb-6">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Search Collaborators
             </Button>
           </div>
 
-          <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">My Collaboration</h3>
+          <h3 className="text-lg font-semibold mb-4">My Collaboration</h3>
 
           {/* Main Content Area */}
-          <div className='border-2 rounded-lg bg-white overflow-x-auto'>
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 lg:col-span-2">
-              <div className='md:col-span-2'>
-                <div className="p-4 sm:p-6">
-                  {/* <Card> */}
+          {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"> */}
+
+          {/* My Collaboration */}
+          <div className='border-2 rounded-lg bg-white'>
+            <div className="grid grid-cols-6 gap-4 lg:col-span-2">
+              <div className='col-span-2'>
+                {/* <Card> */}
+                  <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-4">
                         <div className="text-sm text-gray-600">Collaboration Status</div>
@@ -372,7 +366,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Calendar */}
-                    <div className="mb-4">
+                    <div className="mb-4 ">
                       {/* <div className="flex items-center justify-between mb-4">
                         <button className="p-1 hover:bg-gray-100 rounded">
                           <ChevronLeft className="w-4 h-4" />
@@ -391,58 +385,66 @@ const Dashboard = () => {
                     </div>
 
                     <div>
-                      <Button variant="outline" className="w-full sm:w-auto">See Collaboration</Button>
+                      <Button variant="outline">See Collaboration</Button>
                     </div>
-                  {/* </Card> */}
-                </div>
-              </div>
+                  </div>
+                {/* </Card> */}
+              </div> 
+
+
               {/* Collaborators */}
-              <div className="md:col-span-4">
-                <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">2 Collaborators</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-10 h-10">
-                        {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
-                        <img 
-                          src="/lovable-uploads/avatar1.jpg" 
-                         
-                          className="max-w-full h-auto rounded-lg shadow-lg"
-                        />
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">Bashair Mussa (me)</div>
-                        <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
-                          <Badge variant="outline" className="text-xs">Idea</Badge>
-                          <Badge variant="outline" className="text-xs">Proposal</Badge>
-                          <Badge variant="outline" className="text-xs">Grant Application</Badge>
+              <div>
+                {/* <Card> */}
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <Avatar className="w-10 h-10">
+                          {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
+                          <img 
+                            src="/lovable-uploads/avatar1.jpg" 
+                           
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                          />
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="font-medium">Bashair Mussa (me)</div>
+                          <div className="text-sm text-gray-500">Researcher Role</div>
+                          <div className="flex space-x-2 mt-2">
+                            <Badge variant="outline" className="text-xs">Idea</Badge>
+                            <Badge variant="outline" className="text-xs">Proposal</Badge>
+                            <Badge variant="outline" className="text-xs">Grant Application</Badge>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-10 h-10">
-                        {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
-                        <img 
-                          src="/lovable-uploads/avatar2.jpg" 
-                           
-                          className="max-w-full h-auto rounded-lg shadow-lg"
-                        />
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">Anna Krylova</div>
-                        <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
-                          <Badge variant="outline" className="text-xs">Equipment</Badge>
-                          <Badge variant="outline" className="text-xs">Experiment</Badge>
+                      <div className="flex items-start space-x-3">
+                        <Avatar className="w-10 h-10">
+                          {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
+                          <img 
+                            src="/lovable-uploads/avatar2.jpg" 
+                             
+                            className="max-w-full h-auto rounded-lg shadow-lg"
+                          />
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="font-medium">Anna Krylova</div>
+                          <div className="text-sm text-gray-500">Researcher Role</div>
+                          <div className="flex space-x-2 mt-2">
+                            <Badge variant="outline" className="text-xs">Equipment</Badge>
+                            <Badge variant="outline" className="text-xs">Experiment</Badge>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                {/* </Card> */}
               </div>
+              
             </div>
+
+            
           </div>
         </div>
       </div>
