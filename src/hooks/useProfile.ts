@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -22,18 +22,20 @@ export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const getProfile = async () => {
+  const refreshProfile = useCallback(async () => {
+    try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user) {
+        setUser(null);
+        setProfile(null);
         setLoading(false);
         return;
       }
 
       setUser(session.user);
       
-      // Get user profile
+      // Get fresh user profile data
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -42,22 +44,20 @@ export const useProfile = () => {
       
       setProfile(profileData);
       setLoading(false);
-    };
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      setLoading(false);
+    }
+  }, []);
 
-    getProfile();
+  useEffect(() => {
+    refreshProfile();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user);
-        // Refetch profile when auth state changes
-        setTimeout(() => {
-          supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle()
-            .then(({ data }) => setProfile(data));
-        }, 0);
+        // Refresh profile when auth state changes
+        refreshProfile();
       } else {
         setUser(null);
         setProfile(null);
@@ -65,7 +65,7 @@ export const useProfile = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refreshProfile]);
 
   const getDisplayName = () => {
     if (profile?.first_name && profile?.last_name) {
@@ -109,5 +109,6 @@ export const useProfile = () => {
     getDisplayName,
     getInitials,
     getUserRole,
+    refreshProfile,
   };
 };
