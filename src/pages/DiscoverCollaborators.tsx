@@ -11,19 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
-import { 
   Home, 
   Users, 
   Bookmark, 
@@ -40,160 +27,23 @@ import {
   Star
 } from 'lucide-react';
 
-const AppSidebar = () => {
-  const navigate = useNavigate();
-  const { state } = useSidebar();
+const home = [
+  { icon: Users, label: 'Dashboard', active: false },
+  { icon: Users, label: 'Discover Collaborators', active: true },
+  { icon: Bookmark, label: 'Saved Collaborators', active: false },
+];
 
-  const home = [
-    { icon: Users, label: 'Dashboard', path: '/dashboard', active: false },
-    { icon: Users, label: 'Discover Collaborators', path: '/discover-collaborators', active: true },
-    { icon: Bookmark, label: 'Saved Collaborators', path: '/saved-collaborators', active: false },
-  ];
+const collaborationItems = [
+  { icon: MessageSquare, label: 'Collaboration', active: false },
+  { icon: MessageSquare, label: 'Chat', active: false },
+  { icon: Database, label: 'Data Center', active: false },
+];
 
-  const collaborationItems = [
-    { icon: MessageSquare, label: 'Collaboration', path: '/collaboration', active: false },
-    { icon: MessageSquare, label: 'Chat', path: '/chat', active: false },
-    { icon: Database, label: 'Data Center', path: '/data-center', active: false },
-  ];
-
-  const supportingServices = [
-    { icon: Ship, label: 'Shipment', path: '/shipment', active: false },
-    { icon: FileText, label: 'Quotation', path: '/quotation', active: false },
-    { icon: Wrench, label: 'Equipment', path: '/equipment', active: false },
-  ];
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  return (
-    <Sidebar className="border-r">
-      <SidebarContent>
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
-            <span className="font-semibold text-lg">AIRCollab</span>
-          </div>
-        </div>
-
-        <div className="flex-1 p-4 space-y-6">
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-              Home
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {home.map((item, index) => (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuButton
-                      onClick={() => navigate(item.path)}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
-                        item.active 
-                          ? 'bg-blue-600 text-white' 
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {state === 'expanded' && <span className="text-sm">{item.label}</span>}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-              Collaborations
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {collaborationItems.map((item, index) => (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuButton
-                      onClick={() => navigate(item.path)}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
-                        item.active 
-                          ? 'bg-blue-600 text-white' 
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {state === 'expanded' && <span className="text-sm">{item.label}</span>}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-              Supporting Services
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {supportingServices.map((item, index) => (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuButton
-                      onClick={() => navigate(item.path)}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
-                        item.active 
-                          ? 'bg-blue-600 text-white' 
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {state === 'expanded' && <span className="text-sm">{item.label}</span>}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </div>
-
-        {/* Settings */}
-        <div className="p-4 border-t border-gray-200">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => navigate('/settings')}
-                className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
-              >
-                <Settings className="w-5 h-5" />
-                {state === 'expanded' && <span className="text-sm">Settings</span>}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </div>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
-            </Avatar>
-            {state === 'expanded' && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
-                  <div className="text-xs text-gray-500">Researcher Role</div>
-                </div>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </SidebarContent>
-    </Sidebar>
-  );
-};
+const supportingServices = [
+  { icon: Ship, label: 'Shipment', active: false },
+  { icon: FileText, label: 'Quotation', active: false },
+  { icon: Wrench, label: 'Equipment', active: false },
+];
 
 const DiscoverCollaborators = () => {
   const [activeTab, setActiveTab] = useState('Best Matching');
@@ -338,27 +188,147 @@ const DiscoverCollaborators = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-gray-50 flex w-full">
-        <AppSidebar />
-        
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <SidebarTrigger className="md:hidden" />
-                <h1 className="text-xl font-semibold text-gray-900">Discover Collaborators</h1>
-              </div>
-              <Button onClick={handleSignOut} variant="outline" size="sm">
-                Sign Out
-              </Button>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-sm">A</span>
             </div>
+            <span className="font-semibold text-lg">AIRCollab</span>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex-1 p-4 space-y-6">
+          <div>
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
+              Home
+            </div>
+            {home.map((item, index) => (
+              <div
+                key={index}
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => {
+                  if (item.label === 'Dashboard') {
+                    navigate('/dashboard');
+                  } else if (item.label === 'Discover Collaborators') {
+                    navigate('/discover-collaborators');
+                  } else if (item.label === 'Saved Collaborators') {
+                    navigate('/saved-collaborators');
+                  }
+                }}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-sm">{item.label}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 p-4 md:p-6">
+          <div>
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
+              Collaborations
+            </div>
+            {collaborationItems.map((item, index) => (
+              <div
+                key={index}
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => {
+                  if (item.label === 'Collaboration') {
+                    navigate('/collaboration');
+                  } else if (item.label === 'Chat') {
+                    navigate('/chat');
+                  } else if (item.label === 'Data Center') {
+                    navigate('/data-center');
+                  }
+                }}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-sm">{item.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
+              Supporting Services
+            </div>
+            {supportingServices.map((item, index) => (
+              <div
+                key={index}
+                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => {
+                  if (item.label === 'Shipment') {
+                    navigate('/shipment');
+                  } else if (item.label === 'Quotation') {
+                    navigate('/quotation');
+                  } else if (item.label === 'Equipment') {
+                    navigate('/equipment');
+                  }
+                }}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-sm">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Settings */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+            onClick={() => navigate('/settings')}
+          >
+            <Settings className="w-5 h-5" />
+            <span className="text-sm">Settings</span>
+          </div>
+        </div>
+
+        {/* User Profile */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center space-x-3">
+            <Avatar className="w-8 h-8">
+              <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
+              <div className="text-xs text-gray-500">Researcher Role</div>
+            </div>
+            <button className="text-gray-400 hover:text-gray-600">
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold text-gray-900">Discover Collaborators</h1>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-6">
             {/* Filter Tabs */}
             <div className="mb-6">
               <div className="flex space-x-4 bg-gray-200 px-2 py-2 rounded-lg w-fit">
@@ -559,10 +529,8 @@ const DiscoverCollaborators = () => {
                 </PaginationContent>
               </Pagination>
             </div>
-          </div>
-        </div>
 
-        {/* Profile Modal */}
+          {/* Profile Modal */}
         <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -726,8 +694,9 @@ const DiscoverCollaborators = () => {
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
