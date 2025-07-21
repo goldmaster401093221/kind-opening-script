@@ -26,7 +26,6 @@ import {
   Eye,
   Star
 } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
 
 const home = [
   { icon: Users, label: 'Dashboard', active: false },
@@ -47,7 +46,6 @@ const supportingServices = [
 ];
 
 const DiscoverCollaborators = () => {
-  const { user, profile, loading, getDisplayName, getInitials, getUserRole, refreshProfile } = useProfile();
   const [activeTab, setActiveTab] = useState('Best Matching');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
@@ -304,15 +302,11 @@ const DiscoverCollaborators = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {getInitials()}
-              </AvatarFallback>
+              <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {getDisplayName()}
-              </div>
-              <div className="text-xs text-gray-500">{getUserRole()}</div>
+              <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
+              <div className="text-xs text-gray-500">Researcher Role</div>
             </div>
             <button className="text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-4 h-4" />

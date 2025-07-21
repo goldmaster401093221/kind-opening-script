@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
-import { useProfile } from '@/hooks/useProfile';
 import { 
   Home, 
   Users, 
@@ -52,7 +51,6 @@ interface ProfileData {
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, profile: userProfile, loading: profileLoading, getDisplayName, getInitials, getUserRole, refreshProfile } = useProfile();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -184,13 +182,6 @@ const Settings = () => {
   useEffect(() => {
     loadProfile();
   }, []);
-
-  // Refresh profile data when navigating to settings
-  useEffect(() => {
-    if (!profileLoading) {
-      refreshProfile();
-    }
-  }, [refreshProfile, profileLoading]);
 
   if (loading) {
     return (
@@ -337,14 +328,14 @@ const Settings = () => {
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {getInitials()}
+                {profile?.first_name?.[0]}{profile?.last_name?.[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">
-                {getDisplayName()}
+                {profile?.first_name} {profile?.last_name}
               </div>
-              <div className="text-xs text-gray-500">{getUserRole()}</div>
+              <div className="text-xs text-gray-500">{profile?.email}</div>
             </div>
             <button className="text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-4 h-4" />
