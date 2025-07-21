@@ -22,55 +22,18 @@ import {
   ChevronRight,
   MoreHorizontal
 } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
-
-interface Profile {
-  id: string;
-  username: string | null;
-  email: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { useProfile } from '@/hooks/useProfile';
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, loading, getDisplayName, getInitials, getUserRole } = useProfile();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate('/auth');
-        return;
-      }
-
-      setUser(session.user);
-      
-      // Get user profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-      
-      setProfile(profileData);
-      setLoading(false);
-    };
-
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -231,15 +194,18 @@ const Dashboard = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
+              {profile?.avatar_url ? (
+                <AvatarImage src={profile.avatar_url} alt={getDisplayName()} />
+              ) : null}
               <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {profile?.username?.substring(0, 2).toUpperCase() || 'BM'}
+                {getInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">
-                {profile?.username || 'Bashair Mussa'}
+                {getDisplayName()}
               </div>
-              <div className="text-xs text-gray-500">Researcher Role</div>
+              <div className="text-xs text-gray-500">{getUserRole()}</div>
             </div>
             <button className="text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-4 h-4" />
@@ -265,7 +231,7 @@ const Dashboard = () => {
           {/* Greeting */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              👋 Good Morning, {profile?.username || 'Bashair Mussa'} !
+              👋 Good Morning, {getDisplayName()}!
             </h2>
           </div>
 

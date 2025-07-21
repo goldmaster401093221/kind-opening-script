@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Home, 
   Users, 
@@ -16,15 +18,181 @@ import {
   Wrench, 
   Settings as SettingsIcon,
   MoreHorizontal,
-  X
+  X,
+  Plus
 } from 'lucide-react';
+
+interface ProfileData {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  gender?: string;
+  user_id_number?: string;
+  phone?: string;
+  title?: string;
+  linkedin_url?: string;
+  researchgate_url?: string;
+  google_scholar_url?: string;
+  institution?: string;
+  college?: string;
+  department?: string;
+  zip_code?: string;
+  country?: string;
+  state_city?: string;
+  experience?: string;
+  primary_research_area?: string;
+  secondary_research_area?: string;
+  keywords?: string[];
+  research_roles?: string[];
+  avatar_url?: string;
+}
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [newKeyword, setNewKeyword] = useState('');
+  const [newRole, setNewRole] = useState('');
+
+  const { register, handleSubmit, reset, setValue, watch } = useForm<ProfileData>();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
+
+  const loadProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile(data);
+        reset(data);
+      } else {
+        // Create initial profile
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{ 
+            id: user.id,
+            email: user.email,
+            keywords: [],
+            research_roles: []
+          }])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+        } else {
+          setProfile(newProfile);
+          reset(newProfile);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmit = async (data: ProfileData) => {
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(data)
+        .eq('id', user.id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update profile",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Profile updated successfully",
+        });
+        setProfile({ ...profile, ...data });
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addKeyword = () => {
+    if (newKeyword.trim() && profile) {
+      const keywords = [...(profile.keywords || []), newKeyword.trim()];
+      setValue('keywords', keywords);
+      setProfile({ ...profile, keywords });
+      setNewKeyword('');
+    }
+  };
+
+  const removeKeyword = (index: number) => {
+    if (profile) {
+      const keywords = profile.keywords?.filter((_, i) => i !== index) || [];
+      setValue('keywords', keywords);
+      setProfile({ ...profile, keywords });
+    }
+  };
+
+  const addRole = () => {
+    if (newRole.trim() && profile) {
+      const research_roles = [...(profile.research_roles || []), newRole.trim()];
+      setValue('research_roles', research_roles);
+      setProfile({ ...profile, research_roles });
+      setNewRole('');
+    }
+  };
+
+  const removeRole = (index: number) => {
+    if (profile) {
+      const research_roles = profile.research_roles?.filter((_, i) => i !== index) || [];
+      setValue('research_roles', research_roles);
+      setProfile({ ...profile, research_roles });
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   const home = [
     { icon: Users, label: 'Dashboard', active: false },
@@ -159,11 +327,15 @@ const Settings = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
+              <AvatarFallback className="bg-gray-800 text-white text-sm">
+                {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
-              <div className="text-xs text-gray-500">Researcher Role</div>
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {profile?.first_name} {profile?.last_name}
+              </div>
+              <div className="text-xs text-gray-500">{profile?.email}</div>
             </div>
             <button className="text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-4 h-4" />
@@ -185,69 +357,75 @@ const Settings = () => {
         </div>
 
         {/* Settings Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Personal Information */}
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
-                <Button variant="outline" size="sm">
-                  Edit Personal Info
+                <Button type="submit" disabled={saving} size="sm">
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-1 flex justify-center">
                   <Avatar className="w-24 h-24">
-                    <AvatarFallback className="bg-gray-800 text-white text-2xl">BM</AvatarFallback>
+                    <AvatarFallback className="bg-gray-800 text-white text-2xl">
+                      {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                    </AvatarFallback>
                   </Avatar>
                 </div>
                 
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                    <select className="w-full p-2 border border-gray-300 rounded-md">
-                      <option>Bashair</option>
-                    </select>
+                    <Input {...register('first_name')} placeholder="First name" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                    <select className="w-full p-2 border border-gray-300 rounded-md">
-                      <option>Mussa</option>
-                    </select>
+                    <Input {...register('last_name')} placeholder="Last name" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                    <select className="w-full p-2 border border-gray-300 rounded-md">
-                      <option>Female</option>
+                    <select {...register('gender')} className="w-full p-2 border border-gray-300 rounded-md">
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ID</label>
-                    <Input defaultValue="123-4567" />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                    <Input {...register('user_id_number')} placeholder="ID number" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                    <Input defaultValue="+1 (229) 690-9308" />
+                    <Input {...register('phone')} placeholder="Phone number" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                    <select className="w-full p-2 border border-gray-300 rounded-md">
-                      <option>Mrs</option>
+                    <select {...register('title')} className="w-full p-2 border border-gray-300 rounded-md">
+                      <option value="">Select title</option>
+                      <option value="dr">Dr.</option>
+                      <option value="prof">Prof.</option>
+                      <option value="mr">Mr.</option>
+                      <option value="mrs">Mrs.</option>
+                      <option value="ms">Ms.</option>
                     </select>
                   </div>
                   <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                      <Input defaultValue="https://linkedin.com/in/bashair-mussa-0321" />
+                      <Input {...register('linkedin_url')} placeholder="LinkedIn profile URL" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">ResearchGate</label>
-                      <Input defaultValue="https://researchgate.io/bashair-mussa" />
+                      <Input {...register('researchgate_url')} placeholder="ResearchGate profile URL" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Google Scholar</label>
-                      <Input defaultValue="https://google.scholar/bashair-mussa" />
+                      <Input {...register('google_scholar_url')} placeholder="Google Scholar profile URL" />
                     </div>
                   </div>
                 </div>
@@ -258,39 +436,32 @@ const Settings = () => {
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Institution Information</h2>
-                <Button variant="outline" size="sm">
-                  Edit Institution Info
-                </Button>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Institution</label>
-                  <Input defaultValue="Institution" />
+                  <Input {...register('institution')} placeholder="Institution name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">College</label>
-                  <Input defaultValue="College" />
+                  <Input {...register('college')} placeholder="College name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                  <Input defaultValue="Department" />
+                  <Input {...register('department')} placeholder="Department name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-                  <Input defaultValue="98500" />
+                  <Input {...register('zip_code')} placeholder="Zip code" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                  <select className="w-full p-2 border border-gray-300 rounded-md">
-                    <option>United States</option>
-                  </select>
+                  <Input {...register('country')} placeholder="Country" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">State/City</label>
-                  <select className="w-full p-2 border border-gray-300 rounded-md">
-                    <option>Los Angeles, CA</option>
-                  </select>
+                  <Input {...register('state_city')} placeholder="State/City" />
                 </div>
               </div>
             </div>
@@ -299,54 +470,85 @@ const Settings = () => {
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Research Information</h2>
-                <Button variant="outline" size="sm">
-                  Edit Institution Info
-                </Button>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Experience</label>
-                  <Input defaultValue="10 Years" />
+                  <Input {...register('experience')} placeholder="Years of experience" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Primary research area</label>
-                  <Input defaultValue="Primary research area" />
+                  <Input {...register('primary_research_area')} placeholder="Primary research area" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Secondary research area</label>
-                  <Input defaultValue="Secondary research area" />
+                  <Input {...register('secondary_research_area')} placeholder="Secondary research area" />
                 </div>
               </div>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-                      Keyword1 <X className="w-3 h-3 ml-1 cursor-pointer" />
-                    </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-                      Keyword1 <X className="w-3 h-3 ml-1 cursor-pointer" />
-                    </span>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile?.keywords?.map((keyword, index) => (
+                      <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                        {keyword}
+                        <button
+                          type="button"
+                          onClick={() => removeKeyword(index)}
+                          className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newKeyword}
+                      onChange={(e) => setNewKeyword(e.target.value)}
+                      placeholder="Add keyword"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
+                    />
+                    <Button type="button" onClick={addKeyword} size="sm">
+                      <Plus className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Research Role</label>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-                      Role1 <X className="w-3 h-3 ml-1 cursor-pointer" />
-                    </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-                      Role2 <X className="w-3 h-3 ml-1 cursor-pointer" />
-                    </span>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile?.research_roles?.map((role, index) => (
+                      <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                        {role}
+                        <button
+                          type="button"
+                          onClick={() => removeRole(index)}
+                          className="ml-1 text-green-600 hover:text-green-800"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newRole}
+                      onChange={(e) => setNewRole(e.target.value)}
+                      placeholder="Add research role"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRole())}
+                    />
+                    <Button type="button" onClick={addRole} size="sm">
+                      <Plus className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

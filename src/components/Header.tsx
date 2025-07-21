@@ -1,8 +1,11 @@
 
 import { Search, Grid3X3, User } from "lucide-react";
 import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useProfile } from "@/hooks/useProfile";
 
 const Header = () => {
+  const { profile, getDisplayName, getInitials } = useProfile();
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -58,10 +61,15 @@ const Header = () => {
 </svg>
 
                    
-          {/* Changed from circular to rectangular */}
-          <div className="w-10 h-8 bg-gray-800 rounded-md flex items-center justify-center">
-            <span className="text-white text-sm font-medium">BM</span>
-          </div>
+          {/* User Avatar */}
+          <Avatar className="w-10 h-8">
+            {profile?.avatar_url ? (
+              <AvatarImage src={profile.avatar_url} alt={getDisplayName()} />
+            ) : null}
+            <AvatarFallback className="bg-gray-800 text-white text-sm">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </header>

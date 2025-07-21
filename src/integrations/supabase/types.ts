@@ -16,25 +16,88 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          avatar_url: string | null
+          college: string | null
+          country: string | null
           created_at: string
+          department: string | null
           email: string | null
+          experience: string | null
+          first_name: string | null
+          gender: string | null
+          google_scholar_url: string | null
           id: string
+          institution: string | null
+          keywords: string[] | null
+          last_name: string | null
+          linkedin_url: string | null
+          phone: string | null
+          primary_research_area: string | null
+          research_roles: string[] | null
+          researchgate_url: string | null
+          secondary_research_area: string | null
+          state_city: string | null
+          title: string | null
           updated_at: string
+          user_id_number: string | null
           username: string | null
+          zip_code: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          college?: string | null
+          country?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
+          experience?: string | null
+          first_name?: string | null
+          gender?: string | null
+          google_scholar_url?: string | null
           id: string
+          institution?: string | null
+          keywords?: string[] | null
+          last_name?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          primary_research_area?: string | null
+          research_roles?: string[] | null
+          researchgate_url?: string | null
+          secondary_research_area?: string | null
+          state_city?: string | null
+          title?: string | null
           updated_at?: string
+          user_id_number?: string | null
           username?: string | null
+          zip_code?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          college?: string | null
+          country?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
+          experience?: string | null
+          first_name?: string | null
+          gender?: string | null
+          google_scholar_url?: string | null
           id?: string
+          institution?: string | null
+          keywords?: string[] | null
+          last_name?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          primary_research_area?: string | null
+          research_roles?: string[] | null
+          researchgate_url?: string | null
+          secondary_research_area?: string | null
+          state_city?: string | null
+          title?: string | null
           updated_at?: string
+          user_id_number?: string | null
           username?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }
