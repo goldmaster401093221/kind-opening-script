@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -51,6 +52,7 @@ interface ProfileData {
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile: globalProfile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -61,6 +63,7 @@ const Settings = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    navigate('/auth');
   };
 
   const loadProfile = async () => {
@@ -328,14 +331,14 @@ const Settings = () => {
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                {getInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">
-                {profile?.first_name} {profile?.last_name}
+                {getDisplayName()}
               </div>
-              <div className="text-xs text-gray-500">{profile?.email}</div>
+              <div className="text-xs text-gray-500">{globalProfile?.email}</div>
             </div>
             <button className="text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-4 h-4" />

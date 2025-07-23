@@ -1,11 +1,18 @@
 
-import { Search, Grid3X3, User } from "lucide-react";
+import { Search, Grid3X3, User, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { profile, getDisplayName, getInitials } = useProfile();
+  
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/auth';
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -61,6 +68,12 @@ const Header = () => {
 </svg>
 
                    
+          {/* Sign Out Button */}
+          <Button onClick={handleSignOut} variant="outline" size="sm">
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+
           {/* User Avatar */}
           <Avatar className="w-10 h-8">
             {profile?.avatar_url ? (

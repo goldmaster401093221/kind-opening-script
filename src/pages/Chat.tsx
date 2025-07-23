@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -33,14 +34,16 @@ import {
 } from 'lucide-react';
 
 const Chat = () => {
+  const navigate = useNavigate();
+  const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
   const [showCallingModal, setShowCallingModal] = useState(false);
   const [showExpandedCalling, setShowExpandedCalling] = useState(false);
-  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    navigate('/auth');
   };
 
   const handlePhoneClick = () => {
@@ -262,11 +265,15 @@ const Chat = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-800 text-white text-sm">BM</AvatarFallback>
+              <AvatarFallback className="bg-gray-800 text-white text-sm">
+                {getInitials()}
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">Bashair Mussa</div>
-              <div className="text-xs text-gray-500">Researcher Role</div>
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {getDisplayName()}
+              </div>
+              <div className="text-xs text-gray-500">{profile?.email}</div>
             </div>
             <button className="text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-4 h-4" />
