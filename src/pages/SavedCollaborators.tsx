@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
+import { useSavedCollaborators } from '@/hooks/useCollaborators';
+import { useCollaboratorActions } from '@/hooks/useCollaboratorActions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,14 +33,28 @@ import {
 
 const SavedCollaborators = () => {
   const navigate = useNavigate();
-  const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
-  const [activeTab, setActiveTab] = useState('Saved');
+  const { user, profile, loading: profileLoading, getDisplayName: getProfileDisplayName, getInitials: getProfileInitials } = useProfile();
+  const [activeTab, setActiveTab] = useState<'Saved' | 'Contacted'>('Saved');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [savedCollaborators, setSavedCollaborators] = useState(new Set());
+
+  // Use database hooks
+  const { 
+    collaborators, 
+    loading: collaboratorsLoading, 
+    error, 
+    refetch 
+  } = useSavedCollaborators(activeTab);
+
+  const { 
+    loading: actionLoading, 
+    toggleSaveCollaborator, 
+    contactCollaborator,
+    markAsCollaborated 
+  } = useCollaboratorActions();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -63,165 +79,90 @@ const SavedCollaborators = () => {
     { icon: Wrench, label: 'Equipment', active: false },
   ];
 
-  const collaborators = [
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: 'Best Match',
-      statusType: 'contacted',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/kevin-rashy-0234c12',
-        phone: '+1 (229) 690-9308',
-        researchGate: 'https://www.researchgate.info/kevinrashy',
-        googleScholar: 'https://www.googlescholar.info/kevinrashy',
-        institution: 'Institution name',
-        collage: 'Collage name',
-        department: 'Department name',
-        country: 'United States',
-        city: 'Los Angeles, CA',
-        postNumber: '98500',
-        researchExperience: '12',
-        primaryResearchField: 'Primary Research Field',
-        secondaryResearchField: 'Secondary Research Field',
-        keywords: ['Keyword1', 'Keyword2', 'Keyword3', 'Keyword4'],
-        whatIHave: ['Idea', 'Proposal', 'Grant Application'],
-        whatINeed: ['Equipment', 'Experiment']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      statusType: 'collaborated',
-      collaborated: true,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    },
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: '',
-      statusType: 'contacted',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/kevin-rashy-0234c12',
-        phone: '+1 (229) 690-9308',
-        researchGate: 'https://www.researchgate.info/kevinrashy',
-        googleScholar: 'https://www.googlescholar.info/kevinrashy',
-        institution: 'Institution name',
-        collage: 'Collage name',
-        department: 'Department name',
-        country: 'United States',
-        city: 'Los Angeles, CA',
-        postNumber: '98500',
-        researchExperience: '12',
-        primaryResearchField: 'Primary Research Field',
-        secondaryResearchField: 'Secondary Research Field',
-        keywords: ['Keyword1', 'Keyword2', 'Keyword3', 'Keyword4'],
-        whatIHave: ['Idea', 'Proposal', 'Grant Application'],
-        whatINeed: ['Equipment', 'Experiment']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: '',
-      statusType: 'none',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: '',
-      statusType: 'none',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    }
-  ];
-
   const handleViewProfile = (collaborator) => {
     setSelectedProfile(collaborator);
     setIsProfileModalOpen(true);
   };
 
-  const handleToggleHeart = (index) => {
-    setSavedCollaborators(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
+  const handleToggleHeart = async (collaboratorId: string) => {
+    const success = await toggleSaveCollaborator(collaboratorId, true); // Remove from saved
+    if (success) {
+      refetch(); // Refresh the list
+    }
   };
+
+  const handleContact = async (collaboratorId: string) => {
+    const success = await contactCollaborator(collaboratorId);
+    if (success) {
+      refetch();
+    }
+  };
+
+  const handleMarkCollaborated = async (collaboratorId: string) => {
+    const success = await markAsCollaborated(collaboratorId);
+    if (success) {
+      refetch();
+    }
+  };
+
+  const getDisplayName = (collaborator) => {
+    if (collaborator.first_name && collaborator.last_name) {
+      return `${collaborator.first_name} ${collaborator.last_name}`;
+    }
+    if (collaborator.username) {
+      return collaborator.username;
+    }
+    if (collaborator.email) {
+      return collaborator.email.split('@')[0];
+    }
+    return 'Unknown User';
+  };
+
+  const getInitials = (collaborator) => {
+    if (collaborator.first_name && collaborator.last_name) {
+      return `${collaborator.first_name.charAt(0)}${collaborator.last_name.charAt(0)}`.toUpperCase();
+    }
+    if (collaborator.username) {
+      return collaborator.username.substring(0, 2).toUpperCase();
+    }
+    if (collaborator.email) {
+      return collaborator.email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getUserRole = (collaborator) => {
+    if (collaborator.title) return collaborator.title;
+    if (collaborator.experience === 'Undergraduate') return 'Undergraduate Student';
+    if (collaborator.experience === 'Graduate') return 'Graduate Student';
+    if (collaborator.experience === 'Postdoc') return 'Postdoctoral Researcher';
+    if (collaborator.experience === 'Faculty') return 'Faculty Member';
+    return 'Researcher';
+  };
+
+  if (profileLoading || collaboratorsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading saved collaborators...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error: {error}</p>
+          <Button onClick={refetch} className="mt-4">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -346,7 +287,7 @@ const SavedCollaborators = () => {
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">
-                {getDisplayName()}
+                {getProfileDisplayName()}
               </div>
               <div className="text-xs text-gray-500">{profile?.email}</div>
             </div>
@@ -377,7 +318,7 @@ const SavedCollaborators = () => {
               {['Saved', 'Contacted'].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => setActiveTab(tab as 'Saved' | 'Contacted')}
                   className={`pb-4 text-sm font-medium ${
                     activeTab === tab
                       ? 'border-b-2 border-gray-900 text-gray-900'
@@ -416,7 +357,7 @@ const SavedCollaborators = () => {
                     <SelectItem value="50">50</SelectItem>
                   </SelectContent>
                 </Select>
-                <span>Total Results: 15</span>
+                <span>Total Results: {collaborators.length}</span>
                 <span>Sort</span>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-32">
@@ -445,84 +386,99 @@ const SavedCollaborators = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {collaborators.map((collaborator, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="w-14 h-14">
-                          <img 
-                            src="/lovable-uploads/avatar2.jpg" 
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                          />
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-gray-900">{collaborator.name}</div>
-                          <div className="text-sm text-gray-500">{collaborator.role}</div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            {collaborator.status && (
-                              <Badge className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                                <svg width="16" height="16" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M7.2999 4.00016H10.5C11.0523 4.00016 11.5 4.44788 11.5 5.00015V6.05235C11.5 6.18295 11.4744 6.3123 11.4247 6.4331L9.8775 10.1905C9.80035 10.3779 9.61775 10.5001 9.41515 10.5001H1C0.72386 10.5001 0.5 10.2763 0.5 10.0001V5.00015C0.5 4.72402 0.72386 4.50016 1 4.50016H2.74092C2.90339 4.50016 3.05572 4.42123 3.14941 4.28851L5.8761 0.425678C5.94735 0.324743 6.08165 0.290989 6.19215 0.346242L7.0992 0.799755C7.625 1.06267 7.89655 1.65646 7.75155 2.22618L7.2999 4.00016ZM3.5 5.2939V9.50015H9.0803L10.5 6.05235V5.00015H7.2999C6.64755 5.00015 6.1699 4.38564 6.3308 3.75346L6.78245 1.97947C6.81145 1.86553 6.75715 1.74677 6.65195 1.69419L6.3214 1.5289L3.96638 4.86519C3.84143 5.0422 3.6817 5.1873 3.5 5.2939ZM2.5 5.50015H1.5V9.50015H2.5V5.50015Z" fill="white"/>
-                                </svg>
-                                {collaborator.status}
-                              </Badge>
+                {collaborators.map((collaborator, index) => {
+                  const displayName = getDisplayName(collaborator);
+                  const initials = getInitials(collaborator);
+                  const userRole = getUserRole(collaborator);
+                  
+                  return (
+                    <TableRow key={collaborator.id} className="hover:bg-gray-50">
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="w-14 h-14">
+                            {collaborator.avatar_url ? (
+                              <img 
+                                src={collaborator.avatar_url} 
+                                className="max-w-full h-auto rounded-lg shadow-lg"
+                              />
+                            ) : (
+                              <AvatarFallback className="bg-gray-200 text-gray-700">
+                                {initials}
+                              </AvatarFallback>
                             )}
-                            {collaborator.statusType === 'contacted' && (
-                              <Badge className="bg-blue-200 text-blue-600 text-xs px-2 py-1 rounded-lg">
-                                Contacted
-                              </Badge>
-                            )}
-                            {collaborator.statusType === 'collaborated' && (
-                              <Badge className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
-                                Collaborated
-                              </Badge>
-                            )}
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-gray-900">{displayName}</div>
+                            <div className="text-sm text-gray-500">{userRole}</div>
+                            <div className="text-xs text-gray-400">
+                              {collaborator.institution && <span>{collaborator.institution}</span>}
+                              {collaborator.institution && collaborator.state_city && <span> • </span>}
+                              {collaborator.state_city && <span>{collaborator.state_city}</span>}
+                            </div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              {activeTab === 'Saved' && (
+                                <Badge className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                                  Saved
+                                </Badge>
+                              )}
+                              {activeTab === 'Contacted' && (
+                                <Badge className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                                  Contacted
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="font-medium">{collaborator.totalCollaborations}</span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="font-medium">{collaborator.rating}</span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {collaborator.skills.map((skill, skillIndex) => (
-                          <Badge key={skillIndex} variant="outline" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center space-x-2">
-                        <button 
-                          className="p-1 hover:bg-gray-100 rounded"
-                          onClick={() => handleToggleHeart(index)}
-                        >
-                          <Heart 
-                            className={`w-4 h-4 ${
-                              savedCollaborators.has(index) 
-                                ? 'text-blue-600 fill-blue-600' 
-                                : 'text-gray-400 hover:text-red-500'
-                            }`} 
-                          />
-                        </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                        </button>
-                        <button 
-                          className="p-1 hover:bg-gray-100 rounded"
-                          onClick={() => handleViewProfile(collaborator)}
-                        >
-                          <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                        </button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="font-medium">{collaborator.collaboration_count || 0}</span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="font-medium">{collaborator.rating ? `${collaborator.rating.toFixed(1)}/5` : '0.0/5'}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {(collaborator.what_i_have || []).map((skill, skillIndex) => (
+                            <Badge key={skillIndex} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center space-x-2">
+                          {activeTab === 'Saved' && (
+                            <button 
+                              className="p-1 hover:bg-gray-100 rounded"
+                              onClick={() => handleToggleHeart(collaborator.id)}
+                              disabled={actionLoading}
+                            >
+                              <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                            </button>
+                          )}
+                          {activeTab === 'Contacted' && (
+                            <button 
+                              className="p-1 hover:bg-gray-100 rounded"
+                              onClick={() => handleMarkCollaborated(collaborator.id)}
+                              disabled={actionLoading}
+                            >
+                              <Star className="w-4 h-4 text-yellow-500" />
+                            </button>
+                          )}
+                          <button className="p-1 hover:bg-gray-100 rounded">
+                            <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                          </button>
+                          <button 
+                            className="p-1 hover:bg-gray-100 rounded"
+                            onClick={() => handleViewProfile(collaborator)}
+                          >
+                            <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>
