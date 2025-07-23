@@ -282,7 +282,7 @@ const SavedCollaborators = () => {
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {getInitials()}
+                {getProfileInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
