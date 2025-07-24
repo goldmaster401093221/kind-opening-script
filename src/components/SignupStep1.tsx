@@ -15,6 +15,7 @@ interface SignupStep1Props {
     phone: string;
     researchgateUrl: string;
     googleScholarUrl: string;
+    careerDescription: string;
   };
   onChange: (field: string, value: string) => void;
   onNext: () => void;
@@ -131,6 +132,17 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
             type="url"
             value={formData.googleScholarUrl}
             onChange={(e) => onChange('googleScholarUrl', e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="careerDescription">Career Description</Label>
+          <Input
+            id="careerDescription"
+            type="text"
+            value={formData.careerDescription}
+            onChange={(e) => onChange('careerDescription', e.target.value)}
+            placeholder="Brief description of your career"
           />
         </div>
 

@@ -32,6 +32,7 @@ const Auth = () => {
     phone: '',
     researchgateUrl: '',
     googleScholarUrl: '',
+    careerDescription: '',
     // Step 2 - Institution Information
     institution: '',
     college: '',
@@ -116,6 +117,7 @@ const Auth = () => {
             phone: signupData.phone,
             researchgate_url: signupData.researchgateUrl,
             google_scholar_url: signupData.googleScholarUrl,
+            career_description: signupData.careerDescription,
             institution: signupData.institution,
             college: signupData.college,
             department: signupData.department,
@@ -149,6 +151,7 @@ const Auth = () => {
         phone: '',
         researchgateUrl: '',
         googleScholarUrl: '',
+        careerDescription: '',
         institution: '',
         college: '',
         department: '',
@@ -265,6 +268,7 @@ const Auth = () => {
                       phone: signupData.phone,
                       researchgateUrl: signupData.researchgateUrl,
                       googleScholarUrl: signupData.googleScholarUrl,
+                      careerDescription: signupData.careerDescription,
                     }}
                     onChange={handleSignupFieldChange}
                     onNext={() => setCurrentStep(2)}

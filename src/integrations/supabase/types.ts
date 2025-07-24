@@ -14,9 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      collaborations: {
+        Row: {
+          collaborator_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
+          career_description: string | null
+          collaboration_count: number | null
           college: string | null
           country: string | null
           created_at: string
@@ -33,6 +63,7 @@ export type Database = {
           linkedin_url: string | null
           phone: string | null
           primary_research_area: string | null
+          rating: number | null
           research_roles: string[] | null
           researchgate_url: string | null
           secondary_research_area: string | null
@@ -41,10 +72,15 @@ export type Database = {
           updated_at: string
           user_id_number: string | null
           username: string | null
+          what_i_have: string[] | null
+          what_i_need: string[] | null
           zip_code: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
+          career_description?: string | null
+          collaboration_count?: number | null
           college?: string | null
           country?: string | null
           created_at?: string
@@ -61,6 +97,7 @@ export type Database = {
           linkedin_url?: string | null
           phone?: string | null
           primary_research_area?: string | null
+          rating?: number | null
           research_roles?: string[] | null
           researchgate_url?: string | null
           secondary_research_area?: string | null
@@ -69,10 +106,15 @@ export type Database = {
           updated_at?: string
           user_id_number?: string | null
           username?: string | null
+          what_i_have?: string[] | null
+          what_i_need?: string[] | null
           zip_code?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
+          career_description?: string | null
+          collaboration_count?: number | null
           college?: string | null
           country?: string | null
           created_at?: string
@@ -89,6 +131,7 @@ export type Database = {
           linkedin_url?: string | null
           phone?: string | null
           primary_research_area?: string | null
+          rating?: number | null
           research_roles?: string[] | null
           researchgate_url?: string | null
           secondary_research_area?: string | null
@@ -97,6 +140,8 @@ export type Database = {
           updated_at?: string
           user_id_number?: string | null
           username?: string | null
+          what_i_have?: string[] | null
+          what_i_need?: string[] | null
           zip_code?: string | null
         }
         Relationships: []
@@ -106,7 +151,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_match_score: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
