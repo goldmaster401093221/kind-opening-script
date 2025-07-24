@@ -7,15 +7,43 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import SignupStep1 from '@/components/SignupStep1';
+import SignupStep2 from '@/components/SignupStep2';
+import SignupStep3 from '@/components/SignupStep3';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Multi-step signup form data
+  const [signupData, setSignupData] = useState({
+    // Step 1 - Personal Information
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    orcidNumber: '',
+    linkedinUrl: '',
+    phone: '',
+    researchgateUrl: '',
+    googleScholarUrl: '',
+    // Step 2 - Institution Information
+    institution: '',
+    college: '',
+    department: '',
+    countryCity: '',
+    // Step 3 - Research Interest
+    experienceYears: '',
+    primaryResearchArea: '',
+    secondaryResearchArea: '',
+    keywords: [] as string[],
+    researchRoles: [] as string[],
+  });
 
   useEffect(() => {
     // Check if user is already logged in
@@ -37,44 +65,22 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
-      } else {
-        const redirectUrl = `${window.location.origin}/dashboard`;
-        
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              username: username,
-            }
-          }
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
-        });
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -86,93 +92,216 @@ const Auth = () => {
     }
   };
 
+  const handleSignupFieldChange = (field: string, value: string | string[]) => {
+    setSignupData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSignupFinish = async () => {
+    setLoading(true);
+    
+    try {
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      
+      const { error } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            first_name: signupData.firstName,
+            last_name: signupData.lastName,
+            username: `${signupData.firstName.toLowerCase()}${signupData.lastName.toLowerCase()}`,
+            orcid_number: signupData.orcidNumber,
+            linkedin_url: signupData.linkedinUrl,
+            phone: signupData.phone,
+            researchgate_url: signupData.researchgateUrl,
+            google_scholar_url: signupData.googleScholarUrl,
+            institution: signupData.institution,
+            college: signupData.college,
+            department: signupData.department,
+            country_city: signupData.countryCity,
+            experience_years: signupData.experienceYears,
+            primary_research_area: signupData.primaryResearchArea,
+            secondary_research_area: signupData.secondaryResearchArea,
+            keywords: signupData.keywords,
+            research_roles: signupData.researchRoles,
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+      
+      // Reset form and go back to login
+      setIsLogin(true);
+      setCurrentStep(1);
+      setSignupData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        orcidNumber: '',
+        linkedinUrl: '',
+        phone: '',
+        researchgateUrl: '',
+        googleScholarUrl: '',
+        institution: '',
+        college: '',
+        department: '',
+        countryCity: '',
+        experienceYears: '',
+        primaryResearchArea: '',
+        secondaryResearchArea: '',
+        keywords: [],
+        researchRoles: [],
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsLogin(true);
+    setCurrentStep(1);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-lg">A</span>
+            <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">A</span>
             </div>
-            <span className="font-bold text-2xl text-gray-900">AIRCollab</span>
+            <span className="font-bold text-2xl text-foreground">AIRCollab</span>
           </div>
-          <p className="text-gray-600">Connect, Collaborate, Discover</p>
+          <p className="text-muted-foreground">Connect, Collaborate, Discover</p>
         </div>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              {isLogin ? 'Welcome back' : 'Create an account'}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {isLogin 
-                ? 'Enter your credentials to access your account' 
-                : 'Enter your information to create your account'
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAuth} className="space-y-4">
-              {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
+          <CardContent className="pt-6">
+            {isLogin ? (
+              // Login Form
+              <>
+                <CardHeader className="space-y-1 px-0 pb-4">
+                  <CardTitle className="text-2xl font-bold text-center">
+                    Welcome back
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Enter your credentials to access your account
+                  </CardDescription>
+                </CardHeader>
+                
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    {loading ? 'Loading...' : 'Sign In'}
+                  </Button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsLogin(false)}
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Sign up
+                    </button>
+                  </p>
                 </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={loading}
-              >
-                {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-blue-600 hover:text-blue-700 font-semibold"
-                >
-                  {isLogin ? 'Sign up' : 'Sign in'}
-                </button>
-              </p>
-            </div>
+              </>
+            ) : (
+              // Multi-step Signup Form
+              <>
+                {currentStep === 1 && (
+                  <SignupStep1
+                    formData={{
+                      firstName: signupData.firstName,
+                      lastName: signupData.lastName,
+                      email: signupData.email,
+                      password: signupData.password,
+                      orcidNumber: signupData.orcidNumber,
+                      linkedinUrl: signupData.linkedinUrl,
+                      phone: signupData.phone,
+                      researchgateUrl: signupData.researchgateUrl,
+                      googleScholarUrl: signupData.googleScholarUrl,
+                    }}
+                    onChange={handleSignupFieldChange}
+                    onNext={() => setCurrentStep(2)}
+                  />
+                )}
+                
+                {currentStep === 2 && (
+                  <SignupStep2
+                    formData={{
+                      institution: signupData.institution,
+                      college: signupData.college,
+                      department: signupData.department,
+                      countryCity: signupData.countryCity,
+                    }}
+                    onChange={handleSignupFieldChange}
+                    onNext={() => setCurrentStep(3)}
+                    onCancel={handleCancel}
+                  />
+                )}
+                
+                {currentStep === 3 && (
+                  <SignupStep3
+                    formData={{
+                      experienceYears: signupData.experienceYears,
+                      primaryResearchArea: signupData.primaryResearchArea,
+                      secondaryResearchArea: signupData.secondaryResearchArea,
+                      keywords: signupData.keywords,
+                      researchRoles: signupData.researchRoles,
+                    }}
+                    onChange={handleSignupFieldChange}
+                    onFinish={handleSignupFinish}
+                    onCancel={handleCancel}
+                    loading={loading}
+                  />
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
