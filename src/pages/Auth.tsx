@@ -125,8 +125,8 @@ const Auth = () => {
             experience_years: signupData.experienceYears,
             primary_research_area: signupData.primaryResearchArea,
             secondary_research_area: signupData.secondaryResearchArea,
-            keywords: signupData.keywords,
-            research_roles: signupData.researchRoles,
+            keywords: signupData.keywords.join(','),
+            research_roles: signupData.researchRoles.join(','),
           }
         }
       });
