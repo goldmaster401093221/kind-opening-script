@@ -22,6 +22,17 @@ export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshProfile = async (userId: string) => {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    setProfile(profileData);
+    return profileData;
+  };
+
   useEffect(() => {
     const getProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -109,5 +120,6 @@ export const useProfile = () => {
     getDisplayName,
     getInitials,
     getUserRole,
+    refreshProfile,
   };
 };

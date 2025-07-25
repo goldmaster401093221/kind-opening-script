@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   Home, 
@@ -58,6 +58,8 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [newKeyword, setNewKeyword] = useState('');
   const [newRole, setNewRole] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<ProfileData>();
 
@@ -179,6 +181,82 @@ const Settings = () => {
       const research_roles = profile.research_roles?.filter((_, i) => i !== index) || [];
       setValue('research_roles', research_roles);
       setProfile({ ...profile, research_roles });
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "File size must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(uploadData.path);
+
+      const avatarUrl = urlData.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setProfile({ ...profile, avatar_url: avatarUrl });
+      setValue('avatar_url', avatarUrl);
+
+      toast({
+        title: "Success",
+        description: "Avatar updated successfully",
+      });
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload avatar",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -330,9 +408,13 @@ const Settings = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {getInitials()}
-              </AvatarFallback>
+              {globalProfile?.avatar_url ? (
+                <AvatarImage src={globalProfile.avatar_url} alt="Profile avatar" />
+              ) : (
+                <AvatarFallback className="bg-gray-800 text-white text-sm">
+                  {getInitials()}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">
@@ -372,12 +454,37 @@ const Settings = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-1 flex justify-center">
-                  <Avatar className="w-24 h-24">
-                    <AvatarFallback className="bg-gray-800 text-white text-2xl">
-                      {profile?.first_name?.[0]}{profile?.last_name?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                <div className="md:col-span-1 flex flex-col items-center">
+                  <div 
+                    className="relative cursor-pointer group"
+                    onClick={handleAvatarClick}
+                  >
+                    <Avatar className="w-24 h-24">
+                      {profile?.avatar_url ? (
+                        <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
+                      ) : (
+                        <AvatarFallback className="bg-gray-800 text-white text-2xl">
+                          {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white text-sm font-medium">
+                        {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
+                      </span>
+                    </div>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Click to upload avatar<br />
+                    Max 5MB, JPG/PNG
+                  </p>
                 </div>
                 
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">

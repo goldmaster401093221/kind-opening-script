@@ -5,7 +5,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -305,9 +305,13 @@ const DiscoverCollaborators = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-800 text-white text-sm">
-                {getInitials()}
-              </AvatarFallback>
+              {profile?.avatar_url ? (
+                <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
+              ) : (
+                <AvatarFallback className="bg-gray-800 text-white text-sm">
+                  {getInitials()}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">
