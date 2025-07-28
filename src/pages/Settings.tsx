@@ -213,49 +213,61 @@ const Settings = () => {
     setUploadingAvatar(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        throw uploadError;
+      if (!user) {
+        throw new Error('User not authenticated');
       }
 
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(uploadData.path);
+      // Convert image to base64 and store directly in database
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64String = reader.result as string;
+          
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ avatar_url: base64String })
+            .eq('id', user.id);
 
-      const avatarUrl = urlData.publicUrl;
+          if (updateError) {
+            throw updateError;
+          }
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: avatarUrl })
-        .eq('id', user.id);
+          setProfile({ ...profile, avatar_url: base64String });
+          setValue('avatar_url', base64String);
 
-      if (updateError) {
-        throw updateError;
-      }
+          toast({
+            title: "Success",
+            description: "Avatar updated successfully",
+          });
+        } catch (error) {
+          console.error('Error updating avatar:', error);
+          toast({
+            title: "Error",
+            description: "Failed to upload avatar. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setUploadingAvatar(false);
+        }
+      };
 
-      setProfile({ ...profile, avatar_url: avatarUrl });
-      setValue('avatar_url', avatarUrl);
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read image file",
+          variant: "destructive",
+        });
+        setUploadingAvatar(false);
+      };
 
-      toast({
-        title: "Success",
-        description: "Avatar updated successfully",
-      });
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
         title: "Error",
-        description: "Failed to upload avatar",
+        description: "Failed to upload avatar. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setUploadingAvatar(false);
     }
   };
