@@ -13,6 +13,10 @@ interface Profile {
   institution: string | null;
   primary_research_area: string | null;
   experience: string | null;
+  contacted: string[] | null;
+  collaborated: string[] | null;
+  best_match: string[] | null;
+  favorite: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,8 +33,33 @@ export const useProfile = () => {
       .eq('id', userId)
       .maybeSingle();
     
-    setProfile(profileData);
-    return profileData;
+    // Transform database response to match our Profile interface
+    if (profileData) {
+      const data = profileData as any; // Type assertion for new fields
+      const transformedProfile: Profile = {
+        id: data.id,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        username: data.username,
+        email: data.email,
+        avatar_url: data.avatar_url,
+        title: data.title,
+        institution: data.institution,
+        primary_research_area: data.primary_research_area,
+        experience: data.experience,
+        contacted: data.contacted || [],
+        collaborated: data.collaborated || [],
+        best_match: data.best_match || [],
+        favorite: data.favorite || [],
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      };
+      setProfile(transformedProfile);
+      return transformedProfile;
+    }
+    
+    setProfile(null);
+    return null;
   };
 
   useEffect(() => {
@@ -51,7 +80,32 @@ export const useProfile = () => {
         .eq('id', session.user.id)
         .maybeSingle();
       
-      setProfile(profileData);
+      // Transform database response to match our Profile interface
+      if (profileData) {
+        const data = profileData as any; // Type assertion for new fields
+        const transformedProfile: Profile = {
+          id: data.id,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          username: data.username,
+          email: data.email,
+          avatar_url: data.avatar_url,
+          title: data.title,
+          institution: data.institution,
+          primary_research_area: data.primary_research_area,
+          experience: data.experience,
+          contacted: data.contacted || [],
+          collaborated: data.collaborated || [],
+          best_match: data.best_match || [],
+          favorite: data.favorite || [],
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+        };
+        setProfile(transformedProfile);
+      } else {
+        setProfile(null);
+      }
+      
       setLoading(false);
     };
 
@@ -67,7 +121,32 @@ export const useProfile = () => {
             .select('*')
             .eq('id', session.user.id)
             .maybeSingle()
-            .then(({ data }) => setProfile(data));
+            .then(({ data }) => {
+              if (data) {
+                const profileData = data as any; // Type assertion for new fields
+                const transformedProfile: Profile = {
+                  id: profileData.id,
+                  first_name: profileData.first_name,
+                  last_name: profileData.last_name,
+                  username: profileData.username,
+                  email: profileData.email,
+                  avatar_url: profileData.avatar_url,
+                  title: profileData.title,
+                  institution: profileData.institution,
+                  primary_research_area: profileData.primary_research_area,
+                  experience: profileData.experience,
+                  contacted: profileData.contacted || [],
+                  collaborated: profileData.collaborated || [],
+                  best_match: profileData.best_match || [],
+                  favorite: profileData.favorite || [],
+                  created_at: profileData.created_at,
+                  updated_at: profileData.updated_at,
+                };
+                setProfile(transformedProfile);
+              } else {
+                setProfile(null);
+              }
+            });
         }, 0);
       } else {
         setUser(null);

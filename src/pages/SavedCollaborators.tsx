@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
+import { useCollaborators } from '@/hooks/useCollaborators';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,13 +33,13 @@ import {
 const SavedCollaborators = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
+  const { collaborators, loading: collaboratorsLoading, isFavorite, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
   const [activeTab, setActiveTab] = useState('Saved');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [savedCollaborators, setSavedCollaborators] = useState(new Set());
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

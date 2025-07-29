@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
+import { useCollaborators } from '@/hooks/useCollaborators';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,145 +50,27 @@ const supportingServices = [
 const DiscoverCollaborators = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
+  const { collaborators, loading: collaboratorsLoading, isFavorite, isBestMatch, isContacted, isCollaborated, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
   const [activeTab, setActiveTab] = useState('Best Matching');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [savedCollaborators, setSavedCollaborators] = useState(new Set());
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
   };
 
-  const collaborators = [
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: 'Best Match',
-      contacted: true,
-      profile: {
-        linkedin: 'https://linkedin.com/in/kevin-rashy-0234c12',
-        phone: '+1 (229) 690-9308',
-        researchGate: 'https://www.researchgate.info/kevinrashy',
-        googleScholar: 'https://www.googlescholar.info/kevinrashy',
-        institution: 'Institution name',
-        collage: 'Collage name',
-        department: 'Department name',
-        country: 'United States',
-        city: 'Los Angeles, CA',
-        postNumber: '98500',
-        researchExperience: '12',
-        primaryResearchField: 'Primary Research Field',
-        secondaryResearchField: 'Secondary Research Field',
-        keywords: ['Keyword1', 'Keyword2', 'Keyword3', 'Keyword4'],
-        whatIHave: ['Idea', 'Proposal', 'Grant Application'],
-        whatINeed: ['Equipment', 'Experiment']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      contacted: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      contacted: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      contacted: true,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    }
-  ];
 
   const handleViewProfile = (collaborator) => {
     setSelectedProfile(collaborator);
     setIsProfileModalOpen(true);
   };
 
-  const handleToggleHeart = (index) => {
-    setSavedCollaborators(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
+  const handleToggleHeart = async (collaboratorId: string) => {
+    await toggleFavorite(collaboratorId);
   };
 
   return (
@@ -406,7 +289,7 @@ const DiscoverCollaborators = () => {
                   </>
                 )}
                 
-                <span className="text-sm text-gray-600">Total Results: 15</span>
+                <span className="text-sm text-gray-600">Total Results: {collaborators.length}</span>
                 
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-600">Results per page</span>
@@ -438,78 +321,87 @@ const DiscoverCollaborators = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {collaborators.map((collaborator, index) => (
-                      <TableRow key={index} className="hover:bg-gray-50">
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="w-14 h-14 flex-shrink-0">
-                              <img 
-                                src="/lovable-uploads/avatar1.jpg" 
-                                alt={collaborator.name}
-                                className="max-w-full h-auto rounded-lg shadow-lg"
-                              />
-                            </Avatar>
-                            <div className="min-w-0">
-                              <div className="font-medium truncate">{collaborator.name}</div>
-                              <div className="text-sm text-gray-500 truncate">{collaborator.role}</div>
-                              <div className="flex flex-wrap items-center gap-2 mt-1">
-                                <Badge className="bg-blue-500 text-white text-xs flex items-center gap-1">
-                                  <svg width="16" height="16" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M7.2999 4.00016H10.5C11.0523 4.00016 11.5 4.44788 11.5 5.00015V6.05235C11.5 6.18295 11.4744 6.3123 11.4247 6.4331L9.8775 10.1905C9.80035 10.3779 9.61775 10.5001 9.41515 10.5001H1C0.72386 10.5001 0.5 10.2763 0.5 10.0001V5.00015C0.5 4.72402 0.72386 4.50016 1 4.50016H2.74092C2.90339 4.50016 3.05572 4.42123 3.14941 4.28851L5.8761 0.425678C5.94735 0.324743 6.08165 0.290989 6.19215 0.346242L7.0992 0.799755C7.625 1.06267 7.89655 1.65646 7.75155 2.22618L7.2999 4.00016ZM3.5 5.2939V9.50015H9.0803L10.5 6.05235V5.00015H7.2999C6.64755 5.00015 6.1699 4.38564 6.3308 3.75346L6.78245 1.97947C6.81145 1.86553 6.75715 1.74677 6.65195 1.69419L6.3214 1.5289L3.96638 4.86519C3.84143 5.0422 3.6817 5.1873 3.5 5.2939ZM2.5 5.50015H1.5V9.50015H2.5V5.50015Z" fill="white"/>
-                                  </svg>
-                                  {collaborator.status}
-                                </Badge>
-                                {collaborator.contacted && (
-                                  <Badge variant="outline" className="text-blue-600 text-xs">
-                                    Contacted
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center bg-gray-100">
-                          <span className="font-medium">{collaborator.totalCollaborations}</span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="font-medium">{collaborator.rating}</span>
-                        </TableCell>
-                        <TableCell className="bg-gray-100">
-                          <div className="flex flex-wrap gap-1">
-                            {collaborator.skills.map((skill, skillIndex) => (
-                              <Badge key={skillIndex} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <button 
-                              className="p-1 hover:bg-gray-100 rounded"
-                              onClick={() => handleToggleHeart(index)}
-                            >
-                              <Heart 
-                                className={`w-4 h-4 ${
-                                  savedCollaborators.has(index) 
-                                    ? 'text-blue-600 fill-blue-600' 
-                                    : 'text-gray-400 hover:text-red-500'
-                                }`} 
-                              />
-                            </button>
-                            <button className="p-1 hover:bg-gray-100 rounded">
-                              <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                            </button>
-                            <button 
-                              className="p-1 hover:bg-gray-100 rounded"
-                              onClick={() => handleViewProfile(collaborator)}
-                            >
-                              <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                     {collaborators.map((collaborator, index) => (
+                       <TableRow key={collaborator.id} className="hover:bg-gray-50">
+                         <TableCell>
+                           <div className="flex items-center space-x-3">
+                             <Avatar className="w-14 h-14 flex-shrink-0">
+                               {collaborator.avatar_url ? (
+                                 <AvatarImage src={collaborator.avatar_url} alt={getCollaboratorDisplayName(collaborator)} />
+                               ) : (
+                                 <AvatarFallback className="bg-gray-800 text-white text-sm">
+                                   {getCollaboratorInitials(collaborator)}
+                                 </AvatarFallback>
+                               )}
+                             </Avatar>
+                             <div className="min-w-0">
+                               <div className="font-medium truncate">{getCollaboratorDisplayName(collaborator)}</div>
+                               <div className="text-sm text-gray-500 truncate">{getUserRole(collaborator)}</div>
+                               <div className="flex flex-wrap items-center gap-2 mt-1">
+                                 {isBestMatch(collaborator.id) && (
+                                   <Badge className="bg-blue-500 text-white text-xs flex items-center gap-1">
+                                     <svg width="16" height="16" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                       <path d="M7.2999 4.00016H10.5C11.0523 4.00016 11.5 4.44788 11.5 5.00015V6.05235C11.5 6.18295 11.4744 6.3123 11.4247 6.4331L9.8775 10.1905C9.80035 10.3779 9.61775 10.5001 9.41515 10.5001H1C0.72386 10.5001 0.5 10.2763 0.5 10.0001V5.00015C0.5 4.72402 0.72386 4.50016 1 4.50016H2.74092C2.90339 4.50016 3.05572 4.42123 3.14941 4.28851L5.8761 0.425678C5.94735 0.324743 6.08165 0.290989 6.19215 0.346242L7.0992 0.799755C7.625 1.06267 7.89655 1.65646 7.75155 2.22618L7.2999 4.00016ZM3.5 5.2939V9.50015H9.0803L10.5 6.05235V5.00015H7.2999C6.64755 5.00015 6.1699 4.38564 6.3308 3.75346L6.78245 1.97947C6.81145 1.86553 6.75715 1.74677 6.65195 1.69419L6.3214 1.5289L3.96638 4.86519C3.84143 5.0422 3.6817 5.1873 3.5 5.2939ZM2.5 5.50015H1.5V9.50015H2.5V5.50015Z" fill="white"/>
+                                     </svg>
+                                     Best Match
+                                   </Badge>
+                                 )}
+                                 {isContacted(collaborator.id) && (
+                                   <Badge variant="outline" className="text-blue-600 text-xs">
+                                     Contacted
+                                   </Badge>
+                                 )}
+                                 {isCollaborated(collaborator.id) && (
+                                   <Badge variant="outline" className="text-green-600 text-xs">
+                                     Collaborated
+                                   </Badge>
+                                 )}
+                               </div>
+                             </div>
+                           </div>
+                         </TableCell>
+                         <TableCell className="text-center bg-gray-100">
+                           <span className="font-medium">{collaborator.collaboration_count || 0}</span>
+                         </TableCell>
+                         <TableCell className="text-center">
+                           <span className="font-medium">{collaborator.rating ? `${collaborator.rating}/5` : 'N/A'}</span>
+                         </TableCell>
+                         <TableCell className="bg-gray-100">
+                           <div className="flex flex-wrap gap-1">
+                             {collaborator.what_i_have?.map((skill, skillIndex) => (
+                               <Badge key={skillIndex} variant="outline" className="text-xs">
+                                 {skill}
+                               </Badge>
+                             )) || <span className="text-xs text-gray-500">No skills listed</span>}
+                           </div>
+                         </TableCell>
+                         <TableCell>
+                           <div className="flex items-center space-x-2">
+                             <button 
+                               className="p-1 hover:bg-gray-100 rounded"
+                               onClick={() => handleToggleHeart(collaborator.id)}
+                             >
+                               <Heart 
+                                 className={`w-4 h-4 ${
+                                   isFavorite(collaborator.id) 
+                                     ? 'text-blue-600 fill-blue-600' 
+                                     : 'text-gray-400 hover:text-red-500'
+                                 }`} 
+                               />
+                             </button>
+                             <button className="p-1 hover:bg-gray-100 rounded">
+                               <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                             </button>
+                             <button 
+                               className="p-1 hover:bg-gray-100 rounded"
+                               onClick={() => handleViewProfile(collaborator)}
+                             >
+                               <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                             </button>
+                           </div>
+                         </TableCell>
+                       </TableRow>
+                     ))}
                   </TableBody>
                 </Table>
               </div>
@@ -553,28 +445,35 @@ const DiscoverCollaborators = () => {
                 {/* Profile Header */}
                 <div className="flex items-center space-x-4">
                   <Avatar className="w-16 h-16">
-                    <img 
-                      src="/lovable-uploads/avatar1.jpg" 
-                      alt={selectedProfile.name}
-                      className="w-full h-full object-cover"
-                    />
+                    {selectedProfile.avatar_url ? (
+                      <AvatarImage src={selectedProfile.avatar_url} alt={getCollaboratorDisplayName(selectedProfile)} />
+                    ) : (
+                      <AvatarFallback className="bg-gray-800 text-white text-sm">
+                        {getCollaboratorInitials(selectedProfile)}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{selectedProfile.name}</h3>
-                    <p className="text-gray-600">{selectedProfile.role}</p>
+                    <h3 className="text-lg font-semibold">{getCollaboratorDisplayName(selectedProfile)}</h3>
+                    <p className="text-gray-600">{getUserRole(selectedProfile)}</p>
                     <div className="flex items-center space-x-4 mt-2">
-                      <Badge className="bg-blue-500 text-white">
-                        👍 Best Match
-                      </Badge>
+                      {isBestMatch(selectedProfile.id) && (
+                        <Badge className="bg-blue-500 text-white">
+                          👍 Best Match
+                        </Badge>
+                      )}
                       <div className="flex items-center space-x-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">{selectedProfile.rating}</span>
+                        <span className="font-medium">{selectedProfile.rating ? `${selectedProfile.rating}/5` : 'N/A'}</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="p-2 hover:bg-gray-100 rounded">
-                      <Heart className="w-5 h-5 text-gray-400" />
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded"
+                      onClick={() => handleToggleHeart(selectedProfile.id)}
+                    >
+                      <Heart className={`w-5 h-5 ${isFavorite(selectedProfile.id) ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`} />
                     </button>
                     <button className="p-2 hover:bg-gray-100 rounded">
                       <MessageSquare className="w-5 h-5 text-gray-400" />
@@ -587,21 +486,21 @@ const DiscoverCollaborators = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-600">LinkedIn</label>
-                      <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.linkedin}</p>
+                      <p className="text-sm text-blue-600 break-all">{selectedProfile.linkedin_url || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Phone</label>
-                      <p className="text-sm">{selectedProfile.profile.phone}</p>
+                      <p className="text-sm">{selectedProfile.phone || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Research Gate Link</label>
-                      <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.researchGate}</p>
+                      <p className="text-sm text-blue-600 break-all">{selectedProfile.researchgate_url || 'Not provided'}</p>
                     </div>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-gray-600">Google Scholar Link</label>
-                    <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.googleScholar}</p>
+                    <p className="text-sm text-blue-600 break-all">{selectedProfile.google_scholar_url || 'Not provided'}</p>
                   </div>
                 </div>
 
@@ -610,30 +509,30 @@ const DiscoverCollaborators = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-600">Institution</label>
-                      <p className="text-sm">{selectedProfile.profile.institution}</p>
+                      <p className="text-sm">{selectedProfile.institution || 'Not provided'}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Collage</label>
-                      <p className="text-sm">{selectedProfile.profile.collage}</p>
+                      <label className="text-sm font-medium text-gray-600">College</label>
+                      <p className="text-sm">{selectedProfile.college || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Department</label>
-                      <p className="text-sm">{selectedProfile.profile.department}</p>
+                      <p className="text-sm">{selectedProfile.department || 'Not provided'}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-600">Country</label>
-                      <p className="text-sm">{selectedProfile.profile.country}</p>
+                      <p className="text-sm">{selectedProfile.country || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">City</label>
-                      <p className="text-sm">{selectedProfile.profile.city}</p>
+                      <p className="text-sm">{selectedProfile.state_city || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Post Number</label>
-                      <p className="text-sm">{selectedProfile.profile.postNumber}</p>
+                      <p className="text-sm">{selectedProfile.zip_code || 'Not provided'}</p>
                     </div>
                   </div>
                 </div>
@@ -642,16 +541,16 @@ const DiscoverCollaborators = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Research Experience in Years</label>
-                      <p className="text-sm font-semibold">{selectedProfile.profile.researchExperience}</p>
+                      <label className="text-sm font-medium text-gray-600">Research Experience</label>
+                      <p className="text-sm font-semibold">{selectedProfile.experience || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Primary Research Field</label>
-                      <p className="text-sm">{selectedProfile.profile.primaryResearchField}</p>
+                      <p className="text-sm">{selectedProfile.primary_research_area || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Secondary Research Field</label>
-                      <p className="text-sm">{selectedProfile.profile.secondaryResearchField}</p>
+                      <p className="text-sm">{selectedProfile.secondary_research_area || 'Not provided'}</p>
                     </div>
                   </div>
                 </div>
@@ -660,11 +559,11 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">Specialization/Key words</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProfile.profile.keywords.map((keyword, index) => (
+                    {selectedProfile.keywords?.map((keyword, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {keyword}
                       </Badge>
-                    ))}
+                    )) || <span className="text-xs text-gray-500">No keywords listed</span>}
                   </div>
                 </div>
 
@@ -672,11 +571,11 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProfile.profile.whatIHave.map((item, index) => (
+                    {selectedProfile.what_i_have?.map((item, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {item}
                       </Badge>
-                    ))}
+                    )) || <span className="text-xs text-gray-500">No items listed</span>}
                   </div>
                 </div>
 
@@ -684,13 +583,21 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">What I need</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProfile.profile.whatINeed.map((item, index) => (
+                    {selectedProfile.what_i_need?.map((item, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {item}
                       </Badge>
-                    ))}
+                    )) || <span className="text-xs text-gray-500">No items listed</span>}
                   </div>
                 </div>
+
+                {/* Bio */}
+                {selectedProfile.bio && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 mb-2 block">Bio</label>
+                    <p className="text-sm text-gray-700">{selectedProfile.bio}</p>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex justify-end space-x-3 pt-4 border-t">
