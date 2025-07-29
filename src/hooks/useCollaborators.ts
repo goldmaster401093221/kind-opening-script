@@ -25,6 +25,7 @@ export interface CollaboratorProfile {
   secondary_research_area: string | null;
   experience: string | null;
   keywords: string[] | null;
+  research_roles: string[] | null;
   what_i_have: string[] | null;
   what_i_need: string[] | null;
   rating: number | null;
@@ -74,6 +75,7 @@ export const useCollaborators = () => {
         secondary_research_area: item.secondary_research_area,
         experience: item.experience,
         keywords: item.keywords,
+        research_roles: item.research_roles,
         what_i_have: item.what_i_have,
         what_i_need: item.what_i_need,
         rating: item.rating,

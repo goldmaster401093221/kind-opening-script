@@ -366,15 +366,15 @@ const DiscoverCollaborators = () => {
                          <TableCell className="text-center">
                            <span className="font-medium">{collaborator.rating ? `${collaborator.rating}/5` : 'N/A'}</span>
                          </TableCell>
-                         <TableCell className="bg-gray-100">
-                           <div className="flex flex-wrap gap-1">
-                             {collaborator.what_i_have?.map((skill, skillIndex) => (
-                               <Badge key={skillIndex} variant="outline" className="text-xs">
-                                 {skill}
-                               </Badge>
-                             )) || <span className="text-xs text-gray-500">No skills listed</span>}
-                           </div>
-                         </TableCell>
+                          <TableCell className="bg-gray-100">
+                            <div className="flex flex-wrap gap-1">
+                              {collaborator.research_roles?.map((role, roleIndex) => (
+                                <Badge key={roleIndex} variant="outline" className="text-xs">
+                                  {role}
+                                </Badge>
+                              )) || <span className="text-xs text-gray-500">No roles listed</span>}
+                            </div>
+                          </TableCell>
                          <TableCell>
                            <div className="flex items-center space-x-2">
                              <button 
