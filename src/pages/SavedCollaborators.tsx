@@ -313,7 +313,7 @@ const SavedCollaborators = () => {
           {/* Table */}
           <Card className="border border-gray-200">
             <Table>
-              <TableHeader className="bg-gray-100">
+              <TableHeader className="bg-gray-300">
                 <TableRow>
                   <TableHead className="text-gray-700 font-medium">Researcher</TableHead>
                   <TableHead className="text-center text-gray-700 font-medium">Total Collaborations</TableHead>
@@ -343,7 +343,7 @@ const SavedCollaborators = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center bg-gray-100">
                       <span className="font-medium">{collaborator.collaboration_count || 0}</span>
                     </TableCell>
                     <TableCell className="text-center">
