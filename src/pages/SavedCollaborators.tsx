@@ -33,14 +33,26 @@ import {
 const SavedCollaborators = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
-  const { collaborators: supabaseCollaborators, loading: collaboratorsLoading, isFavorite, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
+  const { collaborators: allCollaborators, loading: collaboratorsLoading, isFavorite, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
   const [activeTab, setActiveTab] = useState('Saved');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [savedCollaborators, setSavedCollaborators] = useState(new Set());
+
+  // Filter collaborators to only show favorites
+  const favoriteCollaborators = allCollaborators.filter(collaborator => isFavorite(collaborator.id));
+  
+  // Filter based on search query
+  const filteredCollaborators = favoriteCollaborators.filter(collaborator => {
+    if (!searchQuery) return true;
+    const searchLower = searchQuery.toLowerCase();
+    const displayName = getCollaboratorDisplayName(collaborator).toLowerCase();
+    const role = getUserRole(collaborator).toLowerCase();
+    const institution = collaborator.institution?.toLowerCase() || '';
+    return displayName.includes(searchLower) || role.includes(searchLower) || institution.includes(searchLower);
+  });
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -65,164 +77,24 @@ const SavedCollaborators = () => {
     { icon: Wrench, label: 'Equipment', active: false },
   ];
 
-  const collaborators = [
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: 'Best Match',
-      statusType: 'contacted',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/kevin-rashy-0234c12',
-        phone: '+1 (229) 690-9308',
-        researchGate: 'https://www.researchgate.info/kevinrashy',
-        googleScholar: 'https://www.googlescholar.info/kevinrashy',
-        institution: 'Institution name',
-        collage: 'Collage name',
-        department: 'Department name',
-        country: 'United States',
-        city: 'Los Angeles, CA',
-        postNumber: '98500',
-        researchExperience: '12',
-        primaryResearchField: 'Primary Research Field',
-        secondaryResearchField: 'Secondary Research Field',
-        keywords: ['Keyword1', 'Keyword2', 'Keyword3', 'Keyword4'],
-        whatIHave: ['Idea', 'Proposal', 'Grant Application'],
-        whatINeed: ['Equipment', 'Experiment']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: 'Best Match',
-      statusType: 'collaborated',
-      collaborated: true,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    },
-    {
-      name: 'Kevin Rashy',
-      role: 'Researcher Role',
-      totalCollaborations: 12,
-      rating: '4.8/5',
-      skills: ['Idea', 'Proposal', 'Grant Application'],
-      status: '',
-      statusType: 'contacted',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/kevin-rashy-0234c12',
-        phone: '+1 (229) 690-9308',
-        researchGate: 'https://www.researchgate.info/kevinrashy',
-        googleScholar: 'https://www.googlescholar.info/kevinrashy',
-        institution: 'Institution name',
-        collage: 'Collage name',
-        department: 'Department name',
-        country: 'United States',
-        city: 'Los Angeles, CA',
-        postNumber: '98500',
-        researchExperience: '12',
-        primaryResearchField: 'Primary Research Field',
-        secondaryResearchField: 'Secondary Research Field',
-        keywords: ['Keyword1', 'Keyword2', 'Keyword3', 'Keyword4'],
-        whatIHave: ['Idea', 'Proposal', 'Grant Application'],
-        whatINeed: ['Equipment', 'Experiment']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: '',
-      statusType: 'none',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
-    },
-    {
-      name: 'Anna Krylova',
-      role: 'Researcher Role',
-      totalCollaborations: 24,
-      rating: '4.9/5',
-      skills: ['Equipment', 'Experiment'],
-      status: '',
-      statusType: 'none',
-      collaborated: false,
-      profile: {
-        linkedin: 'https://linkedin.com/in/anna-krylova-1234c12',
-        phone: '+1 (555) 123-4567',
-        researchGate: 'https://www.researchgate.info/annakrylova',
-        googleScholar: 'https://www.googlescholar.info/annakrylova',
-        institution: 'University name',
-        collage: 'Science Collage',
-        department: 'Physics Department',
-        country: 'United States',
-        city: 'New York, NY',
-        postNumber: '10001',
-        researchExperience: '15',
-        primaryResearchField: 'Quantum Physics',
-        secondaryResearchField: 'Materials Science',
-        keywords: ['Quantum', 'Materials', 'Physics', 'Research'],
-        whatIHave: ['Equipment', 'Experiment'],
-        whatINeed: ['Funding', 'Collaboration']
-      }
+  // Get collaborators to display based on active tab
+  const getDisplayedCollaborators = () => {
+    if (activeTab === 'Saved') {
+      return filteredCollaborators;
     }
-  ];
+    // For contacted tab, show collaborators that are contacted (you can implement this logic)
+    return filteredCollaborators;
+  };
+
+  const displayedCollaborators = getDisplayedCollaborators();
 
   const handleViewProfile = (collaborator) => {
     setSelectedProfile(collaborator);
     setIsProfileModalOpen(true);
   };
 
-  const handleToggleHeart = (index) => {
-    setSavedCollaborators(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
+  const handleToggleFavorite = async (collaboratorId: string) => {
+    await toggleFavorite(collaboratorId);
   };
 
   return (
@@ -422,7 +294,7 @@ const SavedCollaborators = () => {
                     <SelectItem value="50">50</SelectItem>
                   </SelectContent>
                 </Select>
-                <span>Total Results: 15</span>
+                <span>Total Results: {displayedCollaborators.length}</span>
                 <span>Sort</span>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-32">
@@ -450,67 +322,51 @@ const SavedCollaborators = () => {
                   <TableHead className="text-center text-gray-700 font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {collaborators.map((collaborator, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
+               <TableBody>
+                {displayedCollaborators.map((collaborator, index) => (
+                  <TableRow key={collaborator.id} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="w-14 h-14">
-                          <img 
-                            src="/lovable-uploads/avatar2.jpg" 
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                          />
+                          {collaborator.avatar_url ? (
+                            <AvatarImage src={collaborator.avatar_url} alt="Avatar" />
+                          ) : (
+                            <AvatarFallback className="bg-gray-600 text-white">
+                              {getCollaboratorInitials(collaborator)}
+                            </AvatarFallback>
+                          )}
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{collaborator.name}</div>
-                          <div className="text-sm text-gray-500">{collaborator.role}</div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            {collaborator.status && (
-                              <Badge className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                                <svg width="16" height="16" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M7.2999 4.00016H10.5C11.0523 4.00016 11.5 4.44788 11.5 5.00015V6.05235C11.5 6.18295 11.4744 6.3123 11.4247 6.4331L9.8775 10.1905C9.80035 10.3779 9.61775 10.5001 9.41515 10.5001H1C0.72386 10.5001 0.5 10.2763 0.5 10.0001V5.00015C0.5 4.72402 0.72386 4.50016 1 4.50016H2.74092C2.90339 4.50016 3.05572 4.42123 3.14941 4.28851L5.8761 0.425678C5.94735 0.324743 6.08165 0.290989 6.19215 0.346242L7.0992 0.799755C7.625 1.06267 7.89655 1.65646 7.75155 2.22618L7.2999 4.00016ZM3.5 5.2939V9.50015H9.0803L10.5 6.05235V5.00015H7.2999C6.64755 5.00015 6.1699 4.38564 6.3308 3.75346L6.78245 1.97947C6.81145 1.86553 6.75715 1.74677 6.65195 1.69419L6.3214 1.5289L3.96638 4.86519C3.84143 5.0422 3.6817 5.1873 3.5 5.2939ZM2.5 5.50015H1.5V9.50015H2.5V5.50015Z" fill="white"/>
-                                </svg>
-                                {collaborator.status}
-                              </Badge>
-                            )}
-                            {collaborator.statusType === 'contacted' && (
-                              <Badge className="bg-blue-200 text-blue-600 text-xs px-2 py-1 rounded-lg">
-                                Contacted
-                              </Badge>
-                            )}
-                            {collaborator.statusType === 'collaborated' && (
-                              <Badge className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
-                                Collaborated
-                              </Badge>
-                            )}
-                          </div>
+                          <div className="font-medium text-gray-900">{getCollaboratorDisplayName(collaborator)}</div>
+                          <div className="text-sm text-gray-500">{getUserRole(collaborator)}</div>
+                          <div className="text-xs text-gray-500">{collaborator.institution}</div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="font-medium">{collaborator.totalCollaborations}</span>
+                      <span className="font-medium">{collaborator.collaboration_count || 0}</span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="font-medium">{collaborator.rating}</span>
+                      <span className="font-medium">{collaborator.rating ? `${collaborator.rating}/5` : 'N/A'}</span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="bg-gray-100">
                       <div className="flex flex-wrap gap-1">
-                        {collaborator.skills.map((skill, skillIndex) => (
-                          <Badge key={skillIndex} variant="outline" className="text-xs">
-                            {skill}
+                        {collaborator.research_roles?.map((role, roleIndex) => (
+                          <Badge key={roleIndex} variant="outline" className="text-xs">
+                            {role}
                           </Badge>
-                        ))}
+                        )) || <span className="text-xs text-gray-500">No roles listed</span>}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center space-x-2">
                         <button 
                           className="p-1 hover:bg-gray-100 rounded"
-                          onClick={() => handleToggleHeart(index)}
+                          onClick={() => handleToggleFavorite(collaborator.id)}
                         >
                           <Heart 
                             className={`w-4 h-4 ${
-                              savedCollaborators.has(index) 
+                              isFavorite(collaborator.id)
                                 ? 'text-blue-600 fill-blue-600' 
                                 : 'text-gray-400 hover:text-red-500'
                             }`} 
