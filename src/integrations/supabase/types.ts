@@ -121,8 +121,10 @@ export type Database = {
           google_scholar_url: string | null
           id: string
           institution: string | null
+          is_online: boolean | null
           keywords: string[] | null
           last_name: string | null
+          last_seen: string | null
           linkedin_url: string | null
           phone: string | null
           primary_research_area: string | null
@@ -156,8 +158,10 @@ export type Database = {
           google_scholar_url?: string | null
           id: string
           institution?: string | null
+          is_online?: boolean | null
           keywords?: string[] | null
           last_name?: string | null
+          last_seen?: string | null
           linkedin_url?: string | null
           phone?: string | null
           primary_research_area?: string | null
@@ -191,8 +195,10 @@ export type Database = {
           google_scholar_url?: string | null
           id?: string
           institution?: string | null
+          is_online?: boolean | null
           keywords?: string[] | null
           last_name?: string | null
+          last_seen?: string | null
           linkedin_url?: string | null
           phone?: string | null
           primary_research_area?: string | null

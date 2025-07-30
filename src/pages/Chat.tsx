@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useChat } from '@/hooks/useChat';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -47,6 +48,7 @@ const Chat = () => {
     getOrCreateConversation,
     sendMessage: sendChatMessage
   } = useChat();
+  const { isUserOnline } = useOnlineStatus();
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
   const [showCallingModal, setShowCallingModal] = useState(false);
@@ -65,6 +67,21 @@ const Chat = () => {
   }, [searchParams, user?.id, getOrCreateConversation, setActiveConversation]);
 
   const handleSignOut = async () => {
+    // Mark user as offline before signing out
+    if (user?.id) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({
+            is_online: false,
+            last_seen: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+      } catch (error) {
+        console.error('Error marking user as offline:', error);
+      }
+    }
     await supabase.auth.signOut();
     navigate('/auth');
   };
@@ -346,6 +363,10 @@ const Chat = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
+                    {/* Online indicator */}
+                    {conversation.other_participant?.id && isUserOnline(conversation.other_participant.id) && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -371,13 +392,15 @@ const Chat = () => {
               ))}
             </div>
 
-            {/* Small Calling Card - Only show when not expanded */}
-            {showCallingModal && !showExpandedCalling && (
+            {/* Small Calling Card - Only show when not expanded and there's an active conversation */}
+            {showCallingModal && !showExpandedCalling && currentChatPartner && (
               <div className="p-4">
                 <div className="bg-gray-100 rounded-2xl p-6 relative">
                   {/* Header with Calling text and expand icon */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="text-lg font-medium text-gray-800">Calling...</div>
+                    <div className="text-lg font-medium text-gray-800">
+                      Calling {getDisplayNameFromProfile(currentChatPartner)}...
+                    </div>
                     <button 
                       onClick={handleExpandCall}
                       className="text-gray-600 hover:text-gray-800"
@@ -388,21 +411,39 @@ const Chat = () => {
                   
                   {/* Avatars */}
                   <div className="flex items-center justify-center space-x-8 mb-8">
+                    {/* Caller Avatar (Current User) */}
                     <div className="relative">
                       <Avatar className="w-20 h-20">
-                        <img 
-                          src="/lovable-uploads/avatar1.jpg" 
-                          alt="Anna Krylova"
-                          className="w-full h-full object-cover rounded-full"
-                        />
+                        {profile?.avatar_url ? (
+                          <AvatarImage 
+                            src={profile.avatar_url} 
+                            alt={getDisplayName()}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <AvatarFallback className="bg-gray-800 text-white text-xl">
+                            {getInitials()}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-100"></div>
                     </div>
                     
+                    {/* Receiver Avatar (Chat Partner) */}
                     <div className="relative">
-                      <div className="bg-gray-800 rounded-2xl w-20 h-20 flex items-center justify-center">
-                        <div className="text-xl font-bold text-white">BM</div>
-                      </div>
+                      <Avatar className="w-20 h-20">
+                        {currentChatPartner?.avatar_url ? (
+                          <AvatarImage 
+                            src={currentChatPartner.avatar_url} 
+                            alt={getDisplayNameFromProfile(currentChatPartner)}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <AvatarFallback className="bg-gray-800 text-white text-xl">
+                            {getInitialsFromProfile(currentChatPartner)}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
                       <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-100"></div>
                     </div>
                   </div>
@@ -467,10 +508,20 @@ const Chat = () => {
                           </AvatarFallback>
                         )}
                       </Avatar>
+                      {/* Online indicator in chat header */}
+                      {currentChatPartner?.id && isUserOnline(currentChatPartner.id) && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                      )}
                     </div>
                     <div>
                       <div className="font-medium">{getDisplayNameFromProfile(currentChatPartner)}</div>
-                      <div className="text-sm text-gray-500">Click to start chatting</div>
+                      <div className="text-sm text-gray-500">
+                        {currentChatPartner?.id && isUserOnline(currentChatPartner.id) ? (
+                          <span className="text-green-600 font-medium">Online</span>
+                        ) : (
+                          "Click to start chatting"
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -479,7 +530,13 @@ const Chat = () => {
                   </div>
                 )}
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm" onClick={handlePhoneClick}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handlePhoneClick}
+                    disabled={!currentChatPartner}
+                    className={!currentChatPartner ? "opacity-50 cursor-not-allowed" : ""}
+                  >
                     <Phone className="w-4 h-4" />
                   </Button>
                   <Button variant="ghost" size="sm">
@@ -559,13 +616,15 @@ const Chat = () => {
       </div>
 
       {/* Expanded Calling Modal */}
-      {showExpandedCalling && (
+      {showExpandedCalling && currentChatPartner && (
         <Dialog open={showExpandedCalling} onOpenChange={setShowExpandedCalling}>
           <DialogContent className="max-w-2xl">
             <div className="bg-gray-100 rounded-2xl p-8">
               {/* Header with Calling text and minimize icon */}
               <div className="flex items-center justify-between mb-8">
-                <div className="text-2xl font-medium text-gray-800">Calling...</div>
+                <div className="text-2xl font-medium text-gray-800">
+                  Calling {getDisplayNameFromProfile(currentChatPartner)}...
+                </div>
                 <button 
                   onClick={handleMinimizeCall}
                   className="text-gray-600 hover:text-gray-800"
@@ -576,21 +635,39 @@ const Chat = () => {
               
               {/* Large Avatars */}
               <div className="flex items-center justify-center space-x-16 mb-12">
+                {/* Caller Avatar (Current User) */}
                 <div className="relative">
                   <Avatar className="w-32 h-32">
-                    <img 
-                      src="/lovable-uploads/avatar1.jpg" 
-                      alt="Anna Krylova"
-                      className="w-full h-full object-cover rounded-full"
-                    />
+                    {profile?.avatar_url ? (
+                      <AvatarImage 
+                        src={profile.avatar_url} 
+                        alt={getDisplayName()}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <AvatarFallback className="bg-gray-800 text-white text-3xl">
+                        {getInitials()}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-100"></div>
                 </div>
                 
+                {/* Receiver Avatar (Chat Partner) */}
                 <div className="relative">
-                  <div className="bg-gray-800 rounded-3xl w-32 h-32 flex items-center justify-center">
-                    <div className="text-3xl font-bold text-white">BM</div>
-                  </div>
+                  <Avatar className="w-32 h-32">
+                    {currentChatPartner?.avatar_url ? (
+                      <AvatarImage 
+                        src={currentChatPartner.avatar_url} 
+                        alt={getDisplayNameFromProfile(currentChatPartner)}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <AvatarFallback className="bg-gray-800 text-white text-3xl">
+                        {getInitialsFromProfile(currentChatPartner)}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
                   <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-100"></div>
                 </div>
               </div>
