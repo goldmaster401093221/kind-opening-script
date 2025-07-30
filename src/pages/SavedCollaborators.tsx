@@ -27,13 +27,14 @@ import {
   Copy,
   Eye,
   Search,
-  Star
+  Star,
+  X
 } from 'lucide-react';
 
 const SavedCollaborators = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
-  const { collaborators: allCollaborators, loading: collaboratorsLoading, isFavorite, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
+  const { collaborators: allCollaborators, loading: collaboratorsLoading, isFavorite, isContacted, isCollaborated, isBestMatch, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
   const [activeTab, setActiveTab] = useState('Saved');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
@@ -44,6 +45,37 @@ const SavedCollaborators = () => {
   // Filter collaborators to only show favorites
   const favoriteCollaborators = allCollaborators.filter(collaborator => isFavorite(collaborator.id));
   
+  // Debug logging
+  console.log('SavedCollaborators Debug:', {
+    allCollaboratorsCount: allCollaborators.length,
+    favoriteCollaboratorsCount: favoriteCollaborators.length,
+    searchQuery,
+    sortBy,
+    profile: profile ? 'exists' : 'missing',
+    user: user ? 'exists' : 'missing'
+  });
+
+  // Error handling for data processing
+  try {
+    // This will help catch any errors in the filtering/sorting logic
+    if (!Array.isArray(allCollaborators)) {
+      console.error('allCollaborators is not an array:', allCollaborators);
+      throw new Error('Invalid collaborators data');
+    }
+  } catch (error) {
+    console.error('Error in SavedCollaborators data processing:', error);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error loading saved collaborators. Please refresh the page.</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
   // Filter based on search query
   const filteredCollaborators = favoriteCollaborators.filter(collaborator => {
     if (!searchQuery) return true;
@@ -51,7 +83,53 @@ const SavedCollaborators = () => {
     const displayName = getCollaboratorDisplayName(collaborator).toLowerCase();
     const role = getUserRole(collaborator).toLowerCase();
     const institution = collaborator.institution?.toLowerCase() || '';
-    return displayName.includes(searchLower) || role.includes(searchLower) || institution.includes(searchLower);
+    const department = collaborator.department?.toLowerCase() || '';
+    const primaryResearch = collaborator.primary_research_area?.toLowerCase() || '';
+    const secondaryResearch = collaborator.secondary_research_area?.toLowerCase() || '';
+    const keywords = collaborator.keywords?.join(' ').toLowerCase() || '';
+    const bio = collaborator.bio?.toLowerCase() || '';
+    
+    return displayName.includes(searchLower) || 
+           role.includes(searchLower) || 
+           institution.includes(searchLower) ||
+           department.includes(searchLower) ||
+           primaryResearch.includes(searchLower) ||
+           secondaryResearch.includes(searchLower) ||
+           keywords.includes(searchLower) ||
+           bio.includes(searchLower);
+  });
+
+  // Sort collaborators based on selected sort option
+  const sortedCollaborators = [...filteredCollaborators].sort((a, b) => {
+    switch (sortBy) {
+      case 'Rating':
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        return ratingB - ratingA;
+      case 'Collaborations':
+        const collabA = a.collaboration_count || 0;
+        const collabB = b.collaboration_count || 0;
+        return collabB - collabA;
+      case 'Relevant':
+      default:
+        // For relevant sorting, prioritize best matches, then contacted, then collaborated
+        const aIsBestMatch = isBestMatch(a.id);
+        const bIsBestMatch = isBestMatch(b.id);
+        if (aIsBestMatch && !bIsBestMatch) return -1;
+        if (!aIsBestMatch && bIsBestMatch) return 1;
+        
+        const aIsContacted = isContacted(a.id);
+        const bIsContacted = isContacted(b.id);
+        if (aIsContacted && !bIsContacted) return -1;
+        if (!aIsContacted && bIsContacted) return 1;
+        
+        const aIsCollaborated = isCollaborated(a.id);
+        const bIsCollaborated = isCollaborated(b.id);
+        if (aIsCollaborated && !bIsCollaborated) return -1;
+        if (!aIsCollaborated && bIsCollaborated) return 1;
+        
+        return 0;
+    }
   });
 
   const handleSignOut = async () => {
@@ -80,10 +158,10 @@ const SavedCollaborators = () => {
   // Get collaborators to display based on active tab
   const getDisplayedCollaborators = () => {
     if (activeTab === 'Saved') {
-      return filteredCollaborators;
+      return sortedCollaborators;
     }
     // For contacted tab, show collaborators that are contacted (you can implement this logic)
-    return filteredCollaborators;
+    return sortedCollaborators;
   };
 
   const displayedCollaborators = getDisplayedCollaborators();
@@ -96,6 +174,31 @@ const SavedCollaborators = () => {
   const handleToggleFavorite = async (collaboratorId: string) => {
     await toggleFavorite(collaboratorId);
   };
+
+  // Add loading and error handling
+  if (profileLoading || collaboratorsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading saved collaborators...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Please log in to view saved collaborators.</p>
+          <Button onClick={() => navigate('/auth')} className="mt-4">
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -275,11 +378,19 @@ const SavedCollaborators = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
-                  placeholder="Search"
+                  placeholder="Search saved collaborators..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 pr-10"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               
               <div className="flex items-center space-x-4 text-sm text-gray-700">
@@ -323,8 +434,17 @@ const SavedCollaborators = () => {
                 </TableRow>
               </TableHeader>
                <TableBody>
-                {displayedCollaborators.map((collaborator, index) => (
-                  <TableRow key={collaborator.id} className="hover:bg-gray-50">
+                {!displayedCollaborators || displayedCollaborators.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <div className="text-gray-500">
+                        {searchQuery ? `No saved collaborators found matching "${searchQuery}"` : 'No saved collaborators available'}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  displayedCollaborators.map((collaborator, index) => (
+                    <TableRow key={collaborator.id || index} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="w-14 h-14">
@@ -386,10 +506,11 @@ const SavedCollaborators = () => {
                           <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                         </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+                                         </TableCell>
+                   </TableRow>
+                   ))
+                 )}
+               </TableBody>
             </Table>
           </Card>
 

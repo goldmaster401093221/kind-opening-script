@@ -26,7 +26,9 @@ import {
   Heart,
   Copy,
   Eye,
-  Star
+  Star,
+  Search,
+  X
 } from 'lucide-react';
 
 const home = [
@@ -57,6 +59,62 @@ const DiscoverCollaborators = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  // Filter collaborators based on search query
+  const filteredCollaborators = collaborators.filter(collaborator => {
+    if (!searchQuery) return true;
+    const searchLower = searchQuery.toLowerCase();
+    const displayName = getCollaboratorDisplayName(collaborator).toLowerCase();
+    const role = getUserRole(collaborator).toLowerCase();
+    const institution = collaborator.institution?.toLowerCase() || '';
+    const department = collaborator.department?.toLowerCase() || '';
+    const primaryResearch = collaborator.primary_research_area?.toLowerCase() || '';
+    const secondaryResearch = collaborator.secondary_research_area?.toLowerCase() || '';
+    const keywords = collaborator.keywords?.join(' ').toLowerCase() || '';
+    const bio = collaborator.bio?.toLowerCase() || '';
+    
+    return displayName.includes(searchLower) || 
+           role.includes(searchLower) || 
+           institution.includes(searchLower) ||
+           department.includes(searchLower) ||
+           primaryResearch.includes(searchLower) ||
+           secondaryResearch.includes(searchLower) ||
+           keywords.includes(searchLower) ||
+           bio.includes(searchLower);
+  });
+
+  // Sort collaborators based on selected sort option
+  const sortedCollaborators = [...filteredCollaborators].sort((a, b) => {
+    switch (sortBy) {
+      case 'Rating':
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        return ratingB - ratingA;
+      case 'Collaborations':
+        const collabA = a.collaboration_count || 0;
+        const collabB = b.collaboration_count || 0;
+        return collabB - collabA;
+      case 'Relevant':
+      default:
+        // For relevant sorting, prioritize best matches, then contacted, then collaborated
+        const aIsBestMatch = isBestMatch(a.id);
+        const bIsBestMatch = isBestMatch(b.id);
+        if (aIsBestMatch && !bIsBestMatch) return -1;
+        if (!aIsBestMatch && bIsBestMatch) return 1;
+        
+        const aIsContacted = isContacted(a.id);
+        const bIsContacted = isContacted(b.id);
+        if (aIsContacted && !bIsContacted) return -1;
+        if (!aIsContacted && bIsContacted) return 1;
+        
+        const aIsCollaborated = isCollaborated(a.id);
+        const bIsCollaborated = isCollaborated(b.id);
+        if (aIsCollaborated && !bIsCollaborated) return -1;
+        if (!aIsCollaborated && bIsCollaborated) return 1;
+        
+        return 0;
+    }
+  });
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -244,52 +302,41 @@ const DiscoverCollaborators = () => {
 
             {/* Controls */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-              {/* Left side - Sort (only shown when Best Matching is active) */}
-              {activeTab === 'Best Matching' && (
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">Sort</span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Relevant">Relevant</SelectItem>
-                      <SelectItem value="Rating">Rating</SelectItem>
-                      <SelectItem value="Collaborations">Collaborations</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Left side - Search and Sort */}
+              <div className="flex items-center space-x-4">
+                <div className="relative flex item-center w-80">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Search collaborators..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10 max-w-md"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-              )}
+                <span className="text-sm text-gray-600">Sort</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Relevant">Relevant</SelectItem>
+                    <SelectItem value="Rating">Rating</SelectItem>
+                    <SelectItem value="Collaborations">Collaborations</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               {/* Right side - Results controls */}
               <div className="flex flex-col item-center sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                {/* Sort field when in Search More mode */}
-                {activeTab === 'Search More' && (
-                  <>
-                    <div className="flex item-center w-80">
-                      <Input
-                        placeholder="Search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="max-w-md"
-                      />
-                    </div>
-
-                    <span className="text-sm text-gray-600">Sort</span>
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Relevant">Relevant</SelectItem>
-                        <SelectItem value="Rating">Rating</SelectItem>
-                        <SelectItem value="Collaborations">Collaborations</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </>
-                )}
-                
-                <span className="text-sm text-gray-600">Total Results: {collaborators.length}</span>
+                <span className="text-sm text-gray-600">Total Results: {sortedCollaborators.length}</span>
                 
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-600">Results per page</span>
@@ -321,8 +368,17 @@ const DiscoverCollaborators = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                     {collaborators.map((collaborator, index) => (
-                       <TableRow key={collaborator.id} className="hover:bg-gray-50">
+                     {sortedCollaborators.length === 0 ? (
+                       <TableRow>
+                         <TableCell colSpan={5} className="text-center py-8">
+                           <div className="text-gray-500">
+                             {searchQuery ? `No collaborators found matching "${searchQuery}"` : 'No collaborators available'}
+                           </div>
+                         </TableCell>
+                       </TableRow>
+                     ) : (
+                       sortedCollaborators.map((collaborator, index) => (
+                         <TableRow key={collaborator.id} className="hover:bg-gray-50">
                          <TableCell>
                            <div className="flex items-center space-x-3">
                              <Avatar className="w-14 h-14 flex-shrink-0">
@@ -405,7 +461,8 @@ const DiscoverCollaborators = () => {
                            </div>
                          </TableCell>
                        </TableRow>
-                     ))}
+                       ))
+                     )}
                   </TableBody>
                 </Table>
               </div>
