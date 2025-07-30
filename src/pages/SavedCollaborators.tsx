@@ -492,12 +492,11 @@ const SavedCollaborators = () => {
                             }`} 
                           />
                         </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          {/* <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" /> */}
-<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M3 9.01875H8.86875V7.89375H3V9.01875ZM3 6.58125H12V5.45625H3V6.58125ZM3 4.14375H12V3.01875H3V4.14375ZM0 15V1.125C0 0.825 0.1125 0.5625 0.3375 0.3375C0.5625 0.1125 0.825 0 1.125 0H13.875C14.175 0 14.4375 0.1125 14.6625 0.3375C14.8875 0.5625 15 0.825 15 1.125V10.875C15 11.175 14.8875 11.4375 14.6625 11.6625C14.4375 11.8875 14.175 12 13.875 12H3L0 15ZM2.5125 10.875H13.875V1.125H1.125V12.375L2.5125 10.875Z" fill="#161616"/>
-</svg>
-
+                        <button 
+                          className="p-1 hover:bg-gray-100 rounded"
+                          onClick={() => navigate(`/chat?with=${collaborator.id}`)}
+                        >
+                          <MessageSquare className="w-4 h-4 text-gray-400 hover:text-blue-600" />
                         </button>
                         <button 
                           className="p-1 hover:bg-gray-100 rounded"
@@ -582,8 +581,14 @@ const SavedCollaborators = () => {
                   >
                     <Heart className={`w-5 h-5 ${isFavorite(selectedProfile.id) ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`} />
                   </button>
-                  <button className="p-2 hover:bg-gray-100 rounded">
-                    <MessageSquare className="w-5 h-5 text-gray-400" />
+                  <button 
+                    className="p-2 hover:bg-gray-100 rounded"
+                    onClick={() => {
+                      setIsProfileModalOpen(false);
+                      navigate(`/chat?with=${selectedProfile.id}`);
+                    }}
+                  >
+                    <MessageSquare className="w-5 h-5 text-gray-400 hover:text-blue-600" />
                   </button>
                 </div>
               </div>
