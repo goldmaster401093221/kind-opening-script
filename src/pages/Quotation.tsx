@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
@@ -25,10 +25,130 @@ const Quotation = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
   const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Initialize with welcome message
+  useEffect(() => {
+    setMessages([
+      {
+        id: 1,
+        sender: 'Bot',
+        content: '👋 Hi! I\'m here to help you with quotation services. What type of quote are you looking for today? I can assist with pricing, estimates, and quotation requests.',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOwn: false,
+        avatar: 'AI'
+      }
+    ]);
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
+  };
+
+  const sendMessageToOpenAI = async (userMessage) => {
+    const OPENAI_API_KEY = "";
+    
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful quotation service assistant. You help users with pricing inquiries, provide estimates, assist with quotation requests, and offer guidance on cost analysis. Be friendly, professional, and provide practical advice for quotation-related questions.'
+            },
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+      return 'Sorry, I encountered an error while processing your request. Please try again.';
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+
+    const userMessage = {
+      id: Date.now(),
+      sender: 'User',
+      content: message,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isOwn: true,
+      avatar: profile?.avatar_url || null,
+      initials: getInitials()
+    };
+
+    // Add user message to chat
+    setMessages(prev => [...prev, userMessage]);
+    setMessage('');
+    setIsLoading(true);
+
+    try {
+      // Get AI response
+      const aiResponse = await sendMessageToOpenAI(message);
+      
+      const aiMessage = {
+        id: Date.now() + 1,
+        sender: 'Bot',
+        content: aiResponse,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOwn: false,
+        avatar: 'AI'
+      };
+
+      // Add AI response to chat
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        sender: 'Bot',
+        content: 'Sorry, I encountered an error. Please try again.',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOwn: false,
+        avatar: 'AI'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   const home = [
@@ -49,50 +169,8 @@ const Quotation = () => {
     { icon: Wrench, label: 'Equipment', active: false },
   ];
 
-  const messages = [
-    {
-      sender: 'User',
-      content: 'labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      time: '',
-      isOwn: true,
-      avatar: 'BM'
-    },
-    {
-      sender: 'Bot',
-      content: '👋 Hi, for what are you looking for shipment service today? Let me know so that I can help you.',
-      time: '',
-      isOwn: false,
-      avatar: 'AI'
-    },
-    {
-      sender: 'Bot',
-      content: '👋 Hi, for what are you looking for shipment service today? Let me know so that I can help you.',
-      time: '',
-      isOwn: false,
-      avatar: 'AI'
-    },
-    {
-      sender: 'Parcel Monkey',
-      content: 'Parcel Monkey',
-      time: '',
-      isOwn: false,
-      avatar: 'PM',
-      isService: true,
-      serviceInfo: {
-        website: 'https://parcelmonkey.com',
-        features: [
-          'Instant shipping quotes from multiple couriers (UPS, DHL, USPS, etc.).',
-          'No signup required for basic quotes.',
-          'Discounted rates and access to premium courier services.',
-          'International and domestic coverage to over 200 destinations.',
-          'Easy online booking and label printing.'
-        ]
-      }
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo */}
@@ -106,7 +184,7 @@ const Quotation = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 p-4 space-y-6">
+        <div className="flex-1 p-4 space-y-6 overflow-y-auto">
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
               Home
@@ -231,9 +309,9 @@ const Quotation = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Quotation</h1>
             <Button onClick={handleSignOut} variant="outline" size="sm">
@@ -243,7 +321,7 @@ const Quotation = () => {
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {messages.map((msg, index) => (
@@ -268,7 +346,7 @@ const Quotation = () => {
                             <div key={idx} className="flex items-start space-x-2">
                               <span className="text-gray-600 mt-1">•</span>
                               <span className="text-sm text-gray-700">{feature}</span>
-                              {idx === 1 && (
+                              {idx === 0 && (
                                 <button className="ml-2 text-gray-400 hover:text-gray-600">
                                   <Copy className="w-4 h-4" />
                                 </button>
@@ -280,17 +358,19 @@ const Quotation = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'} items-end space-x-2`}>
+                    {!msg.isOwn && (
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        {msg.avatar && msg.avatar !== 'AI' && msg.avatar !== 'AL' ? (
+                          <AvatarImage src={msg.avatar} alt="Bot avatar" />
+                        ) : (
+                          <AvatarFallback className="bg-gray-800 text-white text-xs">
+                            {msg.avatar}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                    )}
                     <div className="max-w-xs lg:max-w-md">
-                      {!msg.isOwn && (
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Avatar className="w-12 h-12">
-                            <AvatarFallback className="bg-gray-800 text-white text-xs">
-                              {msg.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                      )}
                       <div
                         className={`px-4 py-2 rounded-lg ${
                           msg.isOwn
@@ -305,33 +385,46 @@ const Quotation = () => {
                           </div>
                         )}
                       </div>
-                      {msg.isOwn && (
-                        <div className="flex justify-end mt-1">
-                          <Avatar className="w-12 h-12">
-                            <AvatarFallback className="bg-gray-800 text-white text-xs">
-                              {msg.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                      )}
                     </div>
+                    {msg.isOwn && (
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        {msg.avatar ? (
+                          <AvatarImage src={msg.avatar} alt="User avatar" />
+                        ) : (
+                          <AvatarFallback className="bg-gray-800 text-white text-xs">
+                            {msg.initials}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                    )}
                   </div>
                 )}
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Message Input */}
-          <div className="bg-white border-t border-gray-200 p-4">
+          <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
             <div className="flex items-center space-x-2">
               <Input
                 placeholder="Enter Message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="flex-1"
+                disabled={isLoading}
               />
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Send className="w-4 h-4" />
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handleSendMessage}
+                disabled={isLoading || !message.trim()}
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </Button>
             </div>
           </div>

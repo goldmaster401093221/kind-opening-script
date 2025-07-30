@@ -373,7 +373,11 @@ const SavedCollaborators = () => {
                           />
                         </button>
                         <button className="p-1 hover:bg-gray-100 rounded">
-                          <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                          {/* <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600" /> */}
+<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 9.01875H8.86875V7.89375H3V9.01875ZM3 6.58125H12V5.45625H3V6.58125ZM3 4.14375H12V3.01875H3V4.14375ZM0 15V1.125C0 0.825 0.1125 0.5625 0.3375 0.3375C0.5625 0.1125 0.825 0 1.125 0H13.875C14.175 0 14.4375 0.1125 14.6625 0.3375C14.8875 0.5625 15 0.825 15 1.125V10.875C15 11.175 14.8875 11.4375 14.6625 11.6625C14.4375 11.8875 14.175 12 13.875 12H3L0 15ZM2.5125 10.875H13.875V1.125H1.125V12.375L2.5125 10.875Z" fill="#161616"/>
+</svg>
+
                         </button>
                         <button 
                           className="p-1 hover:bg-gray-100 rounded"
@@ -429,28 +433,33 @@ const SavedCollaborators = () => {
               {/* Profile Header */}
               <div className="flex items-center space-x-4">
                 <Avatar className="w-16 h-16">
-                  <img 
-                    src="/lovable-uploads/avatar2.jpg" 
-                    alt={selectedProfile.name}
-                    className="w-full h-full object-cover"
-                  />
+                  {selectedProfile.avatar_url ? (
+                    <AvatarImage src={selectedProfile.avatar_url} alt={getCollaboratorDisplayName(selectedProfile)} />
+                  ) : (
+                    <AvatarFallback className="bg-gray-800 text-white text-sm">
+                      {getCollaboratorInitials(selectedProfile)}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{selectedProfile.name}</h3>
-                  <p className="text-gray-600">{selectedProfile.role}</p>
+                  <h3 className="text-lg font-semibold">{getCollaboratorDisplayName(selectedProfile)}</h3>
+                  <p className="text-gray-600">{getUserRole(selectedProfile)}</p>
                   <div className="flex items-center space-x-4 mt-2">
                     <Badge className="bg-blue-500 text-white">
                       👍 Best Match
                     </Badge>
                     <div className="flex items-center space-x-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{selectedProfile.rating}</span>
+                      <span className="font-medium">{selectedProfile.rating ? `${selectedProfile.rating}/5` : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="p-2 hover:bg-gray-100 rounded">
-                    <Heart className="w-5 h-5 text-gray-400" />
+                  <button 
+                    className="p-2 hover:bg-gray-100 rounded"
+                    onClick={() => handleToggleFavorite(selectedProfile.id)}
+                  >
+                    <Heart className={`w-5 h-5 ${isFavorite(selectedProfile.id) ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`} />
                   </button>
                   <button className="p-2 hover:bg-gray-100 rounded">
                     <MessageSquare className="w-5 h-5 text-gray-400" />
@@ -463,21 +472,21 @@ const SavedCollaborators = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">LinkedIn</label>
-                    <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.linkedin}</p>
+                    <p className="text-sm text-blue-600 break-all">{selectedProfile.linkedin_url || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Phone</label>
-                    <p className="text-sm">{selectedProfile.profile.phone}</p>
+                    <p className="text-sm">{selectedProfile.phone || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Research Gate Link</label>
-                    <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.researchGate}</p>
+                    <p className="text-sm text-blue-600 break-all">{selectedProfile.researchgate_url || 'Not provided'}</p>
                   </div>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-600">Google Scholar Link</label>
-                  <p className="text-sm text-blue-600 break-all">{selectedProfile.profile.googleScholar}</p>
+                  <p className="text-sm text-blue-600 break-all">{selectedProfile.google_scholar_url || 'Not provided'}</p>
                 </div>
               </div>
 
@@ -486,30 +495,30 @@ const SavedCollaborators = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Institution</label>
-                    <p className="text-sm">{selectedProfile.profile.institution}</p>
+                    <p className="text-sm">{selectedProfile.institution || 'Not provided'}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Collage</label>
-                    <p className="text-sm">{selectedProfile.profile.collage}</p>
+                    <label className="text-sm font-medium text-gray-600">College</label>
+                    <p className="text-sm">{selectedProfile.college || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Department</label>
-                    <p className="text-sm">{selectedProfile.profile.department}</p>
+                    <p className="text-sm">{selectedProfile.department || 'Not provided'}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Country</label>
-                    <p className="text-sm">{selectedProfile.profile.country}</p>
+                    <p className="text-sm">{selectedProfile.country || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">City</label>
-                    <p className="text-sm">{selectedProfile.profile.city}</p>
+                    <p className="text-sm">{selectedProfile.state_city || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Post Number</label>
-                    <p className="text-sm">{selectedProfile.profile.postNumber}</p>
+                    <p className="text-sm">{selectedProfile.zip_code || 'Not provided'}</p>
                   </div>
                 </div>
               </div>
@@ -518,16 +527,16 @@ const SavedCollaborators = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Research Experience in Years</label>
-                    <p className="text-sm font-semibold">{selectedProfile.profile.researchExperience}</p>
+                    <label className="text-sm font-medium text-gray-600">Research Experience</label>
+                    <p className="text-sm font-semibold">{selectedProfile.experience || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Primary Research Field</label>
-                    <p className="text-sm">{selectedProfile.profile.primaryResearchField}</p>
+                    <p className="text-sm">{selectedProfile.primary_research_area || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Secondary Research Field</label>
-                    <p className="text-sm">{selectedProfile.profile.secondaryResearchField}</p>
+                    <p className="text-sm">{selectedProfile.secondary_research_area || 'Not provided'}</p>
                   </div>
                 </div>
               </div>
@@ -536,11 +545,11 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">Specialization/Key words</label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedProfile.profile.keywords.map((keyword, index) => (
+                  {selectedProfile.keywords?.map((keyword, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {keyword}
                     </Badge>
-                  ))}
+                  )) || <span className="text-xs text-gray-500">No keywords listed</span>}
                 </div>
               </div>
 
@@ -548,11 +557,11 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedProfile.profile.whatIHave.map((item, index) => (
+                  {selectedProfile.what_i_have?.map((item, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {item}
                     </Badge>
-                  ))}
+                  )) || <span className="text-xs text-gray-500">No items listed</span>}
                 </div>
               </div>
 
@@ -560,13 +569,21 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">What I need</label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedProfile.profile.whatINeed.map((item, index) => (
+                  {selectedProfile.what_i_need?.map((item, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {item}
                     </Badge>
-                  ))}
+                  )) || <span className="text-xs text-gray-500">No items listed</span>}
                 </div>
               </div>
+
+              {/* Bio */}
+              {selectedProfile.bio && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600 mb-2 block">Bio</label>
+                  <p className="text-sm text-gray-700">{selectedProfile.bio}</p>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -586,3 +603,4 @@ const SavedCollaborators = () => {
 };
 
 export default SavedCollaborators;
+
