@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      calls: {
+        Row: {
+          callee_id: string
+          caller_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          status: string
+        }
+        Insert: {
+          callee_id: string
+          caller_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          callee_id?: string
+          caller_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       collaborations: {
         Row: {
           collaborator_id: string
@@ -225,6 +252,10 @@ export type Database = {
       calculate_match_score: {
         Args: { user1_id: string; user2_id: string }
         Returns: number
+      }
+      mark_user_offline: {
+        Args: { user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

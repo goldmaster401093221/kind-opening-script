@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useChat } from '@/hooks/useChat';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useWebRTC } from '@/hooks/useWebRTC';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,6 +12,8 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog';
+import { CallNotification } from '@/components/CallNotification';
+import { VideoCallInterface } from '@/components/VideoCallInterface';
 import { 
   Home, 
   Users, 
@@ -49,9 +52,25 @@ const Chat = () => {
     sendMessage: sendChatMessage
   } = useChat();
   const { isUserOnline } = useOnlineStatus();
+  const {
+    localVideoRef,
+    remoteVideoRef,
+    isCallActive,
+    isMuted,
+    isVideoEnabled,
+    isScreenSharing,
+    incomingCall,
+    outgoingCall,
+    startCall,
+    answerCall,
+    declineCall,
+    endCall,
+    toggleMute,
+    toggleVideo,
+    toggleScreenShare
+  } = useWebRTC();
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
-  const [showCallingModal, setShowCallingModal] = useState(false);
   const [showExpandedCalling, setShowExpandedCalling] = useState(false);
 
   // Handle chat with specific user from URL params
@@ -87,12 +106,27 @@ const Chat = () => {
   };
 
   const handlePhoneClick = () => {
-    setShowCallingModal(true);
-    setShowExpandedCalling(false);
+    if (currentChatPartner?.id) {
+      startCall(currentChatPartner.id);
+    }
+  };
+
+  const handleAnswerCall = () => {
+    if (incomingCall) {
+      // For now, we'll simulate answering the call
+      // In a real implementation, we'd handle the WebRTC offer
+      answerCall(incomingCall.id, {} as RTCSessionDescriptionInit);
+    }
+  };
+
+  const handleDeclineCall = () => {
+    if (incomingCall) {
+      declineCall(incomingCall.id);
+    }
   };
 
   const handleEndCall = () => {
-    setShowCallingModal(false);
+    endCall();
     setShowExpandedCalling(false);
   };
 
@@ -392,98 +426,24 @@ const Chat = () => {
               ))}
             </div>
 
-            {/* Small Calling Card - Only show when not expanded and there's an active conversation */}
-            {showCallingModal && !showExpandedCalling && currentChatPartner && (
+            {/* Video Call Interface - Only show when call is active */}
+            {(isCallActive || outgoingCall) && !showExpandedCalling && currentChatPartner && (
               <div className="p-4">
-                <div className="bg-gray-100 rounded-2xl p-6 relative">
-                  {/* Header with Calling text and expand icon */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="text-lg font-medium text-gray-800">
-                      Calling {getDisplayNameFromProfile(currentChatPartner)}...
-                    </div>
-                    <button 
-                      onClick={handleExpandCall}
-                      className="text-gray-600 hover:text-gray-800"
-                    >
-                      <Expand className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  {/* Avatars */}
-                  <div className="flex items-center justify-center space-x-8 mb-8">
-                    {/* Caller Avatar (Current User) */}
-                    <div className="relative">
-                      <Avatar className="w-20 h-20">
-                        {profile?.avatar_url ? (
-                          <AvatarImage 
-                            src={profile.avatar_url} 
-                            alt={getDisplayName()}
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <AvatarFallback className="bg-gray-800 text-white text-xl">
-                            {getInitials()}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-100"></div>
-                    </div>
-                    
-                    {/* Receiver Avatar (Chat Partner) */}
-                    <div className="relative">
-                      <Avatar className="w-20 h-20">
-                        {currentChatPartner?.avatar_url ? (
-                          <AvatarImage 
-                            src={currentChatPartner.avatar_url} 
-                            alt={getDisplayNameFromProfile(currentChatPartner)}
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <AvatarFallback className="bg-gray-800 text-white text-xl">
-                            {getInitialsFromProfile(currentChatPartner)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-100"></div>
-                    </div>
-                  </div>
-
-                  {/* Control Buttons */}
-                  <div className="flex items-center justify-center space-x-4">
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      className="bg-green-500 hover:bg-green-600 rounded-2xl p-3 w-12 h-12"
-                    >
-                      <MicIcon className="w-5 h-5 text-white" />
-                    </Button>
-                    
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      className="bg-red-500 hover:bg-red-600 rounded-2xl p-3 w-12 h-12"
-                    >
-                      <Video className="w-5 h-5 text-white" />
-                    </Button>
-                    
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      className="bg-red-500 hover:bg-red-600 rounded-2xl p-3 w-12 h-12"
-                    >
-                      <Monitor className="w-5 h-5 text-white" />
-                    </Button>
-                    
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      className="bg-red-500 hover:bg-red-600 rounded-2xl p-3 w-12 h-12"
-                      onClick={handleEndCall}
-                    >
-                      <PhoneOff className="w-5 h-5 text-white" />
-                    </Button>
-                  </div>
-                </div>
+                <VideoCallInterface
+                  localVideoRef={localVideoRef}
+                  remoteVideoRef={remoteVideoRef}
+                  isMuted={isMuted}
+                  isVideoEnabled={isVideoEnabled}
+                  isScreenSharing={isScreenSharing}
+                  isExpanded={false}
+                  remoteUserName={getDisplayNameFromProfile(currentChatPartner)}
+                  remoteUserAvatar={currentChatPartner?.avatar_url}
+                  onToggleMute={toggleMute}
+                  onToggleVideo={toggleVideo}
+                  onToggleScreenShare={toggleScreenShare}
+                  onEndCall={handleEndCall}
+                  onToggleExpand={handleExpandCall}
+                />
               </div>
             )}
           </div>
@@ -615,101 +575,32 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Expanded Calling Modal */}
-      {showExpandedCalling && currentChatPartner && (
-        <Dialog open={showExpandedCalling} onOpenChange={setShowExpandedCalling}>
-          <DialogContent className="max-w-2xl">
-            <div className="bg-gray-100 rounded-2xl p-8">
-              {/* Header with Calling text and minimize icon */}
-              <div className="flex items-center justify-between mb-8">
-                <div className="text-2xl font-medium text-gray-800">
-                  Calling {getDisplayNameFromProfile(currentChatPartner)}...
-                </div>
-                <button 
-                  onClick={handleMinimizeCall}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  <Minimize2 className="w-6 h-6" />
-                </button>
-              </div>
-              
-              {/* Large Avatars */}
-              <div className="flex items-center justify-center space-x-16 mb-12">
-                {/* Caller Avatar (Current User) */}
-                <div className="relative">
-                  <Avatar className="w-32 h-32">
-                    {profile?.avatar_url ? (
-                      <AvatarImage 
-                        src={profile.avatar_url} 
-                        alt={getDisplayName()}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <AvatarFallback className="bg-gray-800 text-white text-3xl">
-                        {getInitials()}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-100"></div>
-                </div>
-                
-                {/* Receiver Avatar (Chat Partner) */}
-                <div className="relative">
-                  <Avatar className="w-32 h-32">
-                    {currentChatPartner?.avatar_url ? (
-                      <AvatarImage 
-                        src={currentChatPartner.avatar_url} 
-                        alt={getDisplayNameFromProfile(currentChatPartner)}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <AvatarFallback className="bg-gray-800 text-white text-3xl">
-                        {getInitialsFromProfile(currentChatPartner)}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-gray-100"></div>
-                </div>
-              </div>
+      {/* Expanded Video Call Interface */}
+      {showExpandedCalling && currentChatPartner && (isCallActive || outgoingCall) && (
+        <VideoCallInterface
+          localVideoRef={localVideoRef}
+          remoteVideoRef={remoteVideoRef}
+          isMuted={isMuted}
+          isVideoEnabled={isVideoEnabled}
+          isScreenSharing={isScreenSharing}
+          isExpanded={true}
+          remoteUserName={getDisplayNameFromProfile(currentChatPartner)}
+          remoteUserAvatar={currentChatPartner?.avatar_url}
+          onToggleMute={toggleMute}
+          onToggleVideo={toggleVideo}
+          onToggleScreenShare={toggleScreenShare}
+          onEndCall={handleEndCall}
+          onToggleExpand={handleMinimizeCall}
+        />
+      )}
 
-              {/* Control Buttons */}
-              <div className="flex items-center justify-center space-x-6">
-                <Button
-                  variant="ghost" 
-                  size="lg"
-                  className="bg-green-500 hover:bg-green-600 rounded-3xl p-4 w-16 h-16"
-                >
-                  <MicIcon className="w-8 h-8 text-white" />
-                </Button>
-                
-                <Button
-                  variant="ghost" 
-                  size="lg"
-                  className="bg-red-500 hover:bg-red-600 rounded-3xl p-4 w-16 h-16"
-                >
-                  <Video className="w-8 h-8 text-white" />
-                </Button>
-                
-                <Button
-                  variant="ghost" 
-                  size="lg"
-                  className="bg-red-500 hover:bg-red-600 rounded-3xl p-4 w-16 h-16"
-                >
-                  <Monitor className="w-8 h-8 text-white" />
-                </Button>
-                
-                <Button
-                  variant="ghost" 
-                  size="lg"
-                  className="bg-red-500 hover:bg-red-600 rounded-3xl p-4 w-16 h-16"
-                  onClick={handleEndCall}
-                >
-                  <PhoneOff className="w-8 h-8 text-white" />
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+      {/* Incoming Call Notification */}
+      {incomingCall && (
+        <CallNotification
+          call={incomingCall}
+          onAnswer={handleAnswerCall}
+          onDecline={handleDeclineCall}
+        />
       )}
     </div>
   );
