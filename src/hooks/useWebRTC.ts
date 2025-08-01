@@ -95,9 +95,11 @@ export const useWebRTC = () => {
     return pc;
   }, [user?.id]);
 
-  // Start call
+  // Start a call
   const startCall = useCallback(async (calleeId: string) => {
     try {
+      console.log('Starting call to user:', calleeId);
+      
       // Create call record in database (using any for now until types update)
       const { data: callData, error } = await (supabase as any)
         .from('calls')
@@ -110,6 +112,7 @@ export const useWebRTC = () => {
         .single();
 
       if (error) throw error;
+      console.log('Call record created:', callData);
 
       setOutgoingCall(callData as CallData);
 
@@ -125,20 +128,25 @@ export const useWebRTC = () => {
       // Create and send offer
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
+      console.log('Created offer:', offer);
 
-      // Send offer through realtime channel
-      if (channelRef.current) {
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'call-offer',
-          payload: {
-            call_id: callData.id,
-            offer: offer,
-            from_user_id: user?.id,
-            to_user_id: calleeId
-          }
-        });
-      }
+      // Send offer through realtime channel - create a new channel for the callee
+      const callChannel = supabase.channel(`calls:${calleeId}`);
+      await callChannel.subscribe();
+      
+      console.log('Sending call offer to channel:', `calls:${calleeId}`);
+      await callChannel.send({
+        type: 'broadcast',
+        event: 'call-offer',
+        payload: {
+          call_id: callData.id,
+          offer: offer,
+          from_user_id: user?.id,
+          to_user_id: calleeId
+        }
+      });
+
+      console.log('Call offer sent successfully');
 
     } catch (error) {
       console.error('Error starting call:', error);
@@ -369,18 +377,23 @@ export const useWebRTC = () => {
   useEffect(() => {
     if (!user?.id) return;
 
+    console.log('Setting up realtime listeners for user:', user.id);
+
     const channel = supabase.channel(`calls:${user.id}`)
       .on('broadcast', { event: 'call-offer' }, async (payload) => {
+        console.log('Received call offer:', payload);
         const { call_id, offer, from_user_id, to_user_id } = payload.payload;
         
         if (to_user_id === user.id) {
+          console.log('This call is for me, fetching caller profile...');
           // Fetch caller profile
           const { data: callerProfile } = await supabase
             .from('profiles')
             .select('first_name, last_name, avatar_url')
             .eq('id', from_user_id)
-            .single();
+            .maybeSingle();
 
+          console.log('Setting incoming call with profile:', callerProfile);
           setIncomingCall({
             id: call_id,
             caller_id: from_user_id,
@@ -392,6 +405,7 @@ export const useWebRTC = () => {
         }
       })
       .on('broadcast', { event: 'call-answer' }, async (payload) => {
+        console.log('Received call answer:', payload);
         const { answer } = payload.payload;
         
         if (peerConnectionRef.current) {
@@ -401,6 +415,7 @@ export const useWebRTC = () => {
         }
       })
       .on('broadcast', { event: 'ice-candidate' }, async (payload) => {
+        console.log('Received ice candidate:', payload);
         const { candidate } = payload.payload;
         
         if (peerConnectionRef.current) {
@@ -408,16 +423,20 @@ export const useWebRTC = () => {
         }
       })
       .on('broadcast', { event: 'call-declined' }, () => {
+        console.log('Call was declined');
         setOutgoingCall(null);
       })
       .on('broadcast', { event: 'call-ended' }, () => {
+        console.log('Call was ended');
         endCall();
       })
       .subscribe();
 
+    console.log('Subscribed to channel:', channel);
     channelRef.current = channel;
 
     return () => {
+      console.log('Cleaning up realtime listeners');
       supabase.removeChannel(channel);
     };
   }, [user?.id, endCall]);
