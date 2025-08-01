@@ -25,6 +25,7 @@ export const useWebRTC = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [incomingCall, setIncomingCall] = useState<CallData | null>(null);
   const [outgoingCall, setOutgoingCall] = useState<CallData | null>(null);
+  const [activeCall, setActiveCall] = useState<CallData | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -189,6 +190,16 @@ export const useWebRTC = () => {
         });
       }
 
+      // Set active call with caller info for receiver
+      setActiveCall({
+        id: callId,
+        caller_id: incomingCall?.caller_id || '',
+        callee_id: user?.id || '',
+        status: 'connected',
+        created_at: new Date().toISOString(),
+        caller_profile: incomingCall?.caller_profile
+      });
+      
       setIncomingCall(null);
       setIsCallActive(true);
 
@@ -259,6 +270,7 @@ export const useWebRTC = () => {
       setIsCallActive(false);
       setOutgoingCall(null);
       setIncomingCall(null);
+      setActiveCall(null);
       setIsScreenSharing(false);
 
     } catch (error) {
@@ -411,6 +423,10 @@ export const useWebRTC = () => {
         if (peerConnectionRef.current) {
           await peerConnectionRef.current.setRemoteDescription(answer);
           setIsCallActive(true);
+          // Set active call for caller when answer is received
+          if (outgoingCall) {
+            setActiveCall(outgoingCall);
+          }
           setOutgoingCall(null);
         }
       })
@@ -450,6 +466,7 @@ export const useWebRTC = () => {
     isScreenSharing,
     incomingCall,
     outgoingCall,
+    activeCall,
     localVideoRef,
     remoteVideoRef,
     startCall,
