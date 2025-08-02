@@ -8,6 +8,7 @@ export interface CallData {
   callee_id: string;
   status: 'calling' | 'ringing' | 'connected' | 'ended' | 'declined';
   created_at: string;
+  offer?: RTCSessionDescriptionInit;
   caller_profile?: {
     first_name?: string;
     last_name?: string;
@@ -31,6 +32,7 @@ export const useWebRTC = () => {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<any>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   // WebRTC configuration
   const rtcConfig = {
@@ -48,6 +50,7 @@ export const useWebRTC = () => {
         audio: true
       });
       setLocalStream(stream);
+      localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
@@ -412,6 +415,7 @@ export const useWebRTC = () => {
             callee_id: to_user_id,
             status: 'ringing',
             created_at: new Date().toISOString(),
+            offer: offer,
             caller_profile: callerProfile
           });
         }
@@ -441,6 +445,8 @@ export const useWebRTC = () => {
       .on('broadcast', { event: 'call-declined' }, () => {
         console.log('Call was declined');
         setOutgoingCall(null);
+        setActiveCall(null);
+        setIsCallActive(false);
       })
       .on('broadcast', { event: 'call-ended' }, () => {
         console.log('Call was ended');

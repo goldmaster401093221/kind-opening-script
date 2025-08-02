@@ -113,9 +113,7 @@ const Chat = () => {
 
   const handleAnswerCall = () => {
     if (incomingCall) {
-      // For now, we'll simulate answering the call
-      // In a real implementation, we'd handle the WebRTC offer
-      answerCall(incomingCall.id, {} as RTCSessionDescriptionInit);
+      answerCall(incomingCall.id, incomingCall.offer);
     }
   };
 

@@ -1,12 +1,18 @@
 
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { user } = useProfile();
 
   const handleStartCollaborating = () => {
-    navigate('/auth');
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/auth');
+    }
   };
 
   return (

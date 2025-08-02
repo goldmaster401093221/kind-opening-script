@@ -4,13 +4,23 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const { profile, getDisplayName, getInitials } = useProfile();
+  const { profile, user, getDisplayName, getInitials } = useProfile();
+  const navigate = useNavigate();
   
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/auth';
+  };
+
+  const handleNavigation = (path: string) => {
+    if (user) {
+      navigate(path);
+    } else {
+      navigate('/auth');
+    }
   };
 
   return (
@@ -26,18 +36,18 @@ const Header = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
+          <button onClick={() => handleNavigation('/')} className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
             Home
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+          </button>
+          <button onClick={() => handleNavigation('/dashboard')} className="text-gray-600 hover:text-blue-600 transition-colors">
             Dashboard
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+          </button>
+          <button onClick={() => handleNavigation('/discover-collaborators')} className="text-gray-600 hover:text-blue-600 transition-colors">
             discover collaborators
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+          </button>
+          <button onClick={() => handleNavigation('/collaboration')} className="text-gray-600 hover:text-blue-600 transition-colors">
             Collaborations
-          </a>
+          </button>
         </nav>
 
         {/* Search and Profile */}

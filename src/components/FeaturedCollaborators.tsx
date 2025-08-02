@@ -1,6 +1,8 @@
 
 import { Star, Users } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 
 const collaborators = [
   {
@@ -36,6 +38,17 @@ const collaborators = [
 ];
 
 const FeaturedCollaborators = () => {
+  const navigate = useNavigate();
+  const { user } = useProfile();
+
+  const handleSearchCollaborators = () => {
+    if (user) {
+      navigate('/discover-collaborators');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -98,7 +111,10 @@ const FeaturedCollaborators = () => {
         </div>
 
         <div className="text-center">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md">
+          <Button 
+            onClick={handleSearchCollaborators}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md"
+          >
             Search More Collaborators
           </Button>
         </div>
