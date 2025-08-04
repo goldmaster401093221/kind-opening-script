@@ -81,7 +81,7 @@ const DataCenter = () => {
     { icon: Wrench, label: 'Equipment', active: false },
   ];
 
-  const files = [
+  const allFiles = [
     {
       name: 'Experiment Report #001',
       format: 'PDF',
@@ -143,6 +143,16 @@ const DataCenter = () => {
       status: 'active'
     }
   ];
+
+  // Filter files based on search term
+  const files = allFiles.filter(file => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      file.name.toLowerCase().includes(searchLower) ||
+      file.format.toLowerCase().includes(searchLower) ||
+      file.uploader.toLowerCase().includes(searchLower)
+    );
+  });
 
   const mockComments = [
     {
