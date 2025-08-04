@@ -85,15 +85,17 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
           />
           
           {/* Local Video - Picture in Picture */}
-          <div className="absolute top-4 right-4 w-48 h-36 bg-gray-900 rounded-lg overflow-hidden">
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-          </div>
+          {isVideoEnabled && (
+            <div className="absolute top-4 right-4 w-48 h-36 bg-gray-900 rounded-lg overflow-hidden">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
         </div>
 
         {/* Controls */}
@@ -167,15 +169,17 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
         />
         
         {/* Local Video - Small overlay */}
-        <div className="absolute top-2 right-2 w-16 h-12 bg-gray-800 rounded overflow-hidden">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {isVideoEnabled && (
+          <div className="absolute top-2 right-2 w-16 h-12 bg-gray-800 rounded overflow-hidden">
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
       </div>
 
       {/* Control Buttons */}
