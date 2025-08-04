@@ -193,18 +193,20 @@ export const useWebRTC = () => {
         });
       }
 
-      // Set active call with caller info for receiver
-      setActiveCall({
+      const activeCallData = {
         id: callId,
-        caller_id: incomingCall?.caller_id || '',
+        caller_id: incomingCall!.caller_id,
         callee_id: user?.id || '',
-        status: 'connected',
+        status: 'connected' as const,
         created_at: new Date().toISOString(),
         caller_profile: incomingCall?.caller_profile
-      });
+      };
       
+      setActiveCall(activeCallData);
       setIncomingCall(null);
       setIsCallActive(true);
+      
+      console.log('Call answered, setting active call:', activeCallData);
 
     } catch (error) {
       console.error('Error answering call:', error);
@@ -444,9 +446,24 @@ export const useWebRTC = () => {
       })
       .on('broadcast', { event: 'call-declined' }, () => {
         console.log('Call was declined');
+        // Clean up all call states when declined
         setOutgoingCall(null);
         setActiveCall(null);
         setIsCallActive(false);
+        setIncomingCall(null);
+        
+        // Clean up peer connection and streams
+        if (peerConnectionRef.current) {
+          peerConnectionRef.current.close();
+          peerConnectionRef.current = null;
+        }
+        
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          setLocalStream(null);
+        }
+        
+        setRemoteStream(null);
       })
       .on('broadcast', { event: 'call-ended' }, () => {
         console.log('Call was ended');

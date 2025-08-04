@@ -583,7 +583,7 @@ const Chat = () => {
       </div>
 
       {/* Expanded Video Call Interface */}
-      {showExpandedCalling && currentChatPartner && (isCallActive || outgoingCall) && (
+      {showExpandedCalling && currentChatPartner && (isCallActive || activeCall) && (
         <VideoCallInterface
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
