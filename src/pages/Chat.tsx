@@ -61,6 +61,7 @@ const Chat = () => {
     isScreenSharing,
     incomingCall,
     outgoingCall,
+    activeCall,
     startCall,
     answerCall,
     declineCall,
@@ -424,8 +425,8 @@ const Chat = () => {
               ))}
             </div>
 
-            {/* Video Call Interface - Only show when call is active */}
-            {(isCallActive || outgoingCall) && !showExpandedCalling && currentChatPartner && (
+            {/* Video Call Interface - Show when call is active or there's an active call */}
+            {(isCallActive || outgoingCall || activeCall) && !showExpandedCalling && (
               <div className="p-4">
                 <VideoCallInterface
                   localVideoRef={localVideoRef}
@@ -434,8 +435,16 @@ const Chat = () => {
                   isVideoEnabled={isVideoEnabled}
                   isScreenSharing={isScreenSharing}
                   isExpanded={false}
-                  remoteUserName={getDisplayNameFromProfile(currentChatPartner)}
-                  remoteUserAvatar={currentChatPartner?.avatar_url}
+                  remoteUserName={
+                    activeCall?.caller_profile 
+                      ? getDisplayNameFromProfile(activeCall.caller_profile)
+                      : currentChatPartner 
+                        ? getDisplayNameFromProfile(currentChatPartner)
+                        : 'Unknown User'
+                  }
+                  remoteUserAvatar={
+                    activeCall?.caller_profile?.avatar_url || currentChatPartner?.avatar_url
+                  }
                   onToggleMute={toggleMute}
                   onToggleVideo={toggleVideo}
                   onToggleScreenShare={toggleScreenShare}
