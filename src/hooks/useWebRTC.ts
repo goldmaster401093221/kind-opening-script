@@ -295,12 +295,62 @@ export const useWebRTC = () => {
   }, [localStream]);
 
   // Toggle video
-  const toggleVideo = useCallback(() => {
+  const toggleVideo = useCallback(async () => {
     if (localStream) {
       const videoTrack = localStream.getVideoTracks()[0];
       if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoEnabled(videoTrack.enabled);
+        if (videoTrack.enabled) {
+          // Turn off video - stop the track
+          videoTrack.stop();
+          setIsVideoEnabled(false);
+          
+          // Clear video element
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+          }
+        } else {
+          // Turn on video - get new camera stream
+          try {
+            const newStream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: localStream.getAudioTracks()[0] ? true : false
+            });
+            
+            // Replace video track in the existing stream
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            const audioTrack = localStream.getAudioTracks()[0];
+            
+            // Create new stream with existing audio and new video
+            const combinedStream = new MediaStream();
+            if (audioTrack) {
+              combinedStream.addTrack(audioTrack);
+            }
+            combinedStream.addTrack(newVideoTrack);
+            
+            // Update stream references
+            setLocalStream(combinedStream);
+            localStreamRef.current = combinedStream;
+            
+            // Update video element
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = combinedStream;
+            }
+            
+            // Update peer connection with new video track
+            if (peerConnectionRef.current) {
+              const sender = peerConnectionRef.current.getSenders().find(
+                s => s.track && s.track.kind === 'video'
+              );
+              if (sender) {
+                await sender.replaceTrack(newVideoTrack);
+              }
+            }
+            
+            setIsVideoEnabled(true);
+          } catch (error) {
+            console.error('Error re-enabling camera:', error);
+          }
+        }
       }
     }
   }, [localStream]);
