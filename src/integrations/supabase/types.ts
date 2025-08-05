@@ -95,6 +95,80 @@ export type Database = {
         }
         Relationships: []
       }
+      data_center_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          file_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          file_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          file_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_center_comments_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "data_center_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_center_files: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          name: string
+          updated_at: string
+          uploader_id: string
+          views: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          name: string
+          updated_at?: string
+          uploader_id: string
+          views?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          uploader_id?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -252,6 +326,10 @@ export type Database = {
       calculate_match_score: {
         Args: { user1_id: string; user2_id: string }
         Returns: number
+      }
+      increment_file_views: {
+        Args: { file_id: string }
+        Returns: undefined
       }
       mark_user_offline: {
         Args: { user_id: string }

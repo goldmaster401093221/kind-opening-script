@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
+import { useDataCenter, DataCenterFile } from '@/hooks/useDataCenter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUploadDialog } from '@/components/FileUploadDialog';
 import { 
   Home, 
   Users, 
@@ -31,36 +33,84 @@ import {
 const DataCenter = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
+  const { 
+    files: dbFiles, 
+    comments, 
+    loading, 
+    uploading, 
+    uploadFile, 
+    addComment, 
+    fetchComments, 
+    incrementViews, 
+    getFileUrl 
+  } = useDataCenter();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [selectedType, setSelectedType] = useState('All Types');
   const [selectedSort, setSelectedSort] = useState('Relevant');
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [showExternalView, setShowExternalView] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<DataCenterFile | null>(null);
   const [newComment, setNewComment] = useState('');
+  const [showFileViewPanel, setShowFileViewPanel] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
   };
 
-  const handleCommentClick = (file) => {
+  const handleCommentClick = async (file: DataCenterFile) => {
     setSelectedFile(file);
-    setShowCommentModal(true);
+    await fetchComments(file.id);
+    await incrementViews(file.id);
+    setShowFileViewPanel(true);
   };
 
-  const handleExternalClick = (file) => {
+  const handleExternalClick = async (file: DataCenterFile) => {
     setSelectedFile(file);
+    await fetchComments(file.id);
+    await incrementViews(file.id);
     setShowExternalView(true);
   };
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      // Add comment logic here
-      console.log('Adding comment:', newComment);
+  const handleAddComment = async () => {
+    if (newComment.trim() && selectedFile) {
+      await addComment(selectedFile.id, newComment);
       setNewComment('');
     }
+  };
+
+  const handleUpload = async (file: File, description?: string) => {
+    await uploadFile(file, description);
+  };
+
+  const getUploaderName = (file: DataCenterFile) => {
+    const uploader = file.uploader;
+    if (uploader?.first_name && uploader?.last_name) {
+      return `${uploader.first_name} ${uploader.last_name}`;
+    }
+    return uploader?.username || 'Unknown User';
+  };
+
+  const getUploaderInitials = (file: DataCenterFile) => {
+    const uploader = file.uploader;
+    if (uploader?.first_name && uploader?.last_name) {
+      return `${uploader.first_name[0]}${uploader.last_name[0]}`;
+    }
+    if (uploader?.username) {
+      return uploader.username.slice(0, 2).toUpperCase();
+    }
+    return 'UU';
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const getFileExtension = (fileName: string) => {
+    return fileName.split('.').pop()?.toUpperCase() || 'FILE';
   };
 
   const home = [
@@ -81,76 +131,14 @@ const DataCenter = () => {
     { icon: Wrench, label: 'Equipment', active: false },
   ];
 
-  const allFiles = [
-    {
-      name: 'Experiment Report #001',
-      format: 'PDF',
-      uploader: 'Anna Krylova',
-      uploaderAvatar: 'AK',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Image',
-      format: 'JPG',
-      uploader: 'Bashair Mussa',
-      uploaderAvatar: 'BM',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Experiment Report #001',
-      format: 'PDF',
-      uploader: 'Anna Krylova',
-      uploaderAvatar: 'AK',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Image',
-      format: 'JPG',
-      uploader: 'Bashair Mussa',
-      uploaderAvatar: 'BM',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Experiment Report #001',
-      format: 'PDF',
-      uploader: 'Anna Krylova',
-      uploaderAvatar: 'AK',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    },
-    {
-      name: 'Image',
-      format: 'JPG',
-      uploader: 'Bashair Mussa',
-      uploaderAvatar: 'BM',
-      uploadedDate: '2025-06-14',
-      views: 2,
-      comments: 5,
-      status: 'active'
-    }
-  ];
-
   // Filter files based on search term
-  const files = allFiles.filter(file => {
+  const files = dbFiles.filter(file => {
     const searchLower = searchTerm.toLowerCase();
+    const uploaderName = getUploaderName(file);
     return (
       file.name.toLowerCase().includes(searchLower) ||
-      file.format.toLowerCase().includes(searchLower) ||
-      file.uploader.toLowerCase().includes(searchLower)
+      file.file_type.toLowerCase().includes(searchLower) ||
+      uploaderName.toLowerCase().includes(searchLower)
     );
   });
 
@@ -325,7 +313,7 @@ const DataCenter = () => {
               <div className="flex items-center space-x-2">
                 <span className="text-gray-500">Data Center</span>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
-                <span className="text-xl font-semibold text-gray-900">Experiment Report</span>
+                <span className="text-xl font-semibold text-gray-900">{selectedFile?.name || 'File View'}</span>
               </div>
               <Button onClick={() => setShowExternalView(false)} variant="outline" size="sm">
                 Back
@@ -338,94 +326,110 @@ const DataCenter = () => {
             {/* Main Content */}
             <div className="flex-1 bg-white rounded-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold">Experiment Report #001</h1>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">Page</span>
-                  <select className="text-sm border border-gray-300 rounded px-2 py-1">
-                    <option>1/3</option>
-                  </select>
+                <h1 className="text-2xl font-bold">{selectedFile?.name || 'File Content'}</h1>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Eye className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">{selectedFile?.views || 0} Views</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500">File Type: {selectedFile ? getFileExtension(selectedFile.name) : 'Unknown'}</span>
+                  </div>
                 </div>
               </div>
 
+              {/* File Content Area */}
               <div className="space-y-6">
-                <p className="text-gray-700 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore 
-                  magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-                  consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
+                {selectedFile && (
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <div className="text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                          <span className="text-blue-600 font-semibold text-lg">
+                            {getFileExtension(selectedFile.name)}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-lg">{selectedFile.name}</h3>
+                        <p className="text-gray-600">
+                          {selectedFile.file_size ? `${Math.round(selectedFile.file_size / 1024)} KB` : 'Size unknown'}
+                        </p>
+                      </div>
+                      
+                      {selectedFile.description && (
+                        <div className="mt-4 p-4 bg-white rounded border">
+                          <h4 className="font-medium mb-2">Description</h4>
+                          <p className="text-gray-700">{selectedFile.description}</p>
+                        </div>
+                      )}
 
-                <div className="flex gap-6">
-                  <img 
-                    src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop" 
-                    alt="Research"
-                    className="w-80 h-60 object-cover rounded"
-                  />
-                  <div className="flex-1">
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore 
-                      magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea 
-                      commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
-                      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt 
-                      mollit anim id est laborum.
-                    </p>
+                      <div className="mt-6">
+                        <Button 
+                          onClick={() => window.open(getFileUrl(selectedFile.file_path), '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Open File
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <p className="text-gray-700 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore 
-                  magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea 
-                  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-
-                <p className="text-gray-700 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore 
-                  magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea 
-                  commodo consequant.
-                </p>
-
-                <p className="text-gray-700 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore 
-                  magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea 
-                  commodo consequat.
-                </p>
-
-                {/* Earnings Chart */}
-                <div className="mt-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Earnings</h3>
-                    <select className="text-sm border border-gray-300 rounded px-3 py-1">
-                      <option>Weekly</option>
-                    </select>
+                {/* Uploader Information */}
+                {selectedFile && (
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-medium mb-3">Uploaded by</h4>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-10 h-10">
+                        {selectedFile.uploader?.avatar_url ? (
+                          <AvatarImage src={selectedFile.uploader.avatar_url} alt="Avatar" />
+                        ) : (
+                          <AvatarFallback className="bg-gray-800 text-white">
+                            {getUploaderInitials(selectedFile)}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{getUploaderName(selectedFile)}</div>
+                        <div className="text-sm text-gray-500">
+                          Uploaded on {formatDate(selectedFile.created_at)}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <div className="text-center text-gray-500">Chart placeholder - $510</div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Comments Sidebar */}
             <div className="w-80 bg-white rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">5 Comments</h3>
+                <h3 className="font-semibold">{comments.length} Comments</h3>
               </div>
 
               <div className="space-y-4 mb-4 max-h-96 overflow-y-auto">
-                {mockComments.map((comment) => (
+                {comments.map((comment) => (
                   <div key={comment.id} className="flex space-x-3">
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback className={`${
-                        comment.avatar === 'AK' ? 'bg-orange-500' : 'bg-gray-800'
-                      } text-white text-xs`}>
-                        {comment.avatar}
-                      </AvatarFallback>
+                      {comment.user?.avatar_url ? (
+                        <AvatarImage src={comment.user.avatar_url} alt="Avatar" />
+                      ) : (
+                        <AvatarFallback className="bg-gray-800 text-white text-xs">
+                          {comment.user?.first_name?.[0]}{comment.user?.last_name?.[0]}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{comment.user}</span>
-                        <span className="text-xs text-gray-500">{comment.time}</span>
+                        <span className="text-sm font-medium">
+                          {comment.user?.first_name && comment.user?.last_name 
+                            ? `${comment.user.first_name} ${comment.user.last_name}`
+                            : comment.user?.username || 'Unknown User'
+                          }
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(comment.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                       <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
                     </div>
@@ -435,11 +439,16 @@ const DataCenter = () => {
 
               <div className="border-t pt-4">
                 <Textarea
-                  placeholder="Comment here"
+                  placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="w-full"
+                  className="w-full mb-2"
                 />
+                <div className="flex justify-end">
+                  <Button onClick={handleAddComment} size="sm">
+                    Add Comment
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -638,7 +647,10 @@ const DataCenter = () => {
             </div>
           </div>
 
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white mb-6">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white mb-6"
+            onClick={() => setShowUploadDialog(true)}
+          >
             <Upload className="w-4 h-4 mr-2" />
             Upload a File
           </Button>
@@ -671,27 +683,29 @@ const DataCenter = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {files.map((file, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
+                    <tr key={file.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{file.name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap bg-gray-100">
-                        <div className="text-sm text-gray-900">{file.format}</div>
+                        <div className="text-sm text-gray-900">{getFileExtension(file.name)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
-                          <Avatar className="w-12 h-12">
-                            <img 
-                              src="/lovable-uploads/avatar1.jpg" 
-                              alt="Avatar"
-                              className="max-w-full h-auto rounded-lg shadow-lg"
-                            />
+                          <Avatar className="w-8 h-8">
+                            {file.uploader?.avatar_url ? (
+                              <AvatarImage src={file.uploader.avatar_url} alt="Avatar" />
+                            ) : (
+                              <AvatarFallback className="bg-gray-800 text-white text-xs">
+                                {getUploaderInitials(file)}
+                              </AvatarFallback>
+                            )}
                           </Avatar>
-                          <div className="text-sm text-gray-900">{file.uploader}</div>
+                          <div className="text-sm text-gray-900">{getUploaderName(file)}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap bg-gray-100">
-                        <div className="text-sm text-gray-900">{file.uploadedDate}</div>
+                        <div className="text-sm text-gray-900">{formatDate(file.created_at)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-4">
@@ -700,10 +714,8 @@ const DataCenter = () => {
                             <span className="text-sm text-gray-900 underline">{file.views} Views</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M0.833008 0.650391H15.833C16.2103 0.650391 16.5164 0.955765 16.5166 1.33301V13C16.5166 13.3774 16.2104 13.6836 15.833 13.6836H3.66016L3.62012 13.7158L0.150391 16.4404V1.33301C0.150567 0.955875 0.455876 0.650566 0.833008 0.650391ZM1.5166 13.6289L1.75977 13.4385L3.1875 12.3164H15.1504V2.0166H1.5166V13.6289ZM7.25684 4.70117C5.93247 5.49858 5.95312 6.70755 5.95312 6.9707V7.14258L6.12305 7.11914C6.24021 7.10297 6.36462 7.1008 6.48828 7.1123C7.16629 7.17522 7.69629 7.73087 7.69629 8.41699C7.69611 9.13942 7.11018 9.72461 6.3877 9.72461C5.98409 9.72452 5.59571 9.53926 5.35254 9.28125C4.95092 8.85494 4.73344 8.38061 4.7334 7.58789C4.7334 6.24081 5.65623 5.01145 7.04102 4.36719L7.25684 4.70117ZM11.4238 4.70117C10.0992 5.49858 10.1191 6.70754 10.1191 6.9707V7.14258L10.29 7.11914C10.407 7.10302 10.5308 7.10086 10.6543 7.1123H10.6553C11.3331 7.17535 11.8633 7.73097 11.8633 8.41699C11.8631 9.13941 11.2771 9.7246 10.5547 9.72461C10.1508 9.72461 9.76179 9.53949 9.51855 9.28125C9.11695 8.85493 8.90043 8.3806 8.90039 7.58789C8.90039 6.24098 9.82258 5.01152 11.207 4.36719L11.4238 4.70117Z" fill="#161616" stroke="white" strokeWidth="0.3"/>
-                            </svg>
-                            <span className="text-sm text-gray-900 underline">{file.comments} Comments</span>
+                            <MessageCircle className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm text-gray-900 underline">{file.comment_count || 0} Comments</span>
                           </div>
                         </div>
                       </td>
@@ -715,9 +727,7 @@ const DataCenter = () => {
                             className="bg-gray-300"
                             onClick={() => handleCommentClick(file)}
                           >
-                            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M0.833008 0.650391H15.833C16.2103 0.650391 16.5164 0.955765 16.5166 1.33301V13C16.5166 13.3774 16.2104 13.6836 15.833 13.6836H3.66016L3.62012 13.7158L0.150391 16.4404V1.33301C0.150567 0.955875 0.455876 0.650566 0.833008 0.650391ZM1.5166 13.6289L1.75977 13.4385L3.1875 12.3164H15.1504V2.0166H1.5166V13.6289ZM7.25684 4.70117C5.93247 5.49858 5.95312 6.70755 5.95312 6.9707V7.14258L6.12305 7.11914C6.24021 7.10297 6.36462 7.1008 6.48828 7.1123C7.16629 7.17522 7.69629 7.73087 7.69629 8.41699C7.69611 9.13942 7.11018 9.72461 6.3877 9.72461C5.98409 9.72452 5.59571 9.53926 5.35254 9.28125C4.95092 8.85494 4.73344 8.38061 4.7334 7.58789C4.7334 6.24081 5.65623 5.01145 7.04102 4.36719L7.25684 4.70117ZM11.4238 4.70117C10.0992 5.49858 10.1191 6.70754 10.1191 6.9707V7.14258L10.29 7.11914C10.407 7.10302 10.5308 7.10086 10.6543 7.1123H10.6553C11.3331 7.17535 11.8633 7.73097 11.8633 8.41699C11.8631 9.13941 11.2771 9.7246 10.5547 9.72461C10.1508 9.72461 9.76179 9.53949 9.51855 9.28125C9.11695 8.85493 8.90043 8.3806 8.90039 7.58789C8.90039 6.24098 9.82258 5.01152 11.207 4.36719L11.4238 4.70117Z" fill="#161616" stroke="white" strokeWidth="0.3"/>
-                            </svg>
+                            <MessageCircle className="w-4 h-4" />
                           </Button>
                           <Button 
                             variant="ghost" 
@@ -758,6 +768,108 @@ const DataCenter = () => {
         </div>
       </div>
 
+      {/* File View Panel - Right Side */}
+      {showFileViewPanel && selectedFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex">
+          <div className="flex-1" onClick={() => setShowFileViewPanel(false)} />
+          <div className="w-96 bg-white h-full overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">File Details</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowFileViewPanel(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* File Info */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-medium mb-2">{selectedFile.name}</h3>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <div>Format: {getFileExtension(selectedFile.name)}</div>
+                  <div>Uploaded: {formatDate(selectedFile.created_at)}</div>
+                  <div>Size: {selectedFile.file_size ? `${Math.round(selectedFile.file_size / 1024)} KB` : 'Unknown'}</div>
+                  <div className="flex items-center space-x-1">
+                    <Eye className="w-4 h-4" />
+                    <span>{selectedFile.views} Views</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 mt-3">
+                  <Avatar className="w-8 h-8">
+                    {selectedFile.uploader?.avatar_url ? (
+                      <AvatarImage src={selectedFile.uploader.avatar_url} alt="Avatar" />
+                    ) : (
+                      <AvatarFallback className="bg-gray-800 text-white text-xs">
+                        {getUploaderInitials(selectedFile)}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="text-sm">
+                    <div className="font-medium">{getUploaderName(selectedFile)}</div>
+                    <div className="text-gray-500">Uploader</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div className="mb-4">
+                <h3 className="font-semibold mb-4 flex items-center">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  {comments.length} Comments
+                </h3>
+                
+                <div className="space-y-4 max-h-80 overflow-y-auto mb-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex space-x-3">
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        {comment.user?.avatar_url ? (
+                          <AvatarImage src={comment.user.avatar_url} alt="Avatar" />
+                        ) : (
+                          <AvatarFallback className="bg-gray-800 text-white text-xs">
+                            {comment.user?.first_name?.[0]}{comment.user?.last_name?.[0]}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">
+                            {comment.user?.first_name && comment.user?.last_name 
+                              ? `${comment.user.first_name} ${comment.user.last_name}`
+                              : comment.user?.username || 'Unknown User'
+                            }
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(comment.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t pt-4">
+                  <Textarea
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="w-full mb-2"
+                  />
+                  <div className="flex justify-end">
+                    <Button onClick={handleAddComment} size="sm">
+                      Add Comment
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Comment Modal */}
       <Dialog open={showCommentModal} onOpenChange={setShowCommentModal}>
         <DialogContent className="max-w-md">
@@ -765,32 +877,40 @@ const DataCenter = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Eye className="w-4 h-4" />
-                <span className="text-sm">2 Views</span>
+                <span className="text-sm">{selectedFile?.views || 0} Views</span>
                 <MessageCircle className="w-4 h-4 ml-4" />
-                <span className="text-sm">5 Comments</span>
-                <div className="ml-4 px-2 py-1 bg-gray-200 rounded text-xs">13</div>
+                <span className="text-sm">{comments.length} Comments</span>
                 <ExternalLink className="w-4 h-4 ml-4" />
               </div>
             </div>
           </DialogHeader>
           
           <div className="mt-4">
-            <h3 className="font-semibold mb-4">5 Comments</h3>
+            <h3 className="font-semibold mb-4">{comments.length} Comments</h3>
             
             <div className="space-y-4 max-h-80 overflow-y-auto mb-4">
-              {mockComments.map((comment) => (
+              {comments.map((comment) => (
                 <div key={comment.id} className="flex space-x-3">
                   <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarFallback className={`${
-                      comment.avatar === 'AK' ? 'bg-orange-500' : 'bg-gray-800'
-                    } text-white text-xs`}>
-                      {comment.avatar}
-                    </AvatarFallback>
+                    {comment.user?.avatar_url ? (
+                      <AvatarImage src={comment.user.avatar_url} alt="Avatar" />
+                    ) : (
+                      <AvatarFallback className="bg-gray-800 text-white text-xs">
+                        {comment.user?.first_name?.[0]}{comment.user?.last_name?.[0]}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{comment.user}</span>
-                      <span className="text-xs text-gray-500">{comment.time}</span>
+                      <span className="text-sm font-medium">
+                        {comment.user?.first_name && comment.user?.last_name 
+                          ? `${comment.user.first_name} ${comment.user.last_name}`
+                          : comment.user?.username || 'Unknown User'
+                        }
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                     <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
                   </div>
@@ -814,6 +934,14 @@ const DataCenter = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* File Upload Dialog */}
+      <FileUploadDialog
+        open={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
+        onUpload={handleUpload}
+        uploading={uploading}
+      />
     </div>
   );
 };
