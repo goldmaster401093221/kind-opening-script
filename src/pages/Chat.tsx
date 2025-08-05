@@ -582,24 +582,28 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Expanded Video Call Interface */}
-      {showExpandedCalling && currentChatPartner && (isCallActive || activeCall) && (
-        <VideoCallInterface
-          localVideoRef={localVideoRef}
-          remoteVideoRef={remoteVideoRef}
-          isMuted={isMuted}
-          isVideoEnabled={isVideoEnabled}
-          isScreenSharing={isScreenSharing}
-          isExpanded={true}
-          remoteUserName={getDisplayNameFromProfile(currentChatPartner)}
-          remoteUserAvatar={currentChatPartner?.avatar_url}
-          onToggleMute={toggleMute}
-          onToggleVideo={toggleVideo}
-          onToggleScreenShare={toggleScreenShare}
-          onEndCall={handleEndCall}
-          onToggleExpand={handleMinimizeCall}
-        />
-      )}
+      {/* Expanded Video Call Interface Modal */}
+      <Dialog open={showExpandedCalling} onOpenChange={setShowExpandedCalling}>
+        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 bg-black border-none">
+          {currentChatPartner && (isCallActive || activeCall) && (
+            <VideoCallInterface
+              localVideoRef={localVideoRef}
+              remoteVideoRef={remoteVideoRef}
+              isMuted={isMuted}
+              isVideoEnabled={isVideoEnabled}
+              isScreenSharing={isScreenSharing}
+              isExpanded={true}
+              remoteUserName={getDisplayNameFromProfile(currentChatPartner)}
+              remoteUserAvatar={currentChatPartner?.avatar_url}
+              onToggleMute={toggleMute}
+              onToggleVideo={toggleVideo}
+              onToggleScreenShare={toggleScreenShare}
+              onEndCall={handleEndCall}
+              onToggleExpand={handleMinimizeCall}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Incoming Call Notification */}
       {incomingCall && (
