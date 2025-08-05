@@ -31,7 +31,7 @@ export const CallNotification: React.FC<CallNotificationProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center">
+      <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center animate-pulse">
         <div className="mb-6">
           <Avatar className="w-24 h-24 mx-auto mb-4">
             {call.caller_profile?.avatar_url ? (
@@ -48,7 +48,7 @@ export const CallNotification: React.FC<CallNotificationProps> = ({
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             {getDisplayName()}
           </h3>
-          <p className="text-gray-600">Incoming video call...</p>
+          <p className="text-gray-600">📞 Incoming video call...</p>
         </div>
         
         <div className="flex justify-center space-x-6">

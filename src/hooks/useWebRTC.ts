@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from './useProfile';
+import { useToast } from './use-toast';
 
 export interface CallData {
   id: string;
@@ -18,6 +19,7 @@ export interface CallData {
 
 export const useWebRTC = () => {
   const { user } = useProfile();
+  const { toast } = useToast();
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isCallActive, setIsCallActive] = useState(false);
@@ -27,6 +29,7 @@ export const useWebRTC = () => {
   const [incomingCall, setIncomingCall] = useState<CallData | null>(null);
   const [outgoingCall, setOutgoingCall] = useState<CallData | null>(null);
   const [activeCall, setActiveCall] = useState<CallData | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -96,7 +99,18 @@ export const useWebRTC = () => {
       console.log('Connection state:', pc.connectionState);
       if (pc.connectionState === 'connected') {
         setIsCallActive(true);
+        setConnectionStatus('connected');
+        console.log('✅ Call connected! Users can now speak and see each other.');
+        toast({
+          title: "Call Connected! 🎉",
+          description: "You can now speak and see each other. The call is live!",
+          duration: 3000,
+        });
+      } else if (pc.connectionState === 'connecting') {
+        setConnectionStatus('connecting');
+        console.log('🔄 Connecting call...');
       } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+        setConnectionStatus('disconnected');
         endCall();
       }
     };
@@ -109,6 +123,7 @@ export const useWebRTC = () => {
   const startCall = useCallback(async (calleeId: string) => {
     try {
       console.log('Starting call to user:', calleeId);
+      setConnectionStatus('connecting');
       
       // Create call record in database (using any for now until types update)
       const { data: callData, error } = await (supabase as any)
@@ -160,6 +175,7 @@ export const useWebRTC = () => {
 
     } catch (error) {
       console.error('Error starting call:', error);
+      setConnectionStatus(null);
     }
   }, [user?.id, initializeMedia, createPeerConnection]);
 
@@ -167,6 +183,7 @@ export const useWebRTC = () => {
   const answerCall = useCallback(async (callId: string, offer: RTCSessionDescriptionInit) => {
     try {
       console.log('Answering call:', callId);
+      setConnectionStatus('connecting');
       
       // Update call status
       await (supabase as any)
@@ -227,6 +244,7 @@ export const useWebRTC = () => {
 
     } catch (error) {
       console.error('Error answering call:', error);
+      setConnectionStatus(null);
       // Clean up on error
       setIncomingCall(null);
     }
@@ -245,17 +263,18 @@ export const useWebRTC = () => {
       console.log('Call status updated to declined');
 
       // Send decline signal to the caller
-      if (channelRef.current) {
-        console.log('Sending decline signal to caller');
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'call-declined',
-          payload: {
-            call_id: callId,
-            from_user_id: user?.id
-          }
-        });
-      }
+      const callerChannel = supabase.channel(`calls:${incomingCall!.caller_id}`);
+      await callerChannel.subscribe();
+      
+      console.log('Sending decline signal to caller');
+      await callerChannel.send({
+        type: 'broadcast',
+        event: 'call-declined',
+        payload: {
+          call_id: callId,
+          from_user_id: user?.id
+        }
+      });
 
       setIncomingCall(null);
       console.log('Call declined successfully');
@@ -264,7 +283,7 @@ export const useWebRTC = () => {
       // Clean up on error
       setIncomingCall(null);
     }
-  }, [user?.id]);
+  }, [user?.id, incomingCall]);
 
   // End call
   const endCall = useCallback(async () => {
@@ -305,6 +324,7 @@ export const useWebRTC = () => {
       setIncomingCall(null);
       setActiveCall(null);
       setIsScreenSharing(false);
+      setConnectionStatus(null);
 
     } catch (error) {
       console.error('Error ending call:', error);
@@ -518,11 +538,18 @@ export const useWebRTC = () => {
         // Only process if this decline is for our outgoing call
         if (outgoingCall && outgoingCall.id === call_id) {
           console.log('Our outgoing call was declined');
+          toast({
+            title: "Call Declined",
+            description: "The person you called declined the call.",
+            variant: "destructive",
+            duration: 3000,
+          });
           // Clean up all call states when declined
           setOutgoingCall(null);
           setActiveCall(null);
           setIsCallActive(false);
           setIncomingCall(null);
+          setConnectionStatus(null);
           
           // Clean up peer connection and streams
           if (peerConnectionRef.current) {
@@ -563,6 +590,7 @@ export const useWebRTC = () => {
     incomingCall,
     outgoingCall,
     activeCall,
+    connectionStatus,
     localVideoRef,
     remoteVideoRef,
     startCall,

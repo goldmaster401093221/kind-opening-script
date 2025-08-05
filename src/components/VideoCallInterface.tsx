@@ -19,6 +19,7 @@ interface VideoCallInterfaceProps {
   isVideoEnabled: boolean;
   isScreenSharing: boolean;
   isExpanded: boolean;
+  connectionStatus?: 'connecting' | 'connected' | 'disconnected' | null;
   remoteUserName?: string;
   remoteUserAvatar?: string;
   onToggleMute: () => void;
@@ -35,6 +36,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
   isVideoEnabled,
   isScreenSharing,
   isExpanded,
+  connectionStatus,
   remoteUserName = 'Unknown User',
   remoteUserAvatar,
   onToggleMute,
@@ -62,7 +64,22 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                 </AvatarFallback>
               )}
             </Avatar>
-            <span className="font-medium">{remoteUserName}</span>
+            <div>
+              <span className="font-medium">{remoteUserName}</span>
+              {connectionStatus && (
+                <div className="text-xs">
+                  {connectionStatus === 'connecting' && (
+                    <span className="text-yellow-400">🔄 Connecting...</span>
+                  )}
+                  {connectionStatus === 'connected' && (
+                    <span className="text-green-400">✅ Connected</span>
+                  )}
+                  {connectionStatus === 'disconnected' && (
+                    <span className="text-red-400">❌ Disconnected</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <Button
             onClick={onToggleExpand}
@@ -144,17 +161,41 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
   return (
     <div className="bg-gray-100 rounded-2xl p-6 relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-lg font-medium text-gray-800">
-          Video call with {remoteUserName}
+      <div className="flex items-center justify-between p-3 bg-gray-900 text-white rounded-t-lg">
+        <div className="flex items-center space-x-2">
+          <Avatar className="w-6 h-6">
+            {remoteUserAvatar ? (
+              <AvatarImage src={remoteUserAvatar} alt={remoteUserName} />
+            ) : (
+              <AvatarFallback className="bg-gray-600 text-white text-xs">
+                {getInitials(remoteUserName)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div>
+            <span className="text-sm font-medium">{remoteUserName}</span>
+            {connectionStatus && (
+              <div className="text-xs">
+                {connectionStatus === 'connecting' && (
+                  <span className="text-yellow-400">🔄 Connecting...</span>
+                )}
+                {connectionStatus === 'connected' && (
+                  <span className="text-green-400">✅ Connected</span>
+                )}
+                {connectionStatus === 'disconnected' && (
+                  <span className="text-red-400">❌ Disconnected</span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <Button 
+        <Button
           onClick={onToggleExpand}
           variant="ghost"
           size="sm"
-          className="text-gray-600 hover:text-gray-800"
+          className="text-white hover:bg-white hover:bg-opacity-20"
         >
-          <Maximize2 className="w-5 h-5" />
+          <Maximize2 className="w-4 h-4" />
         </Button>
       </div>
       
