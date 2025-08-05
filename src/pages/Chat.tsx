@@ -584,7 +584,7 @@ const Chat = () => {
 
       {/* Expanded Video Call Interface Modal */}
       <Dialog open={showExpandedCalling} onOpenChange={setShowExpandedCalling}>
-        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 bg-black border-none">
+        <DialogContent className="max-w-full w-full h-full p-0 bg-black border-none overflow-hidden">
           {currentChatPartner && (isCallActive || activeCall) && (
             <VideoCallInterface
               localVideoRef={localVideoRef}
