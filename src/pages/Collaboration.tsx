@@ -16,6 +16,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { FeedbackModal } from '@/components/FeedbackModal';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Home, 
   Users, 
@@ -36,9 +38,11 @@ import {
 const Collaboration = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('In Progress');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [showEndCollaborationModal, setShowEndCollaborationModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -47,7 +51,22 @@ const Collaboration = () => {
 
   const handleEndCollaboration = () => {
     setShowEndCollaborationModal(false);
-    // Add logic to end collaboration here
+    setShowFeedbackModal(true);
+  };
+
+  const handleFeedbackSubmit = (feedback: {
+    skillsRating: number;
+    communicationRating: number;
+    platformFeedback: string;
+  }) => {
+    console.log('Feedback submitted:', feedback);
+    setShowFeedbackModal(false);
+    toast({
+      title: "Collaboration Ended",
+      description: "Thank you for your feedback. The collaboration has been ended successfully.",
+    });
+    // Here you would typically save the feedback to the database
+    // and update the collaboration status
   };
 
   const home = [
@@ -628,6 +647,13 @@ const Collaboration = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        open={showFeedbackModal}
+        onOpenChange={setShowFeedbackModal}
+        onSubmit={handleFeedbackSubmit}
+      />
     </div>
   );
 };
