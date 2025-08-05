@@ -51,9 +51,15 @@ export const useWebRTC = () => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-      if (localVideoRef.current) {
+      
+      // Set initial video enabled state
+      setIsVideoEnabled(video);
+      
+      // Set video element if available
+      if (localVideoRef.current && video) {
         localVideoRef.current.srcObject = stream;
       }
+      
       return stream;
     } catch (error) {
       console.error('Error accessing media devices:', error);
@@ -160,15 +166,21 @@ export const useWebRTC = () => {
   // Answer call
   const answerCall = useCallback(async (callId: string, offer: RTCSessionDescriptionInit) => {
     try {
+      console.log('Answering call:', callId);
+      
       // Update call status
       await (supabase as any)
         .from('calls')
         .update({ status: 'connected' })
         .eq('id', callId);
 
+      console.log('Call status updated to connected');
+
       // Initialize media and peer connection
       const stream = await initializeMedia();
       const pc = createPeerConnection();
+
+      console.log('Media initialized and peer connection created');
 
       // Add local stream to peer connection
       stream.getTracks().forEach(track => {
@@ -180,18 +192,23 @@ export const useWebRTC = () => {
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
-      // Send answer through realtime channel
-      if (channelRef.current) {
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'call-answer',
-          payload: {
-            call_id: callId,
-            answer: answer,
-            from_user_id: user?.id
-          }
-        });
-      }
+      console.log('Answer created and set as local description');
+
+      // Send answer through realtime channel to the caller
+      const callerChannel = supabase.channel(`calls:${incomingCall!.caller_id}`);
+      await callerChannel.subscribe();
+      
+      console.log('Sending answer to caller:', incomingCall!.caller_id);
+      await callerChannel.send({
+        type: 'broadcast',
+        event: 'call-answer',
+        payload: {
+          call_id: callId,
+          answer: answer,
+          from_user_id: user?.id,
+          to_user_id: incomingCall!.caller_id
+        }
+      });
 
       const activeCallData = {
         id: callId,
@@ -206,22 +223,30 @@ export const useWebRTC = () => {
       setIncomingCall(null);
       setIsCallActive(true);
       
-      console.log('Call answered, setting active call:', activeCallData);
+      console.log('Call answered successfully, setting active call:', activeCallData);
 
     } catch (error) {
       console.error('Error answering call:', error);
+      // Clean up on error
+      setIncomingCall(null);
     }
-  }, [user?.id, initializeMedia, createPeerConnection]);
+  }, [user?.id, initializeMedia, createPeerConnection, incomingCall]);
 
   // Decline call
   const declineCall = useCallback(async (callId: string) => {
     try {
+      console.log('Declining call:', callId);
+      
       await (supabase as any)
         .from('calls')
         .update({ status: 'declined' })
         .eq('id', callId);
 
+      console.log('Call status updated to declined');
+
+      // Send decline signal to the caller
       if (channelRef.current) {
+        console.log('Sending decline signal to caller');
         channelRef.current.send({
           type: 'broadcast',
           event: 'call-declined',
@@ -233,8 +258,11 @@ export const useWebRTC = () => {
       }
 
       setIncomingCall(null);
+      console.log('Call declined successfully');
     } catch (error) {
       console.error('Error declining call:', error);
+      // Clean up on error
+      setIncomingCall(null);
     }
   }, [user?.id]);
 
@@ -299,10 +327,31 @@ export const useWebRTC = () => {
     if (localStream) {
       const videoTrack = localStream.getVideoTracks()[0];
       if (videoTrack) {
-        // Just toggle the enabled state to show/hide video
+        // Toggle the enabled state to show/hide video
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoEnabled(videoTrack.enabled);
+        
+        console.log('Video toggled:', videoTrack.enabled ? 'enabled' : 'disabled');
+        
+        // Update the video element display
+        if (localVideoRef.current) {
+          if (videoTrack.enabled) {
+            // Show video by setting the stream
+            localVideoRef.current.srcObject = localStream;
+            console.log('Video element updated with stream');
+          } else {
+            // Hide video by clearing the stream
+            localVideoRef.current.srcObject = null;
+            console.log('Video element cleared');
+          }
+        } else {
+          console.log('Local video ref not available');
+        }
+      } else {
+        console.log('No video track found in local stream');
       }
+    } else {
+      console.log('No local stream available');
     }
   }, [localStream]);
 
@@ -353,7 +402,7 @@ export const useWebRTC = () => {
             }
           }
 
-          if (localVideoRef.current) {
+          if (localVideoRef.current && isVideoEnabled) {
             localVideoRef.current.srcObject = cameraStream;
           }
 
@@ -379,7 +428,7 @@ export const useWebRTC = () => {
           }
         }
 
-        if (localVideoRef.current) {
+        if (localVideoRef.current && isVideoEnabled) {
           localVideoRef.current.srcObject = cameraStream;
         }
 
@@ -389,7 +438,18 @@ export const useWebRTC = () => {
     } catch (error) {
       console.error('Error toggling screen share:', error);
     }
-  }, [isScreenSharing, localStream]);
+  }, [isScreenSharing, localStream, isVideoEnabled]);
+
+  // Handle local video element updates
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      if (isVideoEnabled) {
+        localVideoRef.current.srcObject = localStream;
+      } else {
+        localVideoRef.current.srcObject = null;
+      }
+    }
+  }, [localStream, isVideoEnabled]);
 
   // Set up realtime listeners
   useEffect(() => {
@@ -425,16 +485,22 @@ export const useWebRTC = () => {
       })
       .on('broadcast', { event: 'call-answer' }, async (payload) => {
         console.log('Received call answer:', payload);
-        const { answer } = payload.payload;
+        const { answer, from_user_id, to_user_id } = payload.payload;
         
-        if (peerConnectionRef.current) {
-          await peerConnectionRef.current.setRemoteDescription(answer);
-          setIsCallActive(true);
-          // Set active call for caller when answer is received
-          if (outgoingCall) {
-            setActiveCall(outgoingCall);
+        // Only process if this answer is for us (the caller)
+        if (to_user_id === user?.id && peerConnectionRef.current) {
+          try {
+            await peerConnectionRef.current.setRemoteDescription(answer);
+            setIsCallActive(true);
+            // Set active call for caller when answer is received
+            if (outgoingCall) {
+              setActiveCall(outgoingCall);
+            }
+            setOutgoingCall(null);
+            console.log('Call connection established successfully');
+          } catch (error) {
+            console.error('Error setting remote description:', error);
           }
-          setOutgoingCall(null);
         }
       })
       .on('broadcast', { event: 'ice-candidate' }, async (payload) => {
@@ -445,26 +511,32 @@ export const useWebRTC = () => {
           await peerConnectionRef.current.addIceCandidate(candidate);
         }
       })
-      .on('broadcast', { event: 'call-declined' }, () => {
-        console.log('Call was declined');
-        // Clean up all call states when declined
-        setOutgoingCall(null);
-        setActiveCall(null);
-        setIsCallActive(false);
-        setIncomingCall(null);
+      .on('broadcast', { event: 'call-declined' }, (payload) => {
+        console.log('Call was declined:', payload);
+        const { call_id, from_user_id } = payload.payload;
         
-        // Clean up peer connection and streams
-        if (peerConnectionRef.current) {
-          peerConnectionRef.current.close();
-          peerConnectionRef.current = null;
+        // Only process if this decline is for our outgoing call
+        if (outgoingCall && outgoingCall.id === call_id) {
+          console.log('Our outgoing call was declined');
+          // Clean up all call states when declined
+          setOutgoingCall(null);
+          setActiveCall(null);
+          setIsCallActive(false);
+          setIncomingCall(null);
+          
+          // Clean up peer connection and streams
+          if (peerConnectionRef.current) {
+            peerConnectionRef.current.close();
+            peerConnectionRef.current = null;
+          }
+          
+          if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            setLocalStream(null);
+          }
+          
+          setRemoteStream(null);
         }
-        
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-          setLocalStream(null);
-        }
-        
-        setRemoteStream(null);
       })
       .on('broadcast', { event: 'call-ended' }, () => {
         console.log('Call was ended');
@@ -479,7 +551,7 @@ export const useWebRTC = () => {
       console.log('Cleaning up realtime listeners');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, endCall]);
+  }, [user?.id, endCall, outgoingCall, localStream]);
 
   return {
     localStream,
