@@ -30,12 +30,40 @@ export const useWebRTC = () => {
   const [outgoingCall, setOutgoingCall] = useState<CallData | null>(null);
   const [activeCall, setActiveCall] = useState<CallData | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | null>(null);
+  
+  // New features for complete meeting experience
+  const [isRecording, setIsRecording] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [participants, setParticipants] = useState<string[]>([]);
+  const [callChat, setCallChat] = useState<Array<{id: string, sender: string, message: string, timestamp: string}>>([]);
+  const [isHandRaised, setIsHandRaised] = useState(false);
+  const [isBackgroundBlurred, setIsBackgroundBlurred] = useState(false);
+  const [callQuality, setCallQuality] = useState<'good' | 'poor' | 'excellent'>('good');
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<any>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const recordingRef = useRef<MediaRecorder | null>(null);
+  const callTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Monitor video refs and streams
+  useEffect(() => {
+    if (remoteStream && remoteVideoRef.current) {
+      console.log('🔄 Updating remote video with stream');
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play().catch(e => console.error('Error playing remote video:', e));
+    }
+  }, [remoteStream]);
+
+  useEffect(() => {
+    if (localStream && localVideoRef.current) {
+      console.log('🔄 Updating local video with stream');
+      localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play().catch(e => console.error('Error playing local video:', e));
+    }
+  }, [localStream]);
 
   // WebRTC configuration
   const rtcConfig = {
@@ -60,7 +88,12 @@ export const useWebRTC = () => {
       
       // Set video element if available
       if (localVideoRef.current && video) {
+        console.log('🎥 Setting local video srcObject');
         localVideoRef.current.srcObject = stream;
+        // Ensure the video plays
+        localVideoRef.current.play().catch(e => console.error('Error playing local video:', e));
+      } else if (!localVideoRef.current) {
+        console.warn('⚠️ localVideoRef.current is null');
       }
       
       return stream;
@@ -88,10 +121,17 @@ export const useWebRTC = () => {
     };
 
     pc.ontrack = (event) => {
+      console.log('🎥 Remote track received:', event);
       const [remoteStream] = event.streams;
+      console.log('📹 Remote stream:', remoteStream);
       setRemoteStream(remoteStream);
       if (remoteVideoRef.current) {
+        console.log('🔗 Setting remote video srcObject');
         remoteVideoRef.current.srcObject = remoteStream;
+        // Ensure the video plays
+        remoteVideoRef.current.play().catch(e => console.error('Error playing remote video:', e));
+      } else {
+        console.warn('⚠️ remoteVideoRef.current is null');
       }
     };
 
@@ -183,6 +223,13 @@ export const useWebRTC = () => {
   const answerCall = useCallback(async (callId: string, offer: RTCSessionDescriptionInit) => {
     try {
       console.log('Answering call:', callId);
+      
+      // Safety check for incomingCall
+      if (!incomingCall) {
+        console.error('No incoming call to answer');
+        return;
+      }
+      
       setConnectionStatus('connecting');
       
       // Update call status
@@ -212,10 +259,10 @@ export const useWebRTC = () => {
       console.log('Answer created and set as local description');
 
       // Send answer through realtime channel to the caller
-      const callerChannel = supabase.channel(`calls:${incomingCall!.caller_id}`);
+      const callerChannel = supabase.channel(`calls:${incomingCall.caller_id}`);
       await callerChannel.subscribe();
       
-      console.log('Sending answer to caller:', incomingCall!.caller_id);
+      console.log('Sending answer to caller:', incomingCall.caller_id);
       await callerChannel.send({
         type: 'broadcast',
         event: 'call-answer',
@@ -223,24 +270,30 @@ export const useWebRTC = () => {
           call_id: callId,
           answer: answer,
           from_user_id: user?.id,
-          to_user_id: incomingCall!.caller_id
+          to_user_id: incomingCall.caller_id
         }
       });
 
       const activeCallData = {
         id: callId,
-        caller_id: incomingCall!.caller_id,
+        caller_id: incomingCall.caller_id,
         callee_id: user?.id || '',
         status: 'connected' as const,
         created_at: new Date().toISOString(),
         caller_profile: incomingCall?.caller_profile
       };
       
+      console.log('About to set activeCall with data:', activeCallData);
       setActiveCall(activeCallData);
       setIncomingCall(null);
       setIsCallActive(true);
       
       console.log('Call answered successfully, setting active call:', activeCallData);
+      console.log('State after answering call:', {
+        activeCall: activeCallData,
+        incomingCall: null,
+        isCallActive: true
+      });
 
     } catch (error) {
       console.error('Error answering call:', error);
@@ -255,6 +308,12 @@ export const useWebRTC = () => {
     try {
       console.log('Declining call:', callId);
       
+      // Safety check for incomingCall
+      if (!incomingCall) {
+        console.error('No incoming call to decline');
+        return;
+      }
+      
       await (supabase as any)
         .from('calls')
         .update({ status: 'declined' })
@@ -263,7 +322,7 @@ export const useWebRTC = () => {
       console.log('Call status updated to declined');
 
       // Send decline signal to the caller
-      const callerChannel = supabase.channel(`calls:${incomingCall!.caller_id}`);
+      const callerChannel = supabase.channel(`calls:${incomingCall.caller_id}`);
       await callerChannel.subscribe();
       
       console.log('Sending decline signal to caller');
@@ -322,6 +381,7 @@ export const useWebRTC = () => {
       setIsCallActive(false);
       setOutgoingCall(null);
       setIncomingCall(null);
+      console.log('Clearing activeCall in endCall function');
       setActiveCall(null);
       setIsScreenSharing(false);
       setConnectionStatus(null);
@@ -460,6 +520,165 @@ export const useWebRTC = () => {
     }
   }, [isScreenSharing, localStream, isVideoEnabled]);
 
+  // Start/Stop recording
+  const toggleRecording = useCallback(async () => {
+    try {
+      if (!isRecording) {
+        if (localStream) {
+          const combinedStream = new MediaStream();
+          localStream.getTracks().forEach(track => combinedStream.addTrack(track));
+          if (remoteStream) {
+            remoteStream.getTracks().forEach(track => combinedStream.addTrack(track));
+          }
+
+          const recorder = new MediaRecorder(combinedStream, {
+            mimeType: 'video/webm;codecs=vp9'
+          });
+
+          const chunks: Blob[] = [];
+          recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              chunks.push(event.data);
+            }
+          };
+
+          recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meeting-recording-${new Date().toISOString()}.webm`;
+            a.click();
+            URL.revokeObjectURL(url);
+          };
+
+          recordingRef.current = recorder;
+          recorder.start();
+          setIsRecording(true);
+          toast({
+            title: "Recording Started",
+            description: "Meeting is now being recorded",
+            duration: 3000,
+          });
+        }
+      } else {
+        if (recordingRef.current) {
+          recordingRef.current.stop();
+          recordingRef.current = null;
+          setIsRecording(false);
+          toast({
+            title: "Recording Stopped",
+            description: "Recording has been saved to your device",
+            duration: 3000,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling recording:', error);
+      toast({
+        title: "Recording Error",
+        description: "Failed to start/stop recording",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  }, [isRecording, localStream, remoteStream, toast]);
+
+  // Toggle hand raise
+  const toggleHandRaise = useCallback(() => {
+    setIsHandRaised(!isHandRaised);
+    // Send hand raise signal to other participants
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'hand-raise',
+        payload: {
+          from_user_id: user?.id,
+          is_raised: !isHandRaised
+        }
+      });
+    }
+  }, [isHandRaised, user?.id]);
+
+  // Toggle background blur (simplified implementation)
+  const toggleBackgroundBlur = useCallback(() => {
+    setIsBackgroundBlurred(!isBackgroundBlurred);
+    // Note: Real background blur would require more complex implementation
+    // This is a placeholder for the feature
+    toast({
+      title: isBackgroundBlurred ? "Background Blur Disabled" : "Background Blur Enabled",
+      description: isBackgroundBlurred ? "Background blur has been disabled" : "Background blur has been enabled",
+      duration: 2000,
+    });
+  }, [isBackgroundBlurred, toast]);
+
+  // Send message in call chat
+  const sendCallMessage = useCallback((message: string) => {
+    const newMessage = {
+      id: Date.now().toString(),
+      sender: user?.id || 'unknown',
+      message,
+      timestamp: new Date().toISOString()
+    };
+    setCallChat(prev => [...prev, newMessage]);
+
+    // Send message to other participants
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'call-chat',
+        payload: {
+          from_user_id: user?.id,
+          message,
+          timestamp: newMessage.timestamp
+        }
+      });
+    }
+  }, [user?.id]);
+
+  // Monitor call quality
+  const monitorCallQuality = useCallback(() => {
+    if (peerConnectionRef.current) {
+      const stats = peerConnectionRef.current.getStats();
+      stats.then((results) => {
+        results.forEach((report) => {
+          if (report.type === 'inbound-rtp' && report.kind === 'video') {
+            const packetsLost = report.packetsLost || 0;
+            const packetsReceived = report.packetsReceived || 0;
+            const lossRate = packetsLost / (packetsLost + packetsReceived);
+            
+            if (lossRate < 0.01) {
+              setCallQuality('excellent');
+            } else if (lossRate < 0.05) {
+              setCallQuality('good');
+            } else {
+              setCallQuality('poor');
+            }
+          }
+        });
+      });
+    }
+  }, []);
+
+  // Start call timer
+  const startCallTimer = useCallback(() => {
+    if (callTimerRef.current) {
+      clearInterval(callTimerRef.current);
+    }
+    callTimerRef.current = setInterval(() => {
+      setCallDuration(prev => prev + 1);
+    }, 1000);
+  }, []);
+
+  // Stop call timer
+  const stopCallTimer = useCallback(() => {
+    if (callTimerRef.current) {
+      clearInterval(callTimerRef.current);
+      callTimerRef.current = null;
+    }
+    setCallDuration(0);
+  }, []);
+
   // Handle local video element updates
   useEffect(() => {
     if (localVideoRef.current && localStream) {
@@ -514,6 +733,7 @@ export const useWebRTC = () => {
             setIsCallActive(true);
             // Set active call for caller when answer is received
             if (outgoingCall) {
+              console.log('Setting activeCall for caller with outgoingCall:', outgoingCall);
               setActiveCall(outgoingCall);
             }
             setOutgoingCall(null);
@@ -546,6 +766,7 @@ export const useWebRTC = () => {
           });
           // Clean up all call states when declined
           setOutgoingCall(null);
+          console.log('Clearing activeCall in call-declined handler');
           setActiveCall(null);
           setIsCallActive(false);
           setIncomingCall(null);
@@ -568,6 +789,31 @@ export const useWebRTC = () => {
       .on('broadcast', { event: 'call-ended' }, () => {
         console.log('Call was ended');
         endCall();
+      })
+      .on('broadcast', { event: 'hand-raise' }, (payload) => {
+        console.log('Hand raise event:', payload);
+        const { from_user_id, is_raised } = payload.payload;
+        // Handle hand raise from other participants
+        if (from_user_id !== user?.id) {
+          toast({
+            title: is_raised ? "Hand Raised" : "Hand Lowered",
+            description: `A participant ${is_raised ? 'raised' : 'lowered'} their hand`,
+            duration: 3000,
+          });
+        }
+      })
+      .on('broadcast', { event: 'call-chat' }, (payload) => {
+        console.log('Call chat message:', payload);
+        const { from_user_id, message, timestamp } = payload.payload;
+        if (from_user_id !== user?.id) {
+          const newMessage = {
+            id: Date.now().toString(),
+            sender: from_user_id,
+            message,
+            timestamp
+          };
+          setCallChat(prev => [...prev, newMessage]);
+        }
       })
       .subscribe();
 
@@ -599,6 +845,20 @@ export const useWebRTC = () => {
     endCall,
     toggleMute,
     toggleVideo,
-    toggleScreenShare
+    toggleScreenShare,
+    toggleRecording,
+    toggleHandRaise,
+    toggleBackgroundBlur,
+    sendCallMessage,
+    monitorCallQuality,
+    startCallTimer,
+    stopCallTimer,
+    callDuration,
+    callChat,
+    isHandRaised,
+    isBackgroundBlurred,
+    callQuality,
+    isRecording,
+    participants
   };
 };

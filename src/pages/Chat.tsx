@@ -69,7 +69,21 @@ const Chat = () => {
     endCall,
     toggleMute,
     toggleVideo,
-    toggleScreenShare
+    toggleScreenShare,
+    toggleRecording,
+    toggleHandRaise,
+    toggleBackgroundBlur,
+    sendCallMessage,
+    monitorCallQuality,
+    startCallTimer,
+    stopCallTimer,
+    callDuration,
+    callChat,
+    isHandRaised,
+    isBackgroundBlurred,
+    callQuality,
+    isRecording,
+    participants
   } = useWebRTC();
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('In Progress');
@@ -86,6 +100,21 @@ const Chat = () => {
       });
     }
   }, [searchParams, user?.id, getOrCreateConversation, setActiveConversation]);
+
+  // Monitor call quality when call is active
+  useEffect(() => {
+    let qualityInterval: NodeJS.Timeout;
+    if (isCallActive) {
+      qualityInterval = setInterval(() => {
+        monitorCallQuality();
+      }, 5000); // Check quality every 5 seconds
+    }
+    return () => {
+      if (qualityInterval) {
+        clearInterval(qualityInterval);
+      }
+    };
+  }, [isCallActive, monitorCallQuality]);
 
   const handleSignOut = async () => {
     // Mark user as offline before signing out
@@ -109,13 +138,13 @@ const Chat = () => {
 
   const handlePhoneClick = () => {
     if (currentChatPartner?.id) {
-      startCall(currentChatPartner.id);
+      handleStartCall();
     }
   };
 
   const handleAnswerCall = () => {
     if (incomingCall) {
-      answerCall(incomingCall.id, incomingCall.offer);
+      handleAnswerCallWithTimer();
     }
   };
 
@@ -135,6 +164,36 @@ const Chat = () => {
   };
 
   const handleMinimizeCall = () => {
+    setShowExpandedCalling(false);
+  };
+
+  const handleOpenCallChat = () => {
+    // TODO: Implement call chat modal
+    console.log('Opening call chat');
+  };
+
+  const handleOpenParticipants = () => {
+    // TODO: Implement participants modal
+    console.log('Opening participants list');
+  };
+
+  const handleStartCall = () => {
+    if (currentChatPartner?.id) {
+      startCall(currentChatPartner.id);
+      startCallTimer();
+    }
+  };
+
+  const handleAnswerCallWithTimer = () => {
+    if (incomingCall) {
+      answerCall(incomingCall.id, incomingCall.offer);
+      startCallTimer();
+    }
+  };
+
+  const handleEndCallWithTimer = () => {
+    endCall();
+    stopCallTimer();
     setShowExpandedCalling(false);
   };
 
@@ -427,7 +486,7 @@ const Chat = () => {
             </div>
 
             {/* Video Call Interface - Show when call is active or there's an active call */}
-            {(isCallActive || outgoingCall || activeCall) && !showExpandedCalling && (
+            {(activeCall || isCallActive || outgoingCall) && !showExpandedCalling && (
               <div className="p-4">
                 <VideoCallInterface
                   localVideoRef={localVideoRef}
@@ -450,8 +509,19 @@ const Chat = () => {
                   onToggleMute={toggleMute}
                   onToggleVideo={toggleVideo}
                   onToggleScreenShare={toggleScreenShare}
-                  onEndCall={handleEndCall}
+                  onEndCall={handleEndCallWithTimer}
                   onToggleExpand={handleExpandCall}
+                  // New features
+                  isRecording={isRecording}
+                  isHandRaised={isHandRaised}
+                  isBackgroundBlurred={isBackgroundBlurred}
+                  callQuality={callQuality}
+                  callDuration={callDuration}
+                  onToggleRecording={toggleRecording}
+                  onToggleHandRaise={toggleHandRaise}
+                  onToggleBackgroundBlur={toggleBackgroundBlur}
+                  onOpenChat={handleOpenCallChat}
+                  onOpenParticipants={handleOpenParticipants}
                 />
               </div>
             )}
@@ -599,8 +669,19 @@ const Chat = () => {
           onToggleMute={toggleMute}
           onToggleVideo={toggleVideo}
           onToggleScreenShare={toggleScreenShare}
-          onEndCall={handleEndCall}
+          onEndCall={handleEndCallWithTimer}
           onToggleExpand={handleMinimizeCall}
+          // New features
+          isRecording={isRecording}
+          isHandRaised={isHandRaised}
+          isBackgroundBlurred={isBackgroundBlurred}
+          callQuality={callQuality}
+          callDuration={callDuration}
+          onToggleRecording={toggleRecording}
+          onToggleHandRaise={toggleHandRaise}
+          onToggleBackgroundBlur={toggleBackgroundBlur}
+          onOpenChat={handleOpenCallChat}
+          onOpenParticipants={handleOpenParticipants}
         />
       )}
 
