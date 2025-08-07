@@ -133,7 +133,7 @@ const Auth = () => {
             primary_research_area: signupData.primaryResearchArea,
             secondary_research_area: signupData.secondaryResearchArea,
             specialization_keywords: signupData.specializationKeywords,
-            research_roles: signupData.researchRoles.join(','),
+            research_roles: signupData.researchRoles,
           }
         }
       });
