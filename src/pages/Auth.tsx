@@ -132,7 +132,7 @@ const Auth = () => {
             experience_years: signupData.experienceYears,
             primary_research_area: signupData.primaryResearchArea,
             secondary_research_area: signupData.secondaryResearchArea,
-            specialization_keywords: signupData.keywords.join(','),
+            specialization_keywords: signupData.specializationKeywords,
             research_roles: signupData.researchRoles.join(','),
           }
         }

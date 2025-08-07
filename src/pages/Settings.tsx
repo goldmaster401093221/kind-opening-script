@@ -130,9 +130,15 @@ const Settings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Map keywords to specialization_keywords for database
+      const updateData = {
+        ...data,
+        specialization_keywords: data.keywords
+      };
+      
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) {
