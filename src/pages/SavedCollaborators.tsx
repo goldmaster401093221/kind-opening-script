@@ -683,11 +683,12 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedProfile.what_i_have?.map((item, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {item}
-                    </Badge>
-                  )) || <span className="text-xs text-gray-500">No items listed</span>}
+                  {selectedProfile.research_roles ? 
+                    selectedProfile.research_roles.split(',').map((item, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {item.trim()}
+                      </Badge>
+                    )) : <span className="text-xs text-gray-500">No items listed</span>}
                 </div>
               </div>
 
