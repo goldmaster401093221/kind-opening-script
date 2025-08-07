@@ -3,11 +3,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SignupStep1Props {
   formData: {
     firstName: string;
     lastName: string;
+    gender: string;
+    highestDegree: string;
     email: string;
     password: string;
     orcidNumber: string;
@@ -61,6 +64,35 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
               required
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="gender">Gender</Label>
+          <Select value={formData.gender} onValueChange={(value) => onChange('gender', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Male</SelectItem>
+              <SelectItem value="female">Female</SelectItem>
+              <SelectItem value="not_mention">Prefer not to mention</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="highestDegree">Highest Degree Achieved</Label>
+          <Select value={formData.highestDegree} onValueChange={(value) => onChange('highestDegree', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select highest degree" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bsc">BSc</SelectItem>
+              <SelectItem value="msc">MSc</SelectItem>
+              <SelectItem value="phd">Ph.D</SelectItem>
+              <SelectItem value="md">M.D</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">

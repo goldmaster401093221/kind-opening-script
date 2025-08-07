@@ -85,8 +85,13 @@ const Settings = () => {
       }
 
       if (data) {
-        setProfile(data);
-        reset(data);
+        // Map specialization_keywords to keywords for UI consistency
+        const profileData = {
+          ...data,
+          keywords: data.specialization_keywords || []
+        };
+        setProfile(profileData);
+        reset(profileData);
       } else {
         // Create initial profile
         const { data: newProfile, error: createError } = await supabase
@@ -94,7 +99,7 @@ const Settings = () => {
           .insert([{ 
             id: user.id,
             email: user.email,
-            keywords: [],
+            specialization_keywords: [],
             research_roles: []
           }])
           .select()
@@ -103,8 +108,13 @@ const Settings = () => {
         if (createError) {
           console.error('Error creating profile:', createError);
         } else {
-          setProfile(newProfile);
-          reset(newProfile);
+          // Map specialization_keywords to keywords for UI consistency
+          const profileData = {
+            ...newProfile,
+            keywords: newProfile.specialization_keywords || []
+          };
+          setProfile(profileData);
+          reset(profileData);
         }
       }
     } catch (error) {
@@ -150,20 +160,32 @@ const Settings = () => {
     }
   };
 
-  const addKeyword = () => {
+  const addKeyword = async () => {
     if (newKeyword.trim() && profile) {
       const keywords = [...(profile.keywords || []), newKeyword.trim()];
       setValue('keywords', keywords);
       setProfile({ ...profile, keywords });
+      
+      // Update specialization_keywords in database
+      await supabase
+        .from('profiles')
+        .update({ specialization_keywords: keywords })
+        .eq('id', user?.id);
       setNewKeyword('');
     }
   };
 
-  const removeKeyword = (index: number) => {
+  const removeKeyword = async (index: number) => {
     if (profile) {
       const keywords = profile.keywords?.filter((_, i) => i !== index) || [];
       setValue('keywords', keywords);
       setProfile({ ...profile, keywords });
+      
+      // Update specialization_keywords in database
+      await supabase
+        .from('profiles')
+        .update({ specialization_keywords: keywords })
+        .eq('id', user?.id);
     }
   };
 

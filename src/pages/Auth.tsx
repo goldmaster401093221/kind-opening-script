@@ -25,6 +25,8 @@ const Auth = () => {
     // Step 1 - Personal Information
     firstName: '',
     lastName: '',
+    gender: '',
+    highestDegree: '',
     email: '',
     password: '',
     orcidNumber: '',
@@ -38,12 +40,14 @@ const Auth = () => {
     college: '',
     department: '',
     countryCity: '',
+    postcode: '',
     // Step 3 - Research Interest
     experienceYears: '',
     primaryResearchArea: '',
     secondaryResearchArea: '',
     keywords: [] as string[],
     researchRoles: [] as string[],
+    specializationKeywords: [] as string[],
   });
 
   useEffect(() => {
@@ -108,9 +112,11 @@ const Auth = () => {
         password: signupData.password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
+            data: {
             first_name: signupData.firstName,
             last_name: signupData.lastName,
+            gender: signupData.gender,
+            highest_degree: signupData.highestDegree,
             username: `${signupData.firstName.toLowerCase()}${signupData.lastName.toLowerCase()}`,
             orcid_number: signupData.orcidNumber,
             linkedin_url: signupData.linkedinUrl,
@@ -122,10 +128,11 @@ const Auth = () => {
             college: signupData.college,
             department: signupData.department,
             country_city: signupData.countryCity,
+            postcode: signupData.postcode,
             experience_years: signupData.experienceYears,
             primary_research_area: signupData.primaryResearchArea,
             secondary_research_area: signupData.secondaryResearchArea,
-            keywords: signupData.keywords.join(','),
+            specialization_keywords: signupData.keywords.join(','),
             research_roles: signupData.researchRoles.join(','),
           }
         }
@@ -144,6 +151,8 @@ const Auth = () => {
       setSignupData({
         firstName: '',
         lastName: '',
+        gender: '',
+        highestDegree: '',
         email: '',
         password: '',
         orcidNumber: '',
@@ -156,11 +165,13 @@ const Auth = () => {
         college: '',
         department: '',
         countryCity: '',
+        postcode: '',
         experienceYears: '',
         primaryResearchArea: '',
         secondaryResearchArea: '',
         keywords: [],
         researchRoles: [],
+        specializationKeywords: [],
       });
     } catch (error: any) {
       toast({
@@ -261,6 +272,8 @@ const Auth = () => {
                     formData={{
                       firstName: signupData.firstName,
                       lastName: signupData.lastName,
+                      gender: signupData.gender,
+                      highestDegree: signupData.highestDegree,
                       email: signupData.email,
                       password: signupData.password,
                       orcidNumber: signupData.orcidNumber,
@@ -282,6 +295,7 @@ const Auth = () => {
                       college: signupData.college,
                       department: signupData.department,
                       countryCity: signupData.countryCity,
+                      postcode: signupData.postcode,
                     }}
                     onChange={handleSignupFieldChange}
                     onNext={() => setCurrentStep(3)}
@@ -297,6 +311,7 @@ const Auth = () => {
                       secondaryResearchArea: signupData.secondaryResearchArea,
                       keywords: signupData.keywords,
                       researchRoles: signupData.researchRoles,
+                      specializationKeywords: signupData.specializationKeywords,
                     }}
                     onChange={handleSignupFieldChange}
                     onFinish={handleSignupFinish}

@@ -17,6 +17,7 @@ interface Profile {
   collaborated: string[] | null;
   best_match: string[] | null;
   favorite: string[] | null;
+  keywords: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -51,6 +52,7 @@ export const useProfile = () => {
         collaborated: data.collaborated || [],
         best_match: data.best_match || [],
         favorite: data.favorite || [],
+        keywords: data.specialization_keywords || [],
         created_at: data.created_at,
         updated_at: data.updated_at,
       };
@@ -98,6 +100,7 @@ export const useProfile = () => {
           collaborated: data.collaborated || [],
           best_match: data.best_match || [],
           favorite: data.favorite || [],
+          keywords: data.specialization_keywords || [],
           created_at: data.created_at,
           updated_at: data.updated_at,
         };
@@ -139,6 +142,7 @@ export const useProfile = () => {
                   collaborated: profileData.collaborated || [],
                   best_match: profileData.best_match || [],
                   favorite: profileData.favorite || [],
+                  keywords: profileData.specialization_keywords || [],
                   created_at: profileData.created_at,
                   updated_at: profileData.updated_at,
                 };

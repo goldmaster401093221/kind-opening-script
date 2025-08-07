@@ -74,7 +74,7 @@ export const useCollaborators = () => {
         primary_research_area: item.primary_research_area,
         secondary_research_area: item.secondary_research_area,
         experience: item.experience,
-        keywords: item.keywords,
+        keywords: item.specialization_keywords,
         research_roles: item.research_roles,
         what_i_have: item.what_i_have,
         what_i_need: item.what_i_need,

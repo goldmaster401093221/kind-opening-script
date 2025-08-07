@@ -10,6 +10,7 @@ interface SignupStep2Props {
     college: string;
     department: string;
     countryCity: string;
+    postcode: string;
   };
   onChange: (field: string, value: string) => void;
   onNext: () => void;
@@ -75,6 +76,17 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
             type="text"
             value={formData.countryCity}
             onChange={(e) => onChange('countryCity', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="postcode">Postcode</Label>
+          <Input
+            id="postcode"
+            type="text"
+            value={formData.postcode}
+            onChange={(e) => onChange('postcode', e.target.value)}
             required
           />
         </div>

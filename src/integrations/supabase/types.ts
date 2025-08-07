@@ -220,6 +220,7 @@ export type Database = {
           first_name: string | null
           gender: string | null
           google_scholar_url: string | null
+          highest_degree: string | null
           id: string
           institution: string | null
           is_online: boolean | null
@@ -228,11 +229,13 @@ export type Database = {
           last_seen: string | null
           linkedin_url: string | null
           phone: string | null
+          postcode: string | null
           primary_research_area: string | null
           rating: number | null
           research_roles: string[] | null
           researchgate_url: string | null
           secondary_research_area: string | null
+          specialization_keywords: string[] | null
           state_city: string | null
           title: string | null
           updated_at: string
@@ -257,6 +260,7 @@ export type Database = {
           first_name?: string | null
           gender?: string | null
           google_scholar_url?: string | null
+          highest_degree?: string | null
           id: string
           institution?: string | null
           is_online?: boolean | null
@@ -265,11 +269,13 @@ export type Database = {
           last_seen?: string | null
           linkedin_url?: string | null
           phone?: string | null
+          postcode?: string | null
           primary_research_area?: string | null
           rating?: number | null
           research_roles?: string[] | null
           researchgate_url?: string | null
           secondary_research_area?: string | null
+          specialization_keywords?: string[] | null
           state_city?: string | null
           title?: string | null
           updated_at?: string
@@ -294,6 +300,7 @@ export type Database = {
           first_name?: string | null
           gender?: string | null
           google_scholar_url?: string | null
+          highest_degree?: string | null
           id?: string
           institution?: string | null
           is_online?: boolean | null
@@ -302,11 +309,13 @@ export type Database = {
           last_seen?: string | null
           linkedin_url?: string | null
           phone?: string | null
+          postcode?: string | null
           primary_research_area?: string | null
           rating?: number | null
           research_roles?: string[] | null
           researchgate_url?: string | null
           secondary_research_area?: string | null
+          specialization_keywords?: string[] | null
           state_city?: string | null
           title?: string | null
           updated_at?: string
