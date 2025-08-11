@@ -57,7 +57,7 @@ const Equipment = () => {
   };
 
   const sendMessageToOpenAI = async (userMessage) => {
-    const OPENAI_API_KEY = "";
+    const OPENAI_API_KEY = import.meta.env.VITE_OPENAI;
     
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
