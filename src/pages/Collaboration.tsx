@@ -376,7 +376,7 @@ const Collaboration = () => {
                                 {(profile as any)?.research_roles ? (profile as any).research_roles : 'Researcher Role'}
                               </div>
                               <div className="flex space-x-2 mt-2">
-                                {(profile as any)?.specialization_keywords ? 
+                                {(profile as any)?.specialization_keywords && typeof (profile as any).specialization_keywords === 'string' ? 
                                   (profile as any).specialization_keywords.split(',').slice(0, 3).map((keyword: string, i: number) => (
                                     <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
                                   )) : 
@@ -408,7 +408,7 @@ const Collaboration = () => {
                                 {otherParticipant?.research_roles ? otherParticipant.research_roles : 'Researcher Role'}
                               </div>
                               <div className="flex space-x-2 mt-2">
-                                {otherParticipant?.specialization_keywords ? 
+                                {otherParticipant?.specialization_keywords && typeof otherParticipant.specialization_keywords === 'string' ? 
                                   otherParticipant.specialization_keywords.split(',').slice(0, 3).map((keyword: string, i: number) => (
                                     <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
                                   )) : 
