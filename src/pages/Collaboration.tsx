@@ -386,10 +386,9 @@ const Collaboration = () => {
                                     <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
                                   )) : 
                                   ((profile as any)?.research_roles && typeof (profile as any).research_roles === 'string' ? 
-                                    (profile as any).research_roles.split(',').slice(0, 3).map((role: string, i: number) => (
+                                    (profile as any).research_roles.split(',').map((role: string, i: number) => (
                                       <Badge key={i} variant="outline" className="text-xs">{role.trim()}</Badge>
-                                    )) : 
-                                    <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                    )) : null
                                   )
                                 }
                               </div>
@@ -428,10 +427,9 @@ const Collaboration = () => {
                                     <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
                                   )) : 
                                   (otherParticipant?.research_roles && typeof otherParticipant.research_roles === 'string' ? 
-                                    otherParticipant.research_roles.split(',').slice(0, 3).map((role: string, i: number) => (
+                                    otherParticipant.research_roles.split(',').map((role: string, i: number) => (
                                       <Badge key={i} variant="outline" className="text-xs">{role.trim()}</Badge>
-                                    )) : 
-                                    <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                    )) : null
                                   )
                                 }
                               </div>
