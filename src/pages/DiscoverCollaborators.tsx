@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Home, 
   Users, 
@@ -69,6 +70,7 @@ const DiscoverCollaborators = () => {
   const [term1, setTerm1] = useState(true);
   const [term2, setTerm2] = useState(false);
   const [term3, setTerm3] = useState(true);
+  const { toast } = useToast();
 
   // Filter collaborators based on search query
   const filteredCollaborators = collaborators.filter(collaborator => {
@@ -143,6 +145,48 @@ const DiscoverCollaborators = () => {
 
   const handleToggleHeart = async (collaboratorId: string) => {
     await toggleFavorite(collaboratorId);
+  };
+
+  const handleSendRequest = async () => {
+    if (!requestOpen) {
+      setRequestOpen(true);
+      return;
+    }
+    if (!user || !selectedProfile) {
+      toast({ title: 'Please sign in', description: 'You must be logged in to send a collaboration request.' });
+      return;
+    }
+    if (!startDate || !endDate) {
+      toast({ title: 'Missing dates', description: 'Please select both start and end dates.' });
+      return;
+    }
+    const terms: string[] = [];
+    if (term1) terms.push('Term of collaboration 1');
+    if (term2) terms.push('Term of collaboration 2');
+    if (term3) terms.push('Term of collaboration 3');
+
+    const payload: any = {
+      requester_id: user.id,
+      collaborator_id: (selectedProfile as any).id,
+      status: 'contacted',
+      start_date: startDate.toISOString().slice(0, 10),
+      end_date: endDate.toISOString().slice(0, 10),
+      terms,
+    };
+
+    const { error } = await supabase.from('collaborations').insert([payload as any]);
+    if (error) {
+      toast({ title: 'Failed to send request', description: error.message });
+    } else {
+      toast({ title: 'Request sent', description: 'Your collaboration request was sent successfully.' });
+      setIsProfileModalOpen(false);
+      setRequestOpen(false);
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setTerm1(true);
+      setTerm2(false);
+      setTerm3(true);
+    }
   };
 
   return (
@@ -730,8 +774,8 @@ const DiscoverCollaborators = () => {
                   <Button variant="outline" onClick={() => setIsProfileModalOpen(false)}>
                     Cancel
                   </Button>
-                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setRequestOpen(true)}>
-                    Send Collaboration Request
+                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSendRequest}>
+                    {requestOpen ? 'Send Request' : 'Send Collaboration Request'}
                   </Button>
                 </div>
               </div>

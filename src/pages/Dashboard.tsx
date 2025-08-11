@@ -24,9 +24,22 @@ import {
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 
+interface Collaborator {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  title: string | null;
+  research_roles: string[] | null;
+}
+
 const Dashboard = () => {
   const { user, profile, loading, getDisplayName, getInitials, getUserRole } = useProfile();
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [collaboratorLoading, setCollaboratorLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,8 +48,88 @@ const Dashboard = () => {
     }
   }, [user, loading, navigate]);
 
+  // Fetch collaborators from database
+  useEffect(() => {
+    const fetchCollaborators = async () => {
+      if (!user) return;
+
+      try {
+        setCollaboratorLoading(true);
+        
+        // Fetch collaborations where status is 'collaborated'
+        const { data: collaborations, error: collabError } = await supabase
+          .from('collaborations')
+          .select('collaborator_id, requester_id')
+          .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
+          .eq('status', 'collaborated');
+
+        if (collabError) throw collabError;
+
+        // Get unique collaborator IDs (excluding current user)
+        const collaboratorIds = new Set<string>();
+        collaborations?.forEach(collab => {
+          if (collab.requester_id !== user.id) {
+            collaboratorIds.add(collab.requester_id);
+          }
+          if (collab.collaborator_id !== user.id) {
+            collaboratorIds.add(collab.collaborator_id);
+          }
+        });
+
+        if (collaboratorIds.size === 0) {
+          setCollaborators([]);
+          setCollaboratorLoading(false);
+          return;
+        }
+
+        // Fetch collaborator profiles
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, username, email, avatar_url, title, research_roles')
+          .in('id', Array.from(collaboratorIds));
+
+        if (profilesError) throw profilesError;
+
+        setCollaborators(profiles || []);
+      } catch (error) {
+        console.error('Error fetching collaborators:', error);
+        setCollaborators([]);
+      } finally {
+        setCollaboratorLoading(false);
+      }
+    };
+
+    fetchCollaborators();
+  }, [user]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  // Helper functions for displaying collaborator data
+  const getCollaboratorDisplayName = (collaborator: Collaborator): string => {
+    if (collaborator.first_name && collaborator.last_name) {
+      return `${collaborator.first_name} ${collaborator.last_name}`;
+    }
+    if (collaborator.first_name) return collaborator.first_name;
+    if (collaborator.last_name) return collaborator.last_name;
+    if (collaborator.username) return collaborator.username;
+    if (collaborator.email) return collaborator.email.split('@')[0];
+    return 'Unknown User';
+  };
+
+  const getCollaboratorInitials = (collaborator: Collaborator): string => {
+    const displayName = getCollaboratorDisplayName(collaborator);
+    const nameParts = displayName.split(' ');
+    if (nameParts.length >= 2) {
+      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+    }
+    return displayName.substring(0, 2).toUpperCase();
+  };
+
+  const getCollaboratorRole = (collaborator: Collaborator): string => {
+    if (collaborator.title) return collaborator.title;
+    return 'Researcher';
   };
 
   if (loading) {
@@ -364,47 +457,66 @@ const Dashboard = () => {
               <div>
                 {/* <Card> */}
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">2 Collaborators</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      {collaboratorLoading ? 'Loading...' : `${collaborators.length + 1} Collaborators`}
+                    </h3>
                     
                     <div className="space-y-4">
+                      {/* Current User */}
                       <div className="flex items-start space-x-3">
                         <Avatar className="w-10 h-10">
-                          {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
-                          <img 
-                            src="/lovable-uploads/avatar1.jpg" 
-                           
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                          />
+                          {profile?.avatar_url ? (
+                            <AvatarImage src={profile.avatar_url} alt={getDisplayName()} />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-800 text-white">
+                            {getInitials()}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <div className="font-medium">Bashair Mussa (me)</div>
-                          <div className="text-sm text-gray-500">Researcher Role</div>
+                          <div className="font-medium">{getDisplayName()} (me)</div>
+                          <div className="text-sm text-gray-500">{getUserRole()}</div>
                           <div className="flex space-x-2 mt-2">
-                            <Badge variant="outline" className="text-xs">Idea</Badge>
-                            <Badge variant="outline" className="text-xs">Proposal</Badge>
-                            <Badge variant="outline" className="text-xs">Grant Application</Badge>
+                            {profile?.research_roles?.slice(0, 3).map((role, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {role}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3">
-                        <Avatar className="w-10 h-10">
-                          {/* <AvatarFallback className="bg-gray-800 text-white">BM</AvatarFallback> */}
-                          <img 
-                            src="/lovable-uploads/avatar2.jpg" 
-                             
-                            className="max-w-full h-auto rounded-lg shadow-lg"
-                          />
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="font-medium">Anna Krylova</div>
-                          <div className="text-sm text-gray-500">Researcher Role</div>
-                          <div className="flex space-x-2 mt-2">
-                            <Badge variant="outline" className="text-xs">Equipment</Badge>
-                            <Badge variant="outline" className="text-xs">Experiment</Badge>
+                      {/* Dynamic Collaborators */}
+                      {collaboratorLoading ? (
+                        <div className="text-sm text-gray-500">Loading collaborators...</div>
+                      ) : collaborators.length === 0 ? (
+                        <div className="text-sm text-gray-500">No collaborators yet</div>
+                      ) : (
+                        collaborators.map((collaborator) => (
+                          <div key={collaborator.id} className="flex items-start space-x-3">
+                            <Avatar className="w-10 h-10">
+                              {collaborator.avatar_url ? (
+                                <AvatarImage src={collaborator.avatar_url} alt={getCollaboratorDisplayName(collaborator)} />
+                              ) : null}
+                              <AvatarFallback className="bg-gray-800 text-white">
+                                {getCollaboratorInitials(collaborator)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="font-medium">{getCollaboratorDisplayName(collaborator)}</div>
+                              <div className="text-sm text-gray-500">{getCollaboratorRole(collaborator)}</div>
+                              <div className="flex space-x-2 mt-2">
+                                {collaborator.research_roles?.slice(0, 3).map((role, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {role}
+                                  </Badge>
+                                )) || (
+                                  <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 {/* </Card> */}

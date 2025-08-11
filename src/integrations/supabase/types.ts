@@ -45,25 +45,34 @@ export type Database = {
         Row: {
           collaborator_id: string
           created_at: string
+          end_date: string | null
           id: string
           requester_id: string
+          start_date: string | null
           status: string
+          terms: string[] | null
           updated_at: string
         }
         Insert: {
           collaborator_id: string
           created_at?: string
+          end_date?: string | null
           id?: string
           requester_id: string
+          start_date?: string | null
           status: string
+          terms?: string[] | null
           updated_at?: string
         }
         Update: {
           collaborator_id?: string
           created_at?: string
+          end_date?: string | null
           id?: string
           requester_id?: string
+          start_date?: string | null
           status?: string
+          terms?: string[] | null
           updated_at?: string
         }
         Relationships: []

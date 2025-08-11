@@ -18,6 +18,7 @@ interface Profile {
   best_match: string[] | null;
   favorite: string[] | null;
   keywords: string[] | null;
+  research_roles: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,7 @@ export const useProfile = () => {
         best_match: data.best_match || [],
         favorite: data.favorite || [],
         keywords: data.specialization_keywords || [],
+        research_roles: data.research_roles || [],
         created_at: data.created_at,
         updated_at: data.updated_at,
       };
@@ -101,6 +103,7 @@ export const useProfile = () => {
           best_match: data.best_match || [],
           favorite: data.favorite || [],
           keywords: data.specialization_keywords || [],
+          research_roles: data.research_roles || [],
           created_at: data.created_at,
           updated_at: data.updated_at,
         };
@@ -143,6 +146,7 @@ export const useProfile = () => {
                   best_match: profileData.best_match || [],
                   favorite: profileData.favorite || [],
                   keywords: profileData.specialization_keywords || [],
+                  research_roles: profileData.research_roles || [],
                   created_at: profileData.created_at,
                   updated_at: profileData.updated_at,
                 };
