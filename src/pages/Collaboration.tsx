@@ -372,8 +372,13 @@ const Collaboration = () => {
                             </Avatar>
                             <div className="flex-1">
                               <div className="font-medium">{getDisplayName()} (me)</div>
-                              <div className="text-sm text-gray-500">
-                                {(profile as any)?.research_roles ? (profile as any).research_roles : 'Researcher Role'}
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {(profile as any)?.research_roles && typeof (profile as any).research_roles === 'string' ? 
+                                  (profile as any).research_roles.split(',').map((role: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{role.trim()}</Badge>
+                                  )) : 
+                                  <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                }
                               </div>
                               <div className="flex space-x-2 mt-2">
                                 {(profile as any)?.specialization_keywords && typeof (profile as any).specialization_keywords === 'string' ? 
@@ -404,8 +409,13 @@ const Collaboration = () => {
                               <div className="font-medium">
                                 {otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || otherParticipant.email : 'Unknown user'}
                               </div>
-                              <div className="text-sm text-gray-500">
-                                {otherParticipant?.research_roles ? otherParticipant.research_roles : 'Researcher Role'}
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {otherParticipant?.research_roles && typeof otherParticipant.research_roles === 'string' ? 
+                                  otherParticipant.research_roles.split(',').map((role: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{role.trim()}</Badge>
+                                  )) : 
+                                  <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                }
                               </div>
                               <div className="flex space-x-2 mt-2">
                                 {otherParticipant?.specialization_keywords && typeof otherParticipant.specialization_keywords === 'string' ? 
