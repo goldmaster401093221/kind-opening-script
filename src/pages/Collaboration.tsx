@@ -385,7 +385,12 @@ const Collaboration = () => {
                                   (profile as any).specialization_keywords.split(',').slice(0, 3).map((keyword: string, i: number) => (
                                     <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
                                   )) : 
-                                  <Badge variant="outline" className="text-xs">General</Badge>
+                                  ((profile as any)?.research_roles && typeof (profile as any).research_roles === 'string' ? 
+                                    (profile as any).research_roles.split(',').slice(0, 3).map((role: string, i: number) => (
+                                      <Badge key={i} variant="outline" className="text-xs">{role.trim()}</Badge>
+                                    )) : 
+                                    <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                  )
                                 }
                               </div>
                             </div>
@@ -422,7 +427,12 @@ const Collaboration = () => {
                                   otherParticipant.specialization_keywords.split(',').slice(0, 3).map((keyword: string, i: number) => (
                                     <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
                                   )) : 
-                                  <Badge variant="outline" className="text-xs">General</Badge>
+                                  (otherParticipant?.research_roles && typeof otherParticipant.research_roles === 'string' ? 
+                                    otherParticipant.research_roles.split(',').slice(0, 3).map((role: string, i: number) => (
+                                      <Badge key={i} variant="outline" className="text-xs">{role.trim()}</Badge>
+                                    )) : 
+                                    <Badge variant="outline" className="text-xs">Researcher</Badge>
+                                  )
                                 }
                               </div>
                             </div>
