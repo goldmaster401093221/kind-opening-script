@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
@@ -12,6 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Home, 
   Users, 
@@ -59,6 +63,12 @@ const DiscoverCollaborators = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [term1, setTerm1] = useState(true);
+  const [term2, setTerm2] = useState(false);
+  const [term3, setTerm3] = useState(true);
 
   // Filter collaborators based on search query
   const filteredCollaborators = collaborators.filter(collaborator => {
@@ -641,7 +651,7 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProfile.what_i_have?.map((item, index) => (
+                    {selectedProfile.research_roles?.map((item, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {item}
                       </Badge>
@@ -653,11 +663,8 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">What I need</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProfile.what_i_need?.map((item, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {item}
-                      </Badge>
-                    )) || <span className="text-xs text-gray-500">No items listed</span>}
+                    <Badge variant="secondary" className="text-xs">Equipment</Badge>
+                    <Badge variant="secondary" className="text-xs">Experiment</Badge>
                   </div>
                 </div>
 
@@ -669,12 +676,61 @@ const DiscoverCollaborators = () => {
                   </div>
                 )}
 
+                {/* Collaboration Request Section (appears after clicking Send) */}
+                {requestOpen && (
+                  <div className="pt-4 border-t space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600 mb-2 block">From Start date</label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                              {startDate ? format(startDate, 'PPP') : 'From Start date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus className="p-3 pointer-events-auto" />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600 mb-2 block">To End date</label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                              {endDate ? format(endDate, 'PPP') : 'To End date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus className="p-3 pointer-events-auto" />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="term1" checked={term1} onCheckedChange={(v) => setTerm1(!!v)} />
+                        <label htmlFor="term1" className="text-sm text-gray-700">Term of collaboration</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="term2" checked={term2} onCheckedChange={(v) => setTerm2(!!v)} />
+                        <label htmlFor="term2" className="text-sm text-gray-700">Term of collaboration</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="term3" checked={term3} onCheckedChange={(v) => setTerm3(!!v)} />
+                        <label htmlFor="term3" className="text-sm text-gray-700">Term of collaboration</label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <Button variant="outline" onClick={() => setIsProfileModalOpen(false)}>
                     Cancel
                   </Button>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setRequestOpen(true)}>
                     Send Collaboration Request
                   </Button>
                 </div>
