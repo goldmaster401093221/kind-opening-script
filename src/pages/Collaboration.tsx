@@ -82,6 +82,11 @@ const Collaboration = () => {
   const [loadingInProgress, setLoadingInProgress] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // Upcoming collaborations
+  const [upcoming, setUpcoming] = useState<any[]>([]);
+  const [upcomingProfiles, setUpcomingProfiles] = useState<Record<string, any>>({});
+  const [loadingUpcoming, setLoadingUpcoming] = useState(false);
+
   const fetchRequests = async () => {
     if (!user) return;
     setLoadingRequests(true);
@@ -175,6 +180,36 @@ const Collaboration = () => {
     setLoadingHistory(false);
   };
 
+  const fetchUpcoming = async () => {
+    if (!user) return;
+    setLoadingUpcoming(true);
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .from('collaborations')
+      .select('*')
+      .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
+      .eq('status', 'collaborated')
+      .gt('start_date', today)
+      .order('start_date', { ascending: true });
+    if (error) {
+      console.error('Error fetching upcoming collaborations', error);
+      setLoadingUpcoming(false);
+      return;
+    }
+    const rows = (data || []) as any[];
+    setUpcoming(rows);
+    const otherIds = Array.from(new Set(rows.map((r:any) => r.requester_id === user.id ? r.collaborator_id : r.requester_id)));
+    if (otherIds.length) {
+      const { data: profs } = await supabase.from('profiles').select('*').in('id', otherIds);
+      const map: Record<string, any> = {};
+      (profs || []).forEach((p:any)=>{ map[p.id]=p; });
+      setUpcomingProfiles(map);
+    } else {
+      setUpcomingProfiles({});
+    }
+    setLoadingUpcoming(false);
+  };
+
   const handleAccept = async (req: any) => {
     const { error } = await supabase
       .from('collaborations')
@@ -208,6 +243,7 @@ const Collaboration = () => {
     fetchRequests();
     fetchInProgress();
     fetchHistory();
+    fetchUpcoming();
   }, [user]);
 
   const home = [
@@ -283,76 +319,118 @@ const Collaboration = () => {
     if (activeTab === 'Upcoming') {
       return (
         <div className="grid grid-cols-6 gap-4">
-          {/* Main Collaboration Content */}
           <div className="col-span-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Collaboration Status</h3>
-                    <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
-                      Upcoming
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
-                    <span>From 2025-06-04</span>
-                    <span>To 2025-06-25</span>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="font-medium mb-4">2 Collaborators</h4>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-12 h-12">
-                        <img 
-                          src="/lovable-uploads/avatar2.jpg" 
-                          className="max-w-full h-auto rounded-lg shadow-lg"
-                        />
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">Bashair Mussa (me)</div>
-                        <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
-                          <Badge variant="outline" className="text-xs">Idea</Badge>
-                          <Badge variant="outline" className="text-xs">Proposal</Badge>
-                          <Badge variant="outline" className="text-xs">Grant Application</Badge>
+            {loadingUpcoming ? (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-sm text-gray-500">Loading upcoming collaborations...</div>
+                </CardContent>
+              </Card>
+            ) : upcoming.length === 0 ? (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-sm text-gray-500">No upcoming collaborations.</div>
+                </CardContent>
+              </Card>
+            ) : (
+              upcoming.map((c: any) => {
+                const otherParticipantId = c.requester_id === user?.id ? c.collaborator_id : c.requester_id;
+                const otherParticipant = upcomingProfiles[otherParticipantId];
+                const isRequester = c.requester_id === user?.id;
+                
+                return (
+                  <Card key={c.id} className="mb-4">
+                    <CardContent className="p-6">
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold">Collaboration Status</h3>
+                          <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
+                            Upcoming
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
+                          <span>From {c.start_date || '-'}</span>
+                          <span>To {c.end_date || '-'}</span>
                         </div>
                       </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
-                        <MessageSquare className="w-5 h-5" />
-                      </button>
-                    </div>
 
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-12 h-12">
-                        <img 
-                          src="/lovable-uploads/avatar1.jpg" 
-                          className="max-w-full h-auto rounded-lg shadow-lg"
-                        />
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">Anna Krylova</div>
-                        <div className="text-sm text-gray-500">Researcher Role</div>
-                        <div className="flex space-x-2 mt-2">
-                          <Badge variant="outline" className="text-xs">Equipment</Badge>
-                          <Badge variant="outline" className="text-xs">Experiment</Badge>
+                      <div className="mb-6">
+                        <h4 className="font-medium mb-4">Collaborators</h4>
+                        
+                        <div className="space-y-4">
+                          {/* Current user */}
+                          <div className="flex items-start space-x-3">
+                            <Avatar className="w-12 h-12">
+                              {profile?.avatar_url ? (
+                                <AvatarImage src={profile.avatar_url} alt={getDisplayName()} />
+                              ) : (
+                                <AvatarFallback className="bg-gray-800 text-white text-sm">
+                                  {getInitials()}
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="font-medium">{getDisplayName()} (me)</div>
+                              <div className="text-sm text-gray-500">
+                                {(profile as any)?.research_roles ? (profile as any).research_roles : 'Researcher Role'}
+                              </div>
+                              <div className="flex space-x-2 mt-2">
+                                {(profile as any)?.specialization_keywords ? 
+                                  (profile as any).specialization_keywords.split(',').slice(0, 3).map((keyword: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
+                                  )) : 
+                                  <Badge variant="outline" className="text-xs">General</Badge>
+                                }
+                              </div>
+                            </div>
+                            <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                              <MessageSquare className="w-5 h-5" />
+                            </button>
+                          </div>
+
+                          {/* Other participant */}
+                          <div className="flex items-start space-x-3">
+                            <Avatar className="w-12 h-12">
+                              {otherParticipant?.avatar_url ? (
+                                <AvatarImage src={otherParticipant.avatar_url} alt={`${otherParticipant?.first_name || ''} ${otherParticipant?.last_name || ''}`.trim()} />
+                              ) : (
+                                <AvatarFallback className="bg-gray-800 text-white text-sm">
+                                  {(otherParticipant?.first_name?.[0] || 'U') + (otherParticipant?.last_name?.[0] || '')}
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="font-medium">
+                                {otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || otherParticipant.email : 'Unknown user'}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {otherParticipant?.research_roles ? otherParticipant.research_roles : 'Researcher Role'}
+                              </div>
+                              <div className="flex space-x-2 mt-2">
+                                {otherParticipant?.specialization_keywords ? 
+                                  otherParticipant.specialization_keywords.split(',').slice(0, 3).map((keyword: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{keyword.trim()}</Badge>
+                                  )) : 
+                                  <Badge variant="outline" className="text-xs">General</Badge>
+                                }
+                              </div>
+                            </div>
+                            <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                              <MessageSquare className="w-5 h-5" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
-                        <MessageSquare className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
 
-                  <Button variant="outline" className="w-full mt-4">
-                    Invite More
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                        <Button variant="outline" className="w-full mt-4">
+                          Invite More
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </div>
       );
