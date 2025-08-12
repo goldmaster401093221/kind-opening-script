@@ -34,6 +34,7 @@ import {
   File,
   MessageCircle
 } from 'lucide-react';
+import { format } from 'date-fns';
 
 const Collaboration = () => {
   const navigate = useNavigate();
@@ -43,15 +44,47 @@ const Collaboration = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [showEndCollaborationModal, setShowEndCollaborationModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [endingCollabId, setEndingCollabId] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
   };
 
-  const handleEndCollaboration = () => {
-    setShowEndCollaborationModal(false);
-    setShowFeedbackModal(true);
+  const handleEndCollaboration = async () => {
+    try {
+      if (!endingCollabId || !user) {
+        setShowEndCollaborationModal(false);
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const { error } = await supabase
+        .from('collaborations')
+        .update({
+          status: 'ended',
+          end_date: today,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', endingCollabId);
+
+      if (error) {
+        console.error('End collaboration error', error);
+        toast({ title: 'Failed to end collaboration', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      setShowEndCollaborationModal(false);
+      setShowFeedbackModal(true);
+      setEndingCollabId(null);
+
+      // Refresh lists so UI reflects the changes immediately
+      fetchInProgress();
+      fetchHistory();
+      fetchTodayActivities();
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: 'Failed to end collaboration', description: e?.message || 'Unknown error', variant: 'destructive' });
+    }
   };
 
   const handleFeedbackSubmit = (feedback: {
@@ -86,6 +119,10 @@ const Collaboration = () => {
   const [upcoming, setUpcoming] = useState<any[]>([]);
   const [upcomingProfiles, setUpcomingProfiles] = useState<Record<string, any>>({});
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
+
+  // Today activities per collaboration
+  const [todayActivities, setTodayActivities] = useState<Record<string, { user: string; action: string; link: string }[]>>({});
+  const [loadingActivities, setLoadingActivities] = useState(false);
 
   const fetchRequests = async () => {
     if (!user) return;
@@ -129,6 +166,7 @@ const Collaboration = () => {
       .select('*')
       .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
       .eq('status', 'collaborated')
+      .lte('start_date', today)
       .gte('end_date', today)
       .order('created_at', { ascending: false });
     if (error) {
@@ -154,21 +192,35 @@ const Collaboration = () => {
     if (!user) return;
     setLoadingHistory(true);
     const today = new Date().toISOString().slice(0, 10);
-    const { data, error } = await supabase
-      .from('collaborations')
-      .select('*')
-      .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
-      .eq('status', 'collaborated')
-      .lt('end_date', today)
-      .order('created_at', { ascending: false });
-    if (error) {
-      console.error('Error fetching history', error);
+
+    const [pastRes, endedRes] = await Promise.all([
+      supabase
+        .from('collaborations')
+        .select('*')
+        .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
+        .eq('status', 'collaborated')
+        .lt('end_date', today)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('collaborations')
+        .select('*')
+        .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
+        .eq('status', 'ended')
+        .order('updated_at', { ascending: false })
+    ]);
+
+    if (pastRes.error || endedRes.error) {
+      console.error('Error fetching history', pastRes.error || endedRes.error);
       setLoadingHistory(false);
       return;
     }
-    const rows = (data || []) as any[];
+
+    const rows = ([...(pastRes.data || []), ...(endedRes.data || [])] as any[])
+      .reduce((acc: any[], curr: any) => (acc.some((r:any) => r.id === curr.id) ? acc : acc.concat(curr)), []);
+
     setHistoryItems(rows);
-    const otherIds = Array.from(new Set(rows.map((r:any) => r.requester_id === user.id ? r.collaborator_id : r.requester_id)));
+
+    const otherIds = Array.from(new Set(rows.map((r:any) => r.requester_id === user.id ? r.collaborator_id : r.requester_id))) as string[];
     if (otherIds.length) {
       const { data: profs } = await supabase.from('profiles').select('*').in('id', otherIds);
       const map: Record<string, any> = {};
@@ -225,6 +277,135 @@ const Collaboration = () => {
     fetchInProgress();
   };
 
+  // Build today's activity feed per collaboration
+  const fetchTodayActivities = async () => {
+    if (!user || inProgress.length === 0) return;
+    setLoadingActivities(true);
+
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const startISO = start.toISOString();
+    const endISO = end.toISOString();
+
+    const participantIds = new Set<string>();
+    inProgress.forEach((c: any) => {
+      participantIds.add(user.id);
+      participantIds.add(c.requester_id === user.id ? c.collaborator_id : c.requester_id);
+    });
+    const ids = Array.from(participantIds);
+
+    const [filesRes, commentsRes] = await Promise.all([
+      supabase
+        .from('data_center_files')
+        .select('id,uploader_id,created_at')
+        .in('uploader_id', ids)
+        .gte('created_at', startISO)
+        .lt('created_at', endISO),
+      supabase
+        .from('data_center_comments')
+        .select('id,user_id,created_at')
+        .in('user_id', ids)
+        .gte('created_at', startISO)
+        .lt('created_at', endISO),
+    ]);
+
+    const files = (filesRes.data || []) as any[];
+    const comments = (commentsRes.data || []) as any[];
+
+    const filesByUser: Record<string, number> = {};
+    files.forEach((f: any) => {
+      filesByUser[f.uploader_id] = (filesByUser[f.uploader_id] || 0) + 1;
+    });
+
+    const commentsByUser: Record<string, number> = {};
+    comments.forEach((cm: any) => {
+      commentsByUser[cm.user_id] = (commentsByUser[cm.user_id] || 0) + 1;
+    });
+
+    const isToday = (ts?: string) => {
+      if (!ts) return false;
+      const d = new Date(ts);
+      return d >= start && d <= end;
+    };
+
+    const nameFor = (uid: string) => {
+      if (uid === user.id) return getDisplayName();
+      const p = inProgressProfiles[uid];
+      if (!p) return 'Collaborator';
+      const full = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+      return full || p.email || 'Collaborator';
+    };
+
+    const map: Record<string, { user: string; action: string; link: string }[]> = {};
+
+    inProgress.forEach((c: any) => {
+      const otherId = c.requester_id === user.id ? c.collaborator_id : c.requester_id;
+      const items: { user: string; action: string; link: string }[] = [];
+
+      // Request received today (if you're the collaborator)
+      if (user.id === c.collaborator_id && isToday(c.created_at)) {
+        items.push({
+          user: nameFor(otherId),
+          action: 'sent you a collaboration request',
+          link: 'View'
+        });
+      }
+
+      // Collaboration ends today (by date)
+      if (c.end_date && c.end_date === new Date().toISOString().slice(0, 10)) {
+        items.push({ user: 'System', action: 'Collaboration ends today', link: 'View' });
+      }
+
+      // Collaboration status updated to ended/declined/completed today
+      if (isToday(c.updated_at) && ['ended', 'declined', 'completed'].includes(c.status)) {
+        items.push({ user: 'System', action: 'Collaboration updated today', link: 'View' });
+      }
+
+      // Files uploaded today by participants
+      const otherFiles = filesByUser[otherId] || 0;
+      const myFiles = filesByUser[user.id] || 0;
+      if (otherFiles > 0) {
+        items.push({
+          user: nameFor(otherId),
+          action: `attached ${otherFiles} file${otherFiles > 1 ? 's' : ''}`,
+          link: 'View'
+        });
+      }
+      if (myFiles > 0) {
+        items.push({
+          user: 'You',
+          action: `attached ${myFiles} file${myFiles > 1 ? 's' : ''}`,
+          link: 'View'
+        });
+      }
+
+      // Comments left today by participants
+      const otherComments = commentsByUser[otherId] || 0;
+      const myComments = commentsByUser[user.id] || 0;
+      if (otherComments > 0) {
+        items.push({
+          user: nameFor(otherId),
+          action: `has left ${otherComments} comment${otherComments > 1 ? 's' : ''}`,
+          link: 'View'
+        });
+      }
+      if (myComments > 0) {
+        items.push({
+          user: 'You',
+          action: `have left ${myComments} comment${myComments > 1 ? 's' : ''}`,
+          link: 'View'
+        });
+      }
+
+      map[c.id] = items;
+    });
+
+    setTodayActivities(map);
+    setLoadingActivities(false);
+  };
+
   const handleReject = async (req: any) => {
     const { error } = await supabase
       .from('collaborations')
@@ -245,6 +426,11 @@ const Collaboration = () => {
     fetchHistory();
     fetchUpcoming();
   }, [user]);
+
+  useEffect(() => {
+    // refresh activities whenever collaborations or participant profiles change
+    fetchTodayActivities();
+  }, [inProgress, inProgressProfiles, user]);
 
   const home = [
     { icon: Users, label: 'Dashboard', active: false },
@@ -393,7 +579,7 @@ const Collaboration = () => {
                                 }
                               </div>
                             </div>
-                            <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                            <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full" onClick={() => navigate(`/chat?with=${otherParticipantId}`)}>
                               <MessageSquare className="w-5 h-5" />
                             </button>
                           </div>
@@ -434,13 +620,13 @@ const Collaboration = () => {
                                 }
                               </div>
                             </div>
-                            <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full">
+                            <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full" onClick={() => navigate(`/chat?with=${otherParticipantId}`)}>
                               <MessageSquare className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
 
-                        <Button variant="outline" className="w-full mt-4">
+                        <Button variant="outline" className="w-full mt-4" onClick={()=>{navigate('/discover-collaborators');}}>
                           Invite More
                         </Button>
                       </div>
@@ -548,8 +734,9 @@ const Collaboration = () => {
 
     if (activeTab === 'In Progress') {
       return (
-        <div className="grid grid-cols-6 gap-4">
-          <div className="col-span-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+          {/* Left: Status, Calendar, Activity, Actions */}
+          <div className="md:col-span-4 space-y-6">
             {loadingInProgress ? (
               <Card>
                 <CardContent className="p-6">
@@ -566,57 +753,151 @@ const Collaboration = () => {
               inProgress.map((c: any) => {
                 const otherId = c.requester_id === user?.id ? c.collaborator_id : c.requester_id;
                 const other = inProgressProfiles[otherId];
+                const todayLabel = `${format(new Date(), 'MMM do')}`;
                 return (
-                  <Card key={c.id} className="mb-4">
-                    <CardContent className="p-6">
-                      <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold">Collaboration</h3>
-                          <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
-                            In Progress
-                          </Badge>
+                  <div key={c.id} className="space-y-6">
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Collaboration Status</h3>
+                          <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">In Progress</Badge>
                         </div>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
                           <span>From {c.start_date || '-'}</span>
                           <span>To {c.end_date || '-'}</span>
                         </div>
-                      </div>
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          className="rounded-md border"
+                        />
+                      </CardContent>
+                    </Card>
 
-                      <div className="flex items-start space-x-3 mb-6">
-                        <Avatar className="w-12 h-12">
-                          {other?.avatar_url ? (
-                            <AvatarImage src={other.avatar_url} alt={other?.first_name || 'Collaborator'} />
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-medium mb-4">{todayLabel} (Today) Activity</h4>
+                        <div className="space-y-3">
+                          {loadingActivities ? (
+                            <div className="text-sm text-gray-500">Loading today's activity...</div>
+                          ) : todayActivities[c.id] && todayActivities[c.id].length > 0 ? (
+                            todayActivities[c.id].map((activity, i) => (
+                              <div key={i} className="flex items-start gap-3">
+                                <div className="w-9 h-9 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
+                                  <File className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 text-sm">
+                                  <span className="font-medium">{activity.user}</span> {activity.action}
+                                  <button className="ml-2 text-blue-600 hover:underline invisible">{activity.link}</button>
+                                </div>
+                              </div>
+                            ))
                           ) : (
-                            <AvatarFallback className="bg-gray-800 text-white text-sm">
-                              {(other?.first_name?.[0] || 'U') + (other?.last_name?.[0] || '')}
-                            </AvatarFallback>
+                            <div className="text-sm text-gray-500">No activity yet today.</div>
                           )}
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="font-medium">
-                            {other ? `${other.first_name || ''} ${other.last_name || ''}`.trim() || other.email : 'Unknown user'}
-                          </div>
-                          <div className="text-sm text-gray-500">Researcher Role</div>
                         </div>
-                        <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full" onClick={() => navigate('/chat')}>
-                          <MessageSquare className="w-5 h-5" />
-                        </button>
-                      </div>
-
-                      <div className="flex space-x-4">
-                        <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/data-center')}>
-                          Go to Data Center
-                        </Button>
-                        <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/chat')}>
-                          Go to Chat Room
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <div className="mt-6 flex flex-wrap gap-3">
+                          <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate('/data-center')}>
+                            Go to Data Center
+                          </Button>
+                          <Button variant="outline" className="text-blue-600 border-blue-600" onClick={() => navigate(`/chat?with=${otherId}`)}>
+                            Go to Chat Room
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })
             )}
           </div>
+
+          {/* Right: Collaborators + Supporting Services */}
+          <aside className="md:col-span-2 space-y-6">
+            {inProgress.map((c: any) => {
+              const otherId = c.requester_id === user?.id ? c.collaborator_id : c.requester_id;
+              const other = inProgressProfiles[otherId];
+              return (
+                <div key={`aside-${c.id}`} className="space-y-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <h4 className="font-medium mb-4">{other ? '2 Collaborators' : 'Collaborators'}</h4>
+                      <div className="space-y-4">
+                        {/* Current user */}
+                        <div className="flex items-start gap-3">
+                          <Avatar className="w-10 h-10">
+                            {profile?.avatar_url ? (
+                              <AvatarImage src={profile.avatar_url} alt={getDisplayName()} />
+                            ) : (
+                              <AvatarFallback className="bg-gray-800 text-white text-xs">{getInitials()}</AvatarFallback>
+                            )}
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">{getDisplayName()} (me)</div>
+                            <div className="text-xs text-gray-500">Researcher Role</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Badge variant="outline" className="text-xs">Idea</Badge>
+                              <Badge variant="outline" className="text-xs">Proposal</Badge>
+                              <Badge variant="outline" className="text-xs">Grant Application</Badge>
+                            </div>
+                          </div>
+                          <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full" onClick={() => navigate(`/chat?with=${otherId}`)}>
+                            <MessageSquare className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        {/* Other participant */}
+                        <div className="flex items-start gap-3">
+                          <Avatar className="w-10 h-10">
+                            {other?.avatar_url ? (
+                              <AvatarImage src={other.avatar_url} alt={`${other?.first_name || ''} ${other?.last_name || ''}`.trim()} />
+                            ) : (
+                              <AvatarFallback className="bg-gray-800 text-white text-xs">{(other?.first_name?.[0] || 'U') + (other?.last_name?.[0] || '')}</AvatarFallback>
+                            )}
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">{other ? `${other.first_name || ''} ${other.last_name || ''}`.trim() || other.email : 'Unknown user'}</div>
+                            <div className="text-xs text-gray-500">Researcher Role</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Badge variant="outline" className="text-xs">Equipment</Badge>
+                              <Badge variant="outline" className="text-xs">Experiment</Badge>
+                            </div>
+                          </div>
+                          <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-full" onClick={() => navigate(`/chat?with=${otherId}`)}>
+                            <MessageSquare className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <Button variant="outline" className="w-full mt-6" onClick={() => { setEndingCollabId(c.id); setShowEndCollaborationModal(true); }}>
+                        End Collaboration
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <h4 className="font-medium mb-4">Supporting Services</h4>
+                      <div className="space-y-4">
+                        {supportingServicesData.map((s, i) => (
+                          <div key={i} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
+                                <s.icon className="w-4 h-4" />
+                              </div>
+                              <div className="text-sm">{s.name}</div>
+                            </div>
+                            <button className="text-blue-600 hover:underline text-sm invisible">{s.link}</button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })}
+          </aside>
         </div>
       );
     }
@@ -648,7 +929,7 @@ const Collaboration = () => {
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-lg font-semibold">Collaboration</h3>
                           <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-3 py-1">
-                            Completed
+                            {c.status === 'ended' ? 'Ended' : 'Completed'}
                           </Badge>
                         </div>
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">

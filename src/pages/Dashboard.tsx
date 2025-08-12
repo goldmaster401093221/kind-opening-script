@@ -396,7 +396,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex justify-end mb-6">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={()=>{navigate('/discover-collaborators');}}>
               Search Collaborators
             </Button>
           </div>
