@@ -61,7 +61,7 @@ const Collaboration = () => {
       const { error } = await supabase
         .from('collaborations')
         .update({
-          status: 'ended',
+          status: 'completed',
           end_date: today,
           updated_at: new Date().toISOString(),
         })
@@ -75,7 +75,6 @@ const Collaboration = () => {
 
       setShowEndCollaborationModal(false);
       setShowFeedbackModal(true);
-      setEndingCollabId(null);
 
       // Refresh lists so UI reflects the changes immediately
       fetchInProgress();
@@ -87,19 +86,76 @@ const Collaboration = () => {
     }
   };
 
-  const handleFeedbackSubmit = (feedback: {
+  const handleFeedbackSubmit = async (feedback: {
     skillsRating: number;
     communicationRating: number;
     platformFeedback: string;
   }) => {
-    console.log('Feedback submitted:', feedback);
-    setShowFeedbackModal(false);
-    toast({
-      title: "Collaboration Ended",
-      description: "Thank you for your feedback. The collaboration has been ended successfully.",
-    });
-    // Here you would typically save the feedback to the database
-    // and update the collaboration status
+    try {
+      if (!endingCollabId || !user) {
+        setShowFeedbackModal(false);
+        setEndingCollabId(null);
+        return;
+      }
+
+      // Get the collaboration to find the other participant
+      const { data: collaboration } = await supabase
+        .from('collaborations')
+        .select('*')
+        .eq('id', endingCollabId)
+        .single();
+
+      if (collaboration) {
+        const otherId = collaboration.requester_id === user.id 
+          ? collaboration.collaborator_id 
+          : collaboration.requester_id;
+
+        // Calculate average rating from skills and communication
+        const averageRating = (feedback.skillsRating + feedback.communicationRating) / 2;
+
+        // Get current rating of the other user
+        const { data: otherProfile } = await supabase
+          .from('profiles')
+          .select('rating, collaboration_count')
+          .eq('id', otherId)
+          .single();
+
+        if (otherProfile) {
+          const currentRating = otherProfile.rating || 0;
+          const currentCount = otherProfile.collaboration_count || 0;
+          const newCount = currentCount + 1;
+          
+          // Calculate new weighted average rating
+          const newRating = ((currentRating * currentCount) + averageRating) / newCount;
+
+          // Update the other user's profile with new rating
+          await supabase
+            .from('profiles')
+            .update({
+              rating: newRating,
+              collaboration_count: newCount,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', otherId);
+        }
+      }
+
+      setShowFeedbackModal(false);
+      setEndingCollabId(null);
+      toast({
+        title: "Collaboration Ended",
+        description: "Thank you for your feedback. The collaboration has been ended successfully.",
+      });
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        title: "Feedback Error",
+        description: "Failed to submit feedback, but collaboration was ended.",
+        variant: "destructive"
+      });
+      setShowFeedbackModal(false);
+      setEndingCollabId(null);
+    }
   };
 
   // Incoming collaboration requests for the current user
@@ -193,7 +249,7 @@ const Collaboration = () => {
     setLoadingHistory(true);
     const today = new Date().toISOString().slice(0, 10);
 
-    const [pastRes, endedRes] = await Promise.all([
+    const [pastRes, completedRes] = await Promise.all([
       supabase
         .from('collaborations')
         .select('*')
@@ -205,17 +261,17 @@ const Collaboration = () => {
         .from('collaborations')
         .select('*')
         .or(`requester_id.eq.${user.id},collaborator_id.eq.${user.id}`)
-        .eq('status', 'ended')
+        .eq('status', 'completed')
         .order('updated_at', { ascending: false })
     ]);
 
-    if (pastRes.error || endedRes.error) {
-      console.error('Error fetching history', pastRes.error || endedRes.error);
+    if (pastRes.error || completedRes.error) {
+      console.error('Error fetching history', pastRes.error || completedRes.error);
       setLoadingHistory(false);
       return;
     }
 
-    const rows = ([...(pastRes.data || []), ...(endedRes.data || [])] as any[])
+    const rows = ([...(pastRes.data || []), ...(completedRes.data || [])] as any[])
       .reduce((acc: any[], curr: any) => (acc.some((r:any) => r.id === curr.id) ? acc : acc.concat(curr)), []);
 
     setHistoryItems(rows);
@@ -928,9 +984,9 @@ const Collaboration = () => {
                       <div className="mb-6">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-lg font-semibold">Collaboration</h3>
-                          <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-3 py-1">
-                            {c.status === 'ended' ? 'Ended' : 'Completed'}
-                          </Badge>
+                           <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-3 py-1">
+                             Completed
+                           </Badge>
                         </div>
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
                           <span>From {c.start_date || '-'}</span>
