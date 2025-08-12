@@ -61,7 +61,7 @@ const Collaboration = () => {
       const { error } = await supabase
         .from('collaborations')
         .update({
-          status: 'completed',
+          status: 'ended',
           end_date: today,
           updated_at: new Date().toISOString(),
         })
