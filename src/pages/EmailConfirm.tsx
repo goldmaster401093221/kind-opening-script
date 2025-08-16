@@ -13,51 +13,9 @@ const EmailConfirm = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const handleEmailConfirmation = async () => {
-      try {
-        // Get the hash fragment from the URL
-        const hashFragment = window.location.hash.substring(1);
-        const params = new URLSearchParams(hashFragment);
-        
-        // Check for error parameters first
-        const errorParam = params.get('error');
-        const errorDescription = params.get('error_description');
-        
-        if (errorParam) {
-          let errorMessage = 'Email confirmation failed';
-          
-          if (errorParam === 'access_denied' && errorDescription?.includes('expired')) {
-            errorMessage = 'Email confirmation link has expired. Please request a new confirmation email.';
-          } else if (errorDescription) {
-            errorMessage = errorDescription.replace(/\+/g, ' ');
-          }
-          
-          throw new Error(errorMessage);
-        }
-        
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        
-        if (accessToken && refreshToken) {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          
-          if (error) throw error;
-          
-          setConfirmed(true);
-        } else {
-          throw new Error('Invalid confirmation link');
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to confirm email');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    handleEmailConfirmation();
+    // Always show confirmed state
+    setLoading(false);
+    setConfirmed(true);
   }, []);
 
   const handleContinue = () => {

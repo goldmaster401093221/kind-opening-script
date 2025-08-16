@@ -48,6 +48,8 @@ const Auth = () => {
     keywords: [] as string[],
     researchRoles: [] as string[],
     specializationKeywords: [] as string[],
+    whatIHave: [] as string[],
+    whatINeed: [] as string[],
   });
 
   useEffect(() => {
@@ -105,8 +107,7 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      // Set the production URL for email confirmation
-      const redirectUrl = 'https://aircollab.vercel.app/email-confirm';
+      const redirectUrl = `${window.location.origin}/email-confirm`;
       
       const { error } = await supabase.auth.signUp({
         email: signupData.email,
@@ -135,6 +136,8 @@ const Auth = () => {
             secondary_research_area: signupData.secondaryResearchArea,
             specialization_keywords: signupData.specializationKeywords.join(','),
             research_roles: signupData.researchRoles.join(','),
+            what_i_have: signupData.whatIHave.join(','),
+            what_i_need: signupData.whatINeed.join(','),
           }
         }
       });
@@ -173,6 +176,8 @@ const Auth = () => {
         keywords: [],
         researchRoles: [],
         specializationKeywords: [],
+        whatIHave: [],
+        whatINeed: [],
       });
     } catch (error: any) {
       toast({
@@ -313,6 +318,8 @@ const Auth = () => {
                       keywords: signupData.keywords,
                       researchRoles: signupData.researchRoles,
                       specializationKeywords: signupData.specializationKeywords,
+                      whatIHave: signupData.whatIHave,
+                      whatINeed: signupData.whatINeed,
                     }}
                     onChange={handleSignupFieldChange}
                     onFinish={handleSignupFinish}

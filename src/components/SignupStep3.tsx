@@ -15,6 +15,8 @@ interface SignupStep3Props {
     keywords: string[];
     researchRoles: string[];
     specializationKeywords: string[];
+    whatIHave: string[];
+    whatINeed: string[];
   };
   onChange: (field: string, value: string | string[]) => void;
   onFinish: () => void;
@@ -26,12 +28,18 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
   const [selectedKeyword, setSelectedKeyword] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
+  const [selectedWhatIHave, setSelectedWhatIHave] = useState('');
+  const [selectedWhatINeed, setSelectedWhatINeed] = useState('');
   const [customPrimaryArea, setCustomPrimaryArea] = useState('');
   const [customSecondaryArea, setCustomSecondaryArea] = useState('');
   const [customSpecialization, setCustomSpecialization] = useState('');
+  const [customWhatIHave, setCustomWhatIHave] = useState('');
+  const [customWhatINeed, setCustomWhatINeed] = useState('');
   const [showCustomPrimary, setShowCustomPrimary] = useState(false);
   const [showCustomSecondary, setShowCustomSecondary] = useState(false);
   const [showCustomSpecialization, setShowCustomSpecialization] = useState(false);
+  const [showCustomWhatIHave, setShowCustomWhatIHave] = useState(false);
+  const [showCustomWhatINeed, setShowCustomWhatINeed] = useState(false);
 
   const experienceOptions = [
     { value: '<5', label: 'Less than 5 years' },
@@ -209,6 +217,28 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
     'Undergraduate Researcher'
   ];
 
+  const whatOptions = [
+    'Idea',
+    'Proposal',
+    'Grant Application',
+    'Approved Grant',
+    'Experiments',
+    'Technical Experience',
+    'Clinical Experience',
+    'Molecular Experience',
+    'Statistics',
+    'Results Analysis',
+    'Graduate Students',
+    'Student Supervision',
+    'Human Samples',
+    'Animal Samples',
+    'Animal Models',
+    'Manuscripts',
+    'Research Reports',
+    'Equipments',
+    'Other'
+  ];
+
   const addKeyword = () => {
     if (selectedKeyword && !formData.keywords.includes(selectedKeyword)) {
       onChange('keywords', [...formData.keywords, selectedKeyword]);
@@ -269,6 +299,48 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
     } else {
       setShowCustomSpecialization(false);
       setSelectedSpecialization(value);
+    }
+  };
+
+  const addWhatIHave = () => {
+    if (selectedWhatIHave && !formData.whatIHave.includes(selectedWhatIHave)) {
+      onChange('whatIHave', [...formData.whatIHave, selectedWhatIHave]);
+      setSelectedWhatIHave('');
+    }
+  };
+
+  const removeWhatIHave = (item: string) => {
+    onChange('whatIHave', formData.whatIHave.filter(h => h !== item));
+  };
+
+  const handleWhatIHaveChange = (value: string) => {
+    if (value === 'Other') {
+      setShowCustomWhatIHave(true);
+      setCustomWhatIHave('');
+    } else {
+      setShowCustomWhatIHave(false);
+      setSelectedWhatIHave(value);
+    }
+  };
+
+  const addWhatINeed = () => {
+    if (selectedWhatINeed && !formData.whatINeed.includes(selectedWhatINeed)) {
+      onChange('whatINeed', [...formData.whatINeed, selectedWhatINeed]);
+      setSelectedWhatINeed('');
+    }
+  };
+
+  const removeWhatINeed = (item: string) => {
+    onChange('whatINeed', formData.whatINeed.filter(n => n !== item));
+  };
+
+  const handleWhatINeedChange = (value: string) => {
+    if (value === 'Other') {
+      setShowCustomWhatINeed(true);
+      setCustomWhatINeed('');
+    } else {
+      setShowCustomWhatINeed(false);
+      setSelectedWhatINeed(value);
     }
   };
 
@@ -465,6 +537,134 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
                 <X 
                   className="h-3 w-3 cursor-pointer" 
                   onClick={() => removeRole(role)}
+                />
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>What I Have</Label>
+          <div className="flex gap-2">
+            {showCustomWhatIHave ? (
+              <Input
+                value={customWhatIHave}
+                onChange={(e) => setCustomWhatIHave(e.target.value)}
+                placeholder="Enter what you have"
+                className="flex-1"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (customWhatIHave && !formData.whatIHave.includes(customWhatIHave)) {
+                      onChange('whatIHave', [...formData.whatIHave, customWhatIHave]);
+                      setCustomWhatIHave('');
+                      setShowCustomWhatIHave(false);
+                    }
+                  }
+                }}
+              />
+            ) : (
+              <Select value={selectedWhatIHave} onValueChange={handleWhatIHaveChange}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select what you have" />
+                </SelectTrigger>
+                <SelectContent>
+                  {whatOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button 
+              type="button" 
+              onClick={showCustomWhatIHave ? 
+                () => {
+                  if (customWhatIHave && !formData.whatIHave.includes(customWhatIHave)) {
+                    onChange('whatIHave', [...formData.whatIHave, customWhatIHave]);
+                    setCustomWhatIHave('');
+                    setShowCustomWhatIHave(false);
+                  }
+                } : 
+                addWhatIHave
+              }
+              disabled={showCustomWhatIHave ? !customWhatIHave : !selectedWhatIHave}
+            >
+              Add
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {formData.whatIHave.map((item, index) => (
+              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                {item}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => removeWhatIHave(item)}
+                />
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>What I Need</Label>
+          <div className="flex gap-2">
+            {showCustomWhatINeed ? (
+              <Input
+                value={customWhatINeed}
+                onChange={(e) => setCustomWhatINeed(e.target.value)}
+                placeholder="Enter what you need"
+                className="flex-1"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (customWhatINeed && !formData.whatINeed.includes(customWhatINeed)) {
+                      onChange('whatINeed', [...formData.whatINeed, customWhatINeed]);
+                      setCustomWhatINeed('');
+                      setShowCustomWhatINeed(false);
+                    }
+                  }
+                }}
+              />
+            ) : (
+              <Select value={selectedWhatINeed} onValueChange={handleWhatINeedChange}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select what you need" />
+                </SelectTrigger>
+                <SelectContent>
+                  {whatOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button 
+              type="button" 
+              onClick={showCustomWhatINeed ? 
+                () => {
+                  if (customWhatINeed && !formData.whatINeed.includes(customWhatINeed)) {
+                    onChange('whatINeed', [...formData.whatINeed, customWhatINeed]);
+                    setCustomWhatINeed('');
+                    setShowCustomWhatINeed(false);
+                  }
+                } : 
+                addWhatINeed
+              }
+              disabled={showCustomWhatINeed ? !customWhatINeed : !selectedWhatINeed}
+            >
+              Add
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {formData.whatINeed.map((item, index) => (
+              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                {item}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => removeWhatINeed(item)}
                 />
               </Badge>
             ))}
