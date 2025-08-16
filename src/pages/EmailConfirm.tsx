@@ -14,8 +14,35 @@ const EmailConfirm = () => {
 
   useEffect(() => {
     // Always show confirmed state
-    setLoading(false);
-    setConfirmed(true);
+    const handleEmailConfirmation = async () => {
+      try {
+        // Get the hash fragment from the URL
+        const hashFragment = window.location.hash.substring(1);
+        const params = new URLSearchParams(hashFragment);
+        
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          
+          if (error) throw error;
+          
+          setConfirmed(true);
+        } else {
+          throw new Error('Invalid confirmation link');
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to confirm email');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleEmailConfirmation();
   }, []);
 
   const handleContinue = () => {
