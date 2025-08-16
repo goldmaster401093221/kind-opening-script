@@ -105,8 +105,8 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      // Use the current origin (includes correct port for development)
-      const redirectUrl = `${window.location.origin}/email-confirm`;
+      // Set the production URL for email confirmation
+      const redirectUrl = 'https://aircollab.vercel.app/email-confirm';
       
       const { error } = await supabase.auth.signUp({
         email: signupData.email,
