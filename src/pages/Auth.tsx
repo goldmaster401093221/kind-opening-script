@@ -105,7 +105,10 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      const redirectUrl = `${window.location.origin}/email-confirm`;
+      // Use the actual domain for production or localhost for development
+      const redirectUrl = window.location.origin.includes('localhost') 
+        ? `${window.location.origin}/email-confirm`
+        : `https://${window.location.hostname}/email-confirm`;
       
       const { error } = await supabase.auth.signUp({
         email: signupData.email,
