@@ -19,6 +19,22 @@ const EmailConfirm = () => {
         const hashFragment = window.location.hash.substring(1);
         const params = new URLSearchParams(hashFragment);
         
+        // Check for error parameters first
+        const errorParam = params.get('error');
+        const errorDescription = params.get('error_description');
+        
+        if (errorParam) {
+          let errorMessage = 'Email confirmation failed';
+          
+          if (errorParam === 'access_denied' && errorDescription?.includes('expired')) {
+            errorMessage = 'Email confirmation link has expired. Please request a new confirmation email.';
+          } else if (errorDescription) {
+            errorMessage = errorDescription.replace(/\+/g, ' ');
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
         
