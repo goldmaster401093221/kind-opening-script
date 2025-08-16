@@ -83,6 +83,7 @@ const DiscoverCollaborators = () => {
     const primaryResearch = collaborator.primary_research_area?.toLowerCase() || '';
     const secondaryResearch = collaborator.secondary_research_area?.toLowerCase() || '';
     const keywords = collaborator.keywords?.join(' ').toLowerCase() || '';
+    const specializationKeywords = collaborator.specialization_keywords?.join(' ').toLowerCase() || '';
     const whatIHave = collaborator.what_i_have?.join(' ').toLowerCase() || '';
     const researchRole = collaborator.research_roles?.join(' ').toLowerCase() || '';
     const bio = collaborator.bio?.toLowerCase() || '';
@@ -94,6 +95,7 @@ const DiscoverCollaborators = () => {
            primaryResearch.includes(searchLower) ||
            secondaryResearch.includes(searchLower) ||
            keywords.includes(searchLower) ||
+           specializationKeywords.includes(searchLower) ||
            whatIHave.includes(searchLower) ||
            researchRole.includes(searchLower) ||
            bio.includes(searchLower);
