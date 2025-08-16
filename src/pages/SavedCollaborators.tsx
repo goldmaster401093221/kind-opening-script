@@ -727,7 +727,7 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">Specialization/Key words</label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedProfile.keywords?.map((keyword, index) => (
+                  {selectedProfile.specialization_keywords?.map((keyword, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {keyword}
                     </Badge>
