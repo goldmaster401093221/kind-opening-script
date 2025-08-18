@@ -31,7 +31,6 @@ interface Collaborator {
   username: string | null;
   email: string | null;
   avatar_url: string | null;
-  title: string | null;
   research_roles: string[] | null;
 }
 
@@ -85,7 +84,7 @@ const Dashboard = () => {
         // Fetch collaborator profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, username, email, avatar_url, title, research_roles')
+          .select('id, first_name, last_name, username, email, avatar_url, research_roles')
           .in('id', Array.from(collaboratorIds));
 
         if (profilesError) throw profilesError;
@@ -128,7 +127,6 @@ const Dashboard = () => {
   };
 
   const getCollaboratorRole = (collaborator: Collaborator): string => {
-    if (collaborator.title) return collaborator.title;
     return 'Researcher';
   };
 

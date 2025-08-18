@@ -390,7 +390,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
                 setCustomPrimaryArea(e.target.value);
                 onChange('primaryResearchArea', e.target.value);
               }}
-              placeholder="Enter your primary research area"
+              placeholder="Enter your primary research areas"
               required
             />
           ) : (

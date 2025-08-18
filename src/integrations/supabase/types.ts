@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -216,7 +216,6 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          bio: string | null
           career_description: string | null
           collaboration_count: number | null
           college: string | null
@@ -246,17 +245,14 @@ export type Database = {
           secondary_research_area: string | null
           specialization_keywords: string[] | null
           state_city: string | null
-          title: string | null
           updated_at: string
           user_id_number: string | null
           username: string | null
           what_i_have: string[] | null
           what_i_need: string[] | null
-          zip_code: string | null
         }
         Insert: {
           avatar_url?: string | null
-          bio?: string | null
           career_description?: string | null
           collaboration_count?: number | null
           college?: string | null
@@ -286,17 +282,14 @@ export type Database = {
           secondary_research_area?: string | null
           specialization_keywords?: string[] | null
           state_city?: string | null
-          title?: string | null
           updated_at?: string
           user_id_number?: string | null
           username?: string | null
           what_i_have?: string[] | null
           what_i_need?: string[] | null
-          zip_code?: string | null
         }
         Update: {
           avatar_url?: string | null
-          bio?: string | null
           career_description?: string | null
           collaboration_count?: number | null
           college?: string | null
@@ -326,13 +319,11 @@ export type Database = {
           secondary_research_area?: string | null
           specialization_keywords?: string[] | null
           state_city?: string | null
-          title?: string | null
           updated_at?: string
           user_id_number?: string | null
           username?: string | null
           what_i_have?: string[] | null
           what_i_need?: string[] | null
-          zip_code?: string | null
         }
         Relationships: []
       }

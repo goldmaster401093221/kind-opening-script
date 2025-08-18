@@ -10,13 +10,12 @@ export interface CollaboratorProfile {
   username: string | null;
   email: string | null;
   avatar_url: string | null;
-  title: string | null;
   institution: string | null;
   college: string | null;
   department: string | null;
   country: string | null;
   state_city: string | null;
-  zip_code: string | null;
+  postcode: string | null;
   phone: string | null;
   linkedin_url: string | null;
   researchgate_url: string | null;
@@ -31,7 +30,7 @@ export interface CollaboratorProfile {
   what_i_need: string[] | null;
   rating: number | null;
   collaboration_count: number | null;
-  bio: string | null;
+  career_description: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -61,13 +60,12 @@ export const useCollaborators = () => {
         username: item.username,
         email: item.email,
         avatar_url: item.avatar_url,
-        title: item.title,
         institution: item.institution,
         college: item.college,
         department: item.department,
         country: item.country,
         state_city: item.state_city,
-        zip_code: item.zip_code,
+        postcode: item.postcode,
         phone: item.phone,
         linkedin_url: item.linkedin_url,
         researchgate_url: item.researchgate_url,
@@ -82,7 +80,7 @@ export const useCollaborators = () => {
         what_i_need: item.what_i_need,
         rating: item.rating,
         collaboration_count: item.collaboration_count,
-        bio: item.bio,
+        career_description: item.career_description,
         created_at: item.created_at,
         updated_at: item.updated_at,
       }));
@@ -234,7 +232,6 @@ export const useCollaborators = () => {
   };
 
   const getUserRole = (collaborator: CollaboratorProfile) => {
-    if (collaborator.title) return collaborator.title;
     if (collaborator.experience === 'Undergraduate') return 'Undergraduate Student';
     if (collaborator.experience === 'Graduate') return 'Graduate Student';
     if (collaborator.experience === 'Postdoc') return 'Postdoctoral Researcher';

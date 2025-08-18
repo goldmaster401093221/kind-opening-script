@@ -31,14 +31,13 @@ interface ProfileData {
   gender?: string;
   user_id_number?: string;
   phone?: string;
-  title?: string;
   linkedin_url?: string;
   researchgate_url?: string;
   google_scholar_url?: string;
   institution?: string;
   college?: string;
   department?: string;
-  zip_code?: string;
+  postcode?: string;
   country?: string;
   state_city?: string;
   experience?: string;
@@ -554,15 +553,8 @@ const Settings = () => {
                     <Input {...register('phone')} placeholder="Phone number" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                    <select {...register('title')} className="w-full p-2 border border-gray-300 rounded-md">
-                      <option value="">Select title</option>
-                      <option value="dr">Dr.</option>
-                      <option value="prof">Prof.</option>
-                      <option value="mr">Mr.</option>
-                      <option value="mrs">Mrs.</option>
-                      <option value="ms">Ms.</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <Input {...register('email')} placeholder="Email address" />
                   </div>
                   <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -602,13 +594,10 @@ const Settings = () => {
                   <Input {...register('department')} placeholder="Department name" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-                  <Input {...register('zip_code')} placeholder="Zip code" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Post Code</label>
+                  <Input {...register('postcode')} placeholder="Post code" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                  <Input {...register('country')} placeholder="Country" />
-                </div>
+              
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">State/City</label>
                   <Input {...register('state_city')} placeholder="State/City" />

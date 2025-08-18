@@ -100,7 +100,7 @@ const SavedCollaborators = () => {
     const secondaryResearch = collaborator.secondary_research_area?.toLowerCase() || '';
     const keywords = collaborator.keywords?.join(' ').toLowerCase() || '';
     const specializationKeywords = collaborator.specialization_keywords?.join(' ').toLowerCase() || '';
-    const bio = collaborator.bio?.toLowerCase() || '';
+    const bio = collaborator.career_description?.toLowerCase() || '';
     
     return displayName.includes(searchLower) || 
            role.includes(searchLower) || 
@@ -700,7 +700,7 @@ const SavedCollaborators = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Post Number</label>
-                    <p className="text-sm">{selectedProfile.zip_code || 'Not provided'}</p>
+                    <p className="text-sm">{selectedProfile.postcode || 'Not provided'}</p>
                   </div>
                 </div>
               </div>
@@ -739,7 +739,7 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedProfile.research_roles?.map((item, index) => (
+                  {selectedProfile.what_i_have?.map((item, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {item}
                     </Badge>
@@ -751,8 +751,11 @@ const SavedCollaborators = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-2 block">What I need</label>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="text-xs">Equipment</Badge>
-                  <Badge variant="secondary" className="text-xs">Experiment</Badge>
+                  {selectedProfile.what_i_need?.map((item, index) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {item}
+                    </Badge>
+                  )) || <span className="text-xs text-gray-500">No items listed</span>}
                 </div>
               </div>
 

@@ -86,7 +86,7 @@ const DiscoverCollaborators = () => {
     const specializationKeywords = collaborator.specialization_keywords?.join(' ').toLowerCase() || '';
     const whatIHave = collaborator.what_i_have?.join(' ').toLowerCase() || '';
     const researchRole = collaborator.research_roles?.join(' ').toLowerCase() || '';
-    const bio = collaborator.bio?.toLowerCase() || '';
+    const bio = collaborator.career_description?.toLowerCase() || '';
     
     return displayName.includes(searchLower) || 
            role.includes(searchLower) || 
@@ -648,17 +648,17 @@ const DiscoverCollaborators = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
+                    {/* <div>
                       <label className="text-sm font-medium text-gray-600">Country</label>
                       <p className="text-sm">{selectedProfile.country || 'Not provided'}</p>
-                    </div>
+                    </div> */}
                     <div>
-                      <label className="text-sm font-medium text-gray-600">City</label>
+                      <label className="text-sm font-medium text-gray-600">Country/City</label>
                       <p className="text-sm">{selectedProfile.state_city || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Post Number</label>
-                      <p className="text-sm">{selectedProfile.zip_code || 'Not provided'}</p>
+                      <p className="text-sm">{selectedProfile.postcode || 'Not provided'}</p>
                     </div>
                   </div>
                 </div>
@@ -697,7 +697,7 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">What I have</label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProfile.research_roles?.map((item, index) => (
+                    {selectedProfile.what_i_have?.map((item, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {item}
                       </Badge>
@@ -709,8 +709,11 @@ const DiscoverCollaborators = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600 mb-2 block">What I need</label>
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="text-xs">Equipment</Badge>
-                    <Badge variant="secondary" className="text-xs">Experiment</Badge>
+                    {selectedProfile.what_i_need?.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {item}
+                      </Badge>
+                    )) || <span className="text-xs text-gray-500">No items listed</span>}
                   </div>
                 </div>
 
