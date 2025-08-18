@@ -47,6 +47,14 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  console.log('VideoCallInterface render:', { 
+    isExpanded, 
+    remoteUserName, 
+    onToggleExpand: !!onToggleExpand,
+    hasLocalVideoRef: !!localVideoRef.current,
+    hasRemoteVideoRef: !!remoteVideoRef.current
+  });
+
   if (isExpanded) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex flex-col">
@@ -65,10 +73,14 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
             <span className="font-medium">{remoteUserName}</span>
           </div>
           <Button
-            onClick={onToggleExpand}
+            onClick={() => {
+              console.log('Minimize button clicked');
+              onToggleExpand();
+            }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white hover:bg-opacity-20"
+            className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+            title="Minimize to small view"
           >
             <Minimize2 className="w-5 h-5" />
           </Button>
@@ -94,6 +106,16 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                 muted
                 className="w-full h-full object-cover"
               />
+            </div>
+          )}
+          
+          {/* Show placeholder when video is disabled */}
+          {!isVideoEnabled && (
+            <div className="absolute top-4 right-4 w-48 h-36 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="text-white text-center">
+                <VideoOff className="w-8 h-8 mx-auto mb-2" />
+                <span className="text-sm">Camera Off</span>
+              </div>
             </div>
           )}
         </div>
@@ -149,10 +171,14 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
           Video call with {remoteUserName}
         </div>
         <Button 
-          onClick={onToggleExpand}
+          onClick={() => {
+            console.log('Expand button clicked');
+            onToggleExpand();
+          }}
           variant="ghost"
           size="sm"
-          className="text-gray-600 hover:text-gray-800"
+          className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2 rounded-lg transition-colors"
+          title="Expand to full screen"
         >
           <Maximize2 className="w-5 h-5" />
         </Button>
@@ -178,6 +204,13 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
               muted
               className="w-full h-full object-cover"
             />
+          </div>
+        )}
+        
+        {/* Show placeholder when video is disabled in minimized view */}
+        {!isVideoEnabled && (
+          <div className="absolute top-2 right-2 w-16 h-12 bg-gray-800 rounded overflow-hidden flex items-center justify-center">
+            <VideoOff className="w-4 h-4 text-white" />
           </div>
         )}
       </div>

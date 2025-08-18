@@ -51,9 +51,18 @@ export const useWebRTC = () => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
+      
+      // Update video element immediately
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
+        // Ensure video plays
+        try {
+          await localVideoRef.current.play();
+        } catch (playError) {
+          console.log('Auto-play prevented, user interaction required');
+        }
       }
+      
       return stream;
     } catch (error) {
       console.error('Error accessing media devices:', error);
@@ -299,9 +308,24 @@ export const useWebRTC = () => {
     if (localStream) {
       const videoTrack = localStream.getVideoTracks()[0];
       if (videoTrack) {
-        // Just toggle the enabled state to show/hide video
+        // Toggle the enabled state to show/hide video
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoEnabled(videoTrack.enabled);
+        
+        // Update the video element to reflect the change immediately
+        if (localVideoRef.current) {
+          if (videoTrack.enabled) {
+            // If video is enabled, ensure the video element shows the stream
+            localVideoRef.current.srcObject = localStream;
+            // Try to play the video
+            localVideoRef.current.play().catch(error => {
+              console.log('Video play failed:', error);
+            });
+          } else {
+            // If video is disabled, the video element will show the last frame
+            // We don't need to change srcObject, just let the track be disabled
+          }
+        }
       }
     }
   }, [localStream]);
@@ -480,6 +504,20 @@ export const useWebRTC = () => {
       supabase.removeChannel(channel);
     };
   }, [user?.id, endCall]);
+
+  // Update video element when localStream changes
+  useEffect(() => {
+    if (localStream && localVideoRef.current) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  // Initialize video element when ref is available
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localVideoRef.current, localStream]);
 
   return {
     localStream,

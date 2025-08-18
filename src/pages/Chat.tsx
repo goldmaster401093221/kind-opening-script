@@ -130,11 +130,25 @@ const Chat = () => {
   };
 
   const handleExpandCall = () => {
+    console.log('Expanding call, current state:', { 
+      showExpandedCalling, 
+      isCallActive, 
+      activeCall: !!activeCall,
+      outgoingCall: !!outgoingCall 
+    });
     setShowExpandedCalling(true);
+    console.log('After setting showExpandedCalling to true');
   };
 
   const handleMinimizeCall = () => {
+    console.log('Minimizing call, current state:', { 
+      showExpandedCalling, 
+      isCallActive, 
+      activeCall: !!activeCall,
+      outgoingCall: !!outgoingCall 
+    });
     setShowExpandedCalling(false);
+    console.log('After setting showExpandedCalling to false');
   };
 
   const home = [
@@ -191,6 +205,18 @@ const Chat = () => {
   // Get active conversation details
   const activeConversationData = conversations.find(conv => conv.id === activeConversation);
   const currentChatPartner = activeConversationData?.other_participant;
+
+  // Debug useEffect to monitor state changes
+  useEffect(() => {
+    console.log('State changed:', {
+      showExpandedCalling,
+      isCallActive,
+      hasActiveCall: !!activeCall,
+      hasOutgoingCall: !!outgoingCall,
+      shouldShowMinimized: (isCallActive || outgoingCall || activeCall) && !showExpandedCalling,
+      shouldShowExpanded: showExpandedCalling && (isCallActive || outgoingCall || activeCall)
+    });
+  }, [showExpandedCalling, isCallActive, activeCall, outgoingCall]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -426,31 +452,46 @@ const Chat = () => {
             </div>
 
             {/* Video Call Interface - Show when call is active or there's an active call */}
-            {(isCallActive || outgoingCall || activeCall) && !showExpandedCalling && (
+            {(isCallActive || outgoingCall || activeCall) && (
               <div className="p-4">
-                <VideoCallInterface
-                  localVideoRef={localVideoRef}
-                  remoteVideoRef={remoteVideoRef}
-                  isMuted={isMuted}
-                  isVideoEnabled={isVideoEnabled}
-                  isScreenSharing={isScreenSharing}
-                  isExpanded={false}
-                  remoteUserName={
-                    activeCall?.caller_profile 
-                      ? getDisplayNameFromProfile(activeCall.caller_profile)
-                      : currentChatPartner 
-                        ? getDisplayNameFromProfile(currentChatPartner)
-                        : 'Unknown User'
-                  }
-                  remoteUserAvatar={
-                    activeCall?.caller_profile?.avatar_url || currentChatPartner?.avatar_url
-                  }
-                  onToggleMute={toggleMute}
-                  onToggleVideo={toggleVideo}
-                  onToggleScreenShare={toggleScreenShare}
-                  onEndCall={handleEndCall}
-                  onToggleExpand={handleExpandCall}
-                />
+                {/* Debug info */}
+                <div className="text-xs text-gray-500 mb-2">
+                  Debug: showExpandedCalling={showExpandedCalling.toString()}, 
+                  isCallActive={isCallActive.toString()}, 
+                  hasActiveCall={!!activeCall},
+                  hasOutgoingCall={!!outgoingCall}
+                </div>
+                {!showExpandedCalling && (
+                  <VideoCallInterface
+                    localVideoRef={localVideoRef}
+                    remoteVideoRef={remoteVideoRef}
+                    isMuted={isMuted}
+                    isVideoEnabled={isVideoEnabled}
+                    isScreenSharing={isScreenSharing}
+                    isExpanded={false}
+                    remoteUserName={
+                      activeCall?.caller_profile 
+                        ? getDisplayNameFromProfile(activeCall.caller_profile)
+                        : currentChatPartner 
+                          ? getDisplayNameFromProfile(currentChatPartner)
+                          : 'Unknown User'
+                    }
+                    remoteUserAvatar={
+                      activeCall?.caller_profile?.avatar_url || currentChatPartner?.avatar_url
+                    }
+                    onToggleMute={toggleMute}
+                    onToggleVideo={toggleVideo}
+                    onToggleScreenShare={toggleScreenShare}
+                    onEndCall={handleEndCall}
+                    onToggleExpand={handleExpandCall}
+                  />
+                )}
+                {/* Fallback message if neither view is showing */}
+                {showExpandedCalling && (
+                  <div className="text-xs text-red-500">
+                    Expanded view should be showing above
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -583,22 +624,38 @@ const Chat = () => {
       </div>
 
       {/* Expanded Video Call Interface */}
-      {showExpandedCalling && currentChatPartner && (isCallActive || activeCall) && (
-        <VideoCallInterface
-          localVideoRef={localVideoRef}
-          remoteVideoRef={remoteVideoRef}
-          isMuted={isMuted}
-          isVideoEnabled={isVideoEnabled}
-          isScreenSharing={isScreenSharing}
-          isExpanded={true}
-          remoteUserName={getDisplayNameFromProfile(currentChatPartner)}
-          remoteUserAvatar={currentChatPartner?.avatar_url}
-          onToggleMute={toggleMute}
-          onToggleVideo={toggleVideo}
-          onToggleScreenShare={toggleScreenShare}
-          onEndCall={handleEndCall}
-          onToggleExpand={handleMinimizeCall}
-        />
+      {showExpandedCalling && (isCallActive || outgoingCall || activeCall) && (
+        <>
+          {/* Debug info */}
+          <div className="fixed top-0 left-0 z-50 bg-red-500 text-white p-2 text-xs">
+            Debug: showExpandedCalling={showExpandedCalling.toString()}, 
+            isCallActive={isCallActive.toString()}, 
+            hasActiveCall={!!activeCall}
+          </div>
+          <VideoCallInterface
+            localVideoRef={localVideoRef}
+            remoteVideoRef={remoteVideoRef}
+            isMuted={isMuted}
+            isVideoEnabled={isVideoEnabled}
+            isScreenSharing={isScreenSharing}
+            isExpanded={true}
+            remoteUserName={
+              activeCall?.caller_profile 
+                ? getDisplayNameFromProfile(activeCall.caller_profile)
+                : currentChatPartner 
+                  ? getDisplayNameFromProfile(currentChatPartner)
+                  : 'Unknown User'
+            }
+            remoteUserAvatar={
+              activeCall?.caller_profile?.avatar_url || currentChatPartner?.avatar_url
+            }
+            onToggleMute={toggleMute}
+            onToggleVideo={toggleVideo}
+            onToggleScreenShare={toggleScreenShare}
+            onEndCall={handleEndCall}
+            onToggleExpand={handleMinimizeCall}
+          />
+        </>
       )}
 
       {/* Incoming Call Notification */}
