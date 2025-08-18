@@ -120,6 +120,7 @@ const Auth = () => {
             gender: signupData.gender,
             highest_degree: signupData.highestDegree,
             username: `${signupData.firstName.toLowerCase()}${signupData.lastName.toLowerCase()}`,
+            user_id_number: signupData.orcidNumber,
             linkedin_url: signupData.linkedinUrl,
             phone: signupData.phone,
             researchgate_url: signupData.researchgateUrl,
