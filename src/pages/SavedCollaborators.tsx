@@ -485,7 +485,7 @@ const SavedCollaborators = () => {
                   <TableHead className="text-gray-700 font-medium">Researcher</TableHead>
                   <TableHead className="text-center text-gray-700 font-medium">Total Collaborations</TableHead>
                   <TableHead className="text-center text-gray-700 font-medium">Ratings</TableHead>
-                  <TableHead className="text-gray-700 font-medium">Research Role</TableHead>
+                  <TableHead className="text-gray-700 font-medium">What I have</TableHead>
                   <TableHead className="text-center text-gray-700 font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
