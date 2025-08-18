@@ -114,13 +114,12 @@ const Auth = () => {
         password: signupData.password,
         options: {
           emailRedirectTo: redirectUrl,
-            data: {
+          data: {
             first_name: signupData.firstName,
             last_name: signupData.lastName,
             gender: signupData.gender,
             highest_degree: signupData.highestDegree,
             username: `${signupData.firstName.toLowerCase()}${signupData.lastName.toLowerCase()}`,
-            orcid_number: signupData.orcidNumber,
             linkedin_url: signupData.linkedinUrl,
             phone: signupData.phone,
             researchgate_url: signupData.researchgateUrl,
@@ -129,9 +128,9 @@ const Auth = () => {
             institution: signupData.institution,
             college: signupData.college,
             department: signupData.department,
-            state_city: signupData.countryCity,
+            country_city: signupData.countryCity,
             postcode: signupData.postcode,
-            experience: signupData.experienceYears,
+            experience_years: signupData.experienceYears,
             primary_research_area: signupData.primaryResearchArea,
             secondary_research_area: signupData.secondaryResearchArea,
             keywords: signupData.keywords.join(','),
