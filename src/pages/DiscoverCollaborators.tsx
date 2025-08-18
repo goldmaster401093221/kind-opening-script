@@ -423,7 +423,7 @@ const DiscoverCollaborators = () => {
                       <TableHead className="min-w-[200px]">Researcher</TableHead>
                       <TableHead className="text-center min-w-[150px]">Total Collaborations</TableHead>
                       <TableHead className="text-center min-w-[100px]">Ratings</TableHead>
-                      <TableHead className="min-w-[200px]">What I have</TableHead>
+                      <TableHead className="min-w-[200px]">Research Role</TableHead>
                       <TableHead className="min-w-[120px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
