@@ -169,6 +169,62 @@ const DiscoverCollaborators = () => {
       return;
     }
     
+    // Check if a request already exists between these users
+    const { data: existingRequest, error: checkError } = await supabase
+      .from('collaborations')
+      .select('id, status')
+      .eq('requester_id', user.id)
+      .eq('collaborator_id', (selectedProfile as any).id)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      console.error('Error checking existing request:', checkError);
+      toast({ title: 'Error', description: 'Failed to check existing requests.' });
+      return;
+    }
+
+    if (existingRequest) {
+      // Request already exists
+      if (existingRequest.status === 'contacted') {
+        toast({ 
+          title: 'Request Already Sent', 
+          description: 'You have already sent a collaboration request to this user. Please wait for their response.',
+          variant: 'destructive'
+        });
+        return;
+      } else if (existingRequest.status === 'collaborated') {
+        toast({ 
+          title: 'Already Collaborating', 
+          description: 'You are already collaborating with this user.',
+          variant: 'destructive'
+        });
+        return;
+      } else {
+        // For declined, ended, completed, or other statuses, allow sending new request
+        // Show a toast to inform user about previous request status
+        let statusMessage = '';
+        switch (existingRequest.status) {
+          case 'declined':
+            statusMessage = 'Your previous request was declined.';
+            break;
+          case 'ended':
+            statusMessage = 'Your previous collaboration has ended.';
+            break;
+          case 'completed':
+            statusMessage = 'Your previous collaboration was completed.';
+            break;
+          default:
+            statusMessage = `Your previous request status was: ${existingRequest.status}.`;
+        }
+        
+        toast({ 
+          title: 'Previous Request Found', 
+          description: `${statusMessage} You can send a new collaboration request.`,
+        });
+        // Continue with the request process
+      }
+    }
+    
     // Show agreement modal if terms are accepted
     setShowAgreementModal(true);
   };
