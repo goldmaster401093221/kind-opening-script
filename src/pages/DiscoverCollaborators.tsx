@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useCollaborators } from '@/hooks/useCollaborators';
+import { usePendingRequests } from '@/hooks/usePendingRequests';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -58,6 +59,7 @@ const DiscoverCollaborators = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
   const { collaborators, loading: collaboratorsLoading, isFavorite, isBestMatch, isContacted, isCollaborated, toggleFavorite, getDisplayName: getCollaboratorDisplayName, getInitials: getCollaboratorInitials, getUserRole } = useCollaborators();
+  const { pendingCount } = usePendingRequests();
   const [activeTab, setActiveTab] = useState('Best Matching');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
@@ -67,9 +69,9 @@ const DiscoverCollaborators = () => {
   const [requestOpen, setRequestOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [term1, setTerm1] = useState(true);
-  const [term2, setTerm2] = useState(false);
-  const [term3, setTerm3] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { toast } = useToast();
 
   // Filter collaborators based on search query
@@ -162,18 +164,25 @@ const DiscoverCollaborators = () => {
       toast({ title: 'Missing dates', description: 'Please select both start and end dates.' });
       return;
     }
-    const terms: string[] = [];
-    if (term1) terms.push('Term of collaboration 1');
-    if (term2) terms.push('Term of collaboration 2');
-    if (term3) terms.push('Term of collaboration 3');
+    if (!termsAccepted) {
+      setShowConfirmModal(true);
+      return;
+    }
+    
+    // Show agreement modal if terms are accepted
+    setShowAgreementModal(true);
+  };
 
+  const handleConfirmAgreement = async () => {
+    setShowAgreementModal(false);
+    
     const payload: any = {
       requester_id: user.id,
       collaborator_id: (selectedProfile as any).id,
       status: 'contacted',
       start_date: startDate.toISOString().slice(0, 10),
       end_date: endDate.toISOString().slice(0, 10),
-      terms,
+      terms: ['Terms of collaboration accepted'],
     };
 
     const { error } = await supabase.from('collaborations').insert([payload as any]);
@@ -185,10 +194,16 @@ const DiscoverCollaborators = () => {
       setRequestOpen(false);
       setStartDate(undefined);
       setEndDate(undefined);
-      setTerm1(true);
-      setTerm2(false);
-      setTerm3(true);
+      setTermsAccepted(false);
     }
+  };
+
+  const handleDeclineAgreement = () => {
+    setShowAgreementModal(false);
+  };
+
+  const handleBackToTerms = () => {
+    setShowConfirmModal(false);
   };
 
   return (
@@ -242,7 +257,7 @@ const DiscoverCollaborators = () => {
             {collaborationItems.map((item, index) => (
               <div
                 key={index}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
+                className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer ${
                   item.active 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-700 hover:bg-gray-100'
@@ -257,8 +272,15 @@ const DiscoverCollaborators = () => {
                   }
                 }}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="text-sm">{item.label}</span>
+                <div className="flex items-center space-x-3">
+                  <item.icon className="w-5 h-5" />
+                  <span className="text-sm">{item.label}</span>
+                </div>
+                {item.label === 'Collaboration' && pendingCount > 0 && (
+                  <div className="flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full">
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -484,11 +506,11 @@ const DiscoverCollaborators = () => {
                          </TableCell>
                           <TableCell className="bg-gray-100">
                             <div className="flex flex-wrap gap-1">
-                              {collaborator.research_roles?.map((role, roleIndex) => (
-                                <Badge key={roleIndex} variant="outline" className="text-xs">
-                                  {role}
+                              {collaborator.what_i_have?.map((item, itemIndex) => (
+                                <Badge key={itemIndex} variant="outline" className="text-xs">
+                                  {item}
                                 </Badge>
-                              )) || <span className="text-xs text-gray-500">No roles listed</span>}
+                              )) || <span className="text-xs text-gray-500">No items listed</span>}
                             </div>
                           </TableCell>
                          <TableCell>
@@ -759,16 +781,8 @@ const DiscoverCollaborators = () => {
 
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="term1" checked={term1} onCheckedChange={(v) => setTerm1(!!v)} />
-                        <label htmlFor="term1" className="text-sm text-gray-700">Term of collaboration</label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="term2" checked={term2} onCheckedChange={(v) => setTerm2(!!v)} />
-                        <label htmlFor="term2" className="text-sm text-gray-700">Term of collaboration</label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="term3" checked={term3} onCheckedChange={(v) => setTerm3(!!v)} />
-                        <label htmlFor="term3" className="text-sm text-gray-700">Term of collaboration</label>
+                        <Checkbox id="termsAccepted" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(!!v)} />
+                        <label htmlFor="termsAccepted" className="text-sm text-gray-700">I agree to the terms and conditions</label>
                       </div>
                     </div>
                   </div>
@@ -785,6 +799,47 @@ const DiscoverCollaborators = () => {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Agreement Modal */}
+        <Dialog open={showAgreementModal} onOpenChange={setShowAgreementModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Terms of Collaboration</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                I agree to work in good faith, sharing expertise and responsibilities to achieve the objectives of the collaboration. I commit to maintaining integrity, transparency, and confidentiality where required. I adhere to general ethical standards of collaboration and make fair contributions to the collaborative projects. In case of disagreements, issues should be resolved through open, civilized and trustful dialogue.
+              </p>
+            </div>
+            <DialogFooter className="flex space-x-2">
+              <Button variant="outline" onClick={handleDeclineAgreement}>
+                No, Thanks.
+              </Button>
+              <Button onClick={handleConfirmAgreement}>
+                Yes, I agree.
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Confirm Terms Modal */}
+        <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Terms Required</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-gray-700">
+                Please confirm the term of collaboration.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleBackToTerms}>
+                Back
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
         </div>
