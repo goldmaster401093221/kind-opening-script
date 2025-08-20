@@ -47,6 +47,14 @@ const Collaboration = () => {
   const [showEndCollaborationModal, setShowEndCollaborationModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [endingCollabId, setEndingCollabId] = useState<string | null>(null);
+  
+  // Accept/Reject request states
+  const [acceptRejectModalOpen, setAcceptRejectModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [acceptRejectAction, setAcceptRejectAction] = useState<'accept' | 'reject' | null>(null);
+  const [acceptRejectTermsAccepted, setAcceptRejectTermsAccepted] = useState(false);
+  const [showAcceptRejectAgreementModal, setShowAcceptRejectAgreementModal] = useState(false);
+  const [showAcceptRejectConfirmModal, setShowAcceptRejectConfirmModal] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -358,34 +366,66 @@ const Collaboration = () => {
   };
 
   const handleAccept = async (req: any) => {
-    const { error } = await supabase
-      .from('collaborations')
-      .update({ status: 'collaborated' })
-      .eq('id', req.id);
-    if (error) {
-      console.error('Accept error', error);
-      toast({ title: 'Failed to accept', description: error.message, variant: 'destructive' });
-      return;
-    }
-    toast({ title: 'Request accepted' });
-    fetchRequests();
-    fetchMyRequests();
-    fetchInProgress();
+    setSelectedRequest(req);
+    setAcceptRejectAction('accept');
+    setAcceptRejectModalOpen(true);
+    setAcceptRejectTermsAccepted(false);
   };
 
   const handleReject = async (req: any) => {
-    const { error } = await supabase
-      .from('collaborations')
-      .update({ status: 'declined' })
-      .eq('id', req.id);
-    if (error) {
-      console.error('Reject error', error);
-      toast({ title: 'Failed to reject', description: error.message, variant: 'destructive' });
+    setSelectedRequest(req);
+    setAcceptRejectAction('reject');
+    setAcceptRejectModalOpen(true);
+    setAcceptRejectTermsAccepted(false);
+  };
+
+  const handleAcceptRejectRequest = async () => {
+    if (!acceptRejectTermsAccepted) {
+      setShowAcceptRejectConfirmModal(true);
       return;
     }
-    toast({ title: 'Request rejected' });
+    
+    // Show agreement modal if terms are accepted
+    setShowAcceptRejectAgreementModal(true);
+  };
+
+  const handleConfirmAcceptRejectAgreement = async () => {
+    setShowAcceptRejectAgreementModal(false);
+    
+    if (!selectedRequest || !acceptRejectAction) return;
+
+    const newStatus = acceptRejectAction === 'accept' ? 'collaborated' : 'declined';
+    
+    const { error } = await supabase
+      .from('collaborations')
+      .update({ status: newStatus })
+      .eq('id', selectedRequest.id);
+    
+    if (error) {
+      console.error(`${acceptRejectAction} error`, error);
+      toast({ title: `Failed to ${acceptRejectAction}`, description: error.message, variant: 'destructive' });
+      return;
+    }
+    
+    toast({ title: `Request ${acceptRejectAction}ed` });
+    setAcceptRejectModalOpen(false);
+    setSelectedRequest(null);
+    setAcceptRejectAction(null);
+    setAcceptRejectTermsAccepted(false);
+    
     fetchRequests();
     fetchMyRequests();
+    if (acceptRejectAction === 'accept') {
+      fetchInProgress();
+    }
+  };
+
+  const handleDeclineAcceptRejectAgreement = () => {
+    setShowAcceptRejectAgreementModal(false);
+  };
+
+  const handleBackToAcceptRejectTerms = () => {
+    setShowAcceptRejectConfirmModal(false);
   };
 
   // Build today's activity feed per collaboration
@@ -1392,6 +1432,96 @@ const Collaboration = () => {
         onOpenChange={setShowFeedbackModal}
         onSubmit={handleFeedbackSubmit}
       />
+
+      {/* Accept/Reject Request Modal */}
+      <Dialog open={acceptRejectModalOpen} onOpenChange={setAcceptRejectModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              {acceptRejectAction === 'accept' ? 'Accept' : 'Reject'} Collaboration Request
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {selectedRequest && (
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>You are about to <strong>{acceptRejectAction}</strong> a collaboration request from:</p>
+                  <p className="font-medium mt-1">
+                    {requesterProfiles[selectedRequest.requester_id] 
+                      ? `${requesterProfiles[selectedRequest.requester_id].first_name || ''} ${requesterProfiles[selectedRequest.requester_id].last_name || ''}`.trim() || requesterProfiles[selectedRequest.requester_id].email 
+                      : 'Unknown user'}
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="acceptRejectTermsAccepted" 
+                      checked={acceptRejectTermsAccepted} 
+                      onCheckedChange={(v) => setAcceptRejectTermsAccepted(!!v)} 
+                    />
+                    <label htmlFor="acceptRejectTermsAccepted" className="text-sm text-gray-700">
+                      I agree to the terms and conditions
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex space-x-2">
+            <Button variant="outline" onClick={() => setAcceptRejectModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              className={`${acceptRejectAction === 'accept' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
+              onClick={handleAcceptRejectRequest}
+            >
+              {acceptRejectAction === 'accept' ? 'Accept' : 'Reject'} Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Accept/Reject Agreement Modal */}
+      <Dialog open={showAcceptRejectAgreementModal} onOpenChange={setShowAcceptRejectAgreementModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Terms of Collaboration</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              I agree to work in good faith, sharing expertise and responsibilities to achieve the objectives of the collaboration. I commit to maintaining integrity, transparency, and confidentiality where required. I adhere to general ethical standards of collaboration and make fair contributions to the collaborative projects. In case of disagreements, issues should be resolved through open, civilized and trustful dialogue.
+            </p>
+          </div>
+          <DialogFooter className="flex space-x-2">
+            <Button variant="outline" onClick={handleDeclineAcceptRejectAgreement}>
+              No, Thanks.
+            </Button>
+            <Button onClick={handleConfirmAcceptRejectAgreement}>
+              Yes, I agree.
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Accept/Reject Confirm Terms Modal */}
+      <Dialog open={showAcceptRejectConfirmModal} onOpenChange={setShowAcceptRejectConfirmModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Terms Required</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-700">
+              Please confirm the term of collaboration.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleBackToAcceptRejectTerms}>
+              Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
