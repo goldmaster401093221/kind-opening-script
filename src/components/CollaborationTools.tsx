@@ -36,7 +36,7 @@ const CollaborationTools = () => {
             Powerful <span className="text-gray-900">Collaboration Tools</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Everything you need to collaborate effectively with collaborators worldwide
+            Everything you need to collaborate effectively with researchers worldwide
           </p>
         </div>
 

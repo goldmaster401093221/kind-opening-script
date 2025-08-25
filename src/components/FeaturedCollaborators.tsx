@@ -115,7 +115,7 @@ const FeaturedCollaborators = () => {
             onClick={handleSearchCollaborators}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md"
           >
-            Search More Collaborators
+            Search for Collaborators
           </Button>
         </div>
       </div>

@@ -43,7 +43,7 @@ const Header = () => {
             Dashboard
           </button>
           <button onClick={() => handleNavigation('/discover-collaborators')} className="text-gray-600 hover:text-blue-600 transition-colors">
-            discover collaborators
+            Discover Collaborators
           </button>
           <button onClick={() => handleNavigation('/collaboration')} className="text-gray-600 hover:text-blue-600 transition-colors">
             Collaborations
