@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface SignupStep1Props {
   formData: {
@@ -19,8 +20,10 @@ interface SignupStep1Props {
     researchgateUrl: string;
     googleScholarUrl: string;
     careerDescription: string;
+    isIndependentResearcher: boolean;
+    isRetiredResearcher: boolean;
   };
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | boolean) => void;
   onNext: () => void;
 }
 
@@ -43,9 +46,45 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
       <Progress value={33} className="w-full" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Research Status Checkboxes */}
+        <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+          <Label className="text-base font-medium">Research Status</Label>
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="independentResearcher"
+                checked={formData.isIndependentResearcher}
+                onCheckedChange={(checked) => {
+                  onChange('isIndependentResearcher', !!checked);
+                  if (checked) {
+                    onChange('isRetiredResearcher', false);
+                  }
+                }}
+              />
+              <Label htmlFor="independentResearcher" className="text-sm font-normal">
+                Independent researcher
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="retiredResearcher"
+                checked={formData.isRetiredResearcher}
+                onCheckedChange={(checked) => {
+                  onChange('isRetiredResearcher', !!checked);
+                  if (checked) {
+                    onChange('isIndependentResearcher', false);
+                  }
+                }}
+              />
+              <Label htmlFor="retiredResearcher" className="text-sm font-normal">
+                Retired researcher
+              </Label>
+            </div>
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
             <Input
               id="firstName"
               type="text"
@@ -55,7 +94,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastName">Last Name <span className="text-destructive">*</span></Label>
             <Input
               id="lastName"
               type="text"
@@ -67,7 +106,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="gender">Gender</Label>
+          <Label htmlFor="gender">Gender <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Select value={formData.gender} onValueChange={(value) => onChange('gender', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select gender" />
@@ -81,8 +120,8 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="highestDegree">Highest Degree Achieved</Label>
-          <Select value={formData.highestDegree} onValueChange={(value) => onChange('highestDegree', value)}>
+          <Label htmlFor="highestDegree">Highest Degree Achieved <span className="text-destructive">*</span></Label>
+          <Select value={formData.highestDegree} onValueChange={(value) => onChange('highestDegree', value)} required>
             <SelectTrigger>
               <SelectValue placeholder="Select highest degree" />
             </SelectTrigger>
@@ -96,7 +135,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
           <Input
             id="email"
             type="email"
@@ -107,7 +146,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
           <Input
             id="password"
             type="password"
@@ -118,7 +157,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="orcidNumber">ORCID Number</Label>
+          <Label htmlFor="orcidNumber">ORCID Number <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Input
             id="orcidNumber"
             type="text"
@@ -128,7 +167,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="linkedinUrl">LinkedIn Link</Label>
+          <Label htmlFor="linkedinUrl">LinkedIn Link <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Input
             id="linkedinUrl"
             type="url"
@@ -138,7 +177,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
+          <Label htmlFor="phone">Phone Number <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Input
             id="phone"
             type="tel"
@@ -148,7 +187,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="researchgateUrl">Research Gate Link</Label>
+          <Label htmlFor="researchgateUrl">Research Gate Link <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Input
             id="researchgateUrl"
             type="url"
@@ -158,7 +197,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="googleScholarUrl">Google Scholar Link</Label>
+          <Label htmlFor="googleScholarUrl">Google Scholar Link <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Input
             id="googleScholarUrl"
             type="url"
@@ -168,7 +207,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="careerDescription">Career Description</Label>
+          <Label htmlFor="careerDescription">Career Description <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <Input
             id="careerDescription"
             type="text"

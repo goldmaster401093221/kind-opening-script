@@ -375,7 +375,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="experienceYears">Research Experience in Years *</Label>
+          <Label htmlFor="experienceYears">Research Experience in Years <span className="text-destructive">*</span></Label>
           <Select 
             value={formData.experienceYears} 
             onValueChange={(value) => onChange('experienceYears', value)}
@@ -394,7 +394,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryResearchArea">Primary Research Area *</Label>
+          <Label htmlFor="primaryResearchArea">Primary Research Area <span className="text-destructive">*</span></Label>
           {showCustomPrimary ? (
             <Input
               value={customPrimaryArea}
@@ -425,7 +425,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="secondaryResearchArea">Secondary Research Area *</Label>
+          <Label htmlFor="secondaryResearchArea">Secondary Research Area <span className="text-destructive">*</span></Label>
           {showCustomSecondary ? (
             <Input
               value={customSecondaryArea}
@@ -456,7 +456,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Specialization/Keywords</Label>
+          <Label>Specialization/Keywords <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <div className="flex gap-2">
             {showCustomSpecialization ? (
               <Input
@@ -520,7 +520,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Research Role </Label>
+          <Label>Research Role <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <div className="flex gap-2">
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger className="flex-1">
@@ -556,7 +556,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Have</Label>
+          <Label>What I Have <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <div className="flex gap-2">
             {showCustomWhatIHave ? (
               <Input
@@ -620,7 +620,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Need</Label>
+          <Label>What I Need <span className="text-muted-foreground text-sm">(Optional)</span></Label>
           <div className="flex gap-2">
             {showCustomWhatINeed ? (
               <Input

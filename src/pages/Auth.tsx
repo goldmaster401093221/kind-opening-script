@@ -35,6 +35,8 @@ const Auth = () => {
     researchgateUrl: '',
     googleScholarUrl: '',
     careerDescription: '',
+    isIndependentResearcher: false,
+    isRetiredResearcher: false,
     // Step 2 - Institution Information
     institution: '',
     college: '',
@@ -99,7 +101,7 @@ const Auth = () => {
     }
   };
 
-  const handleSignupFieldChange = (field: string, value: string | string[]) => {
+  const handleSignupFieldChange = (field: string, value: string | string[] | boolean) => {
     setSignupData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -166,6 +168,8 @@ const Auth = () => {
         researchgateUrl: '',
         googleScholarUrl: '',
         careerDescription: '',
+        isIndependentResearcher: false,
+        isRetiredResearcher: false,
         institution: '',
         college: '',
         department: '',
@@ -289,6 +293,8 @@ const Auth = () => {
                       researchgateUrl: signupData.researchgateUrl,
                       googleScholarUrl: signupData.googleScholarUrl,
                       careerDescription: signupData.careerDescription,
+                      isIndependentResearcher: signupData.isIndependentResearcher,
+                      isRetiredResearcher: signupData.isRetiredResearcher,
                     }}
                     onChange={handleSignupFieldChange}
                     onNext={() => setCurrentStep(2)}
@@ -307,6 +313,7 @@ const Auth = () => {
                     onChange={handleSignupFieldChange}
                     onNext={() => setCurrentStep(3)}
                     onCancel={handleCancel}
+                    skipInstitution={signupData.isIndependentResearcher || signupData.isRetiredResearcher}
                   />
                 )}
                 
