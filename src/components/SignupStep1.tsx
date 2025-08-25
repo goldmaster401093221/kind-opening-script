@@ -4,7 +4,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface SignupStep1Props {
   formData: {
@@ -20,10 +19,8 @@ interface SignupStep1Props {
     researchgateUrl: string;
     googleScholarUrl: string;
     careerDescription: string;
-    isIndependentResearcher: boolean;
-    isRetiredResearcher: boolean;
   };
-  onChange: (field: string, value: string | boolean) => void;
+  onChange: (field: string, value: string) => void;
   onNext: () => void;
 }
 
@@ -46,41 +43,9 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
       <Progress value={33} className="w-full" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Researcher Type Checkboxes */}
-        <div className="space-y-3 p-4 border rounded-md bg-muted/50">
-          <Label className="text-sm font-medium">Researcher Type (Optional)</Label>
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="independentResearcher"
-                checked={formData.isIndependentResearcher}
-                onCheckedChange={(checked) => {
-                  onChange('isIndependentResearcher', checked as boolean);
-                  if (checked) onChange('isRetiredResearcher', false);
-                }}
-              />
-              <Label htmlFor="independentResearcher" className="text-sm">
-                Independent researcher
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="retiredResearcher"
-                checked={formData.isRetiredResearcher}
-                onCheckedChange={(checked) => {
-                  onChange('isRetiredResearcher', checked as boolean);
-                  if (checked) onChange('isIndependentResearcher', false);
-                }}
-              />
-              <Label htmlFor="retiredResearcher" className="text-sm">
-                Retired researcher
-              </Label>
-            </div>
-          </div>
-        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name *</Label>
+            <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
               type="text"
@@ -90,7 +55,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name *</Label>
+            <Label htmlFor="lastName">Last Name</Label>
             <Input
               id="lastName"
               type="text"
@@ -102,7 +67,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="gender">Gender (Optional)</Label>
+          <Label htmlFor="gender">Gender</Label>
           <Select value={formData.gender} onValueChange={(value) => onChange('gender', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select gender" />
@@ -116,7 +81,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="highestDegree">Highest Degree Achieved (Optional)</Label>
+          <Label htmlFor="highestDegree">Highest Degree Achieved</Label>
           <Select value={formData.highestDegree} onValueChange={(value) => onChange('highestDegree', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select highest degree" />
@@ -131,7 +96,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address *</Label>
+          <Label htmlFor="email">Email Address</Label>
           <Input
             id="email"
             type="email"
@@ -142,7 +107,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password *</Label>
+          <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
@@ -153,7 +118,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="orcidNumber">ORCID Number (Optional)</Label>
+          <Label htmlFor="orcidNumber">ORCID Number</Label>
           <Input
             id="orcidNumber"
             type="text"
@@ -163,7 +128,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="linkedinUrl">LinkedIn Link (Optional)</Label>
+          <Label htmlFor="linkedinUrl">LinkedIn Link</Label>
           <Input
             id="linkedinUrl"
             type="url"
@@ -173,7 +138,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number (Optional)</Label>
+          <Label htmlFor="phone">Phone Number</Label>
           <Input
             id="phone"
             type="tel"
@@ -183,7 +148,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="researchgateUrl">Research Gate Link (Optional)</Label>
+          <Label htmlFor="researchgateUrl">Research Gate Link</Label>
           <Input
             id="researchgateUrl"
             type="url"
@@ -193,7 +158,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="googleScholarUrl">Google Scholar Link (Optional)</Label>
+          <Label htmlFor="googleScholarUrl">Google Scholar Link</Label>
           <Input
             id="googleScholarUrl"
             type="url"
@@ -203,7 +168,7 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="careerDescription">Career Description (Optional)</Label>
+          <Label htmlFor="careerDescription">Career Description</Label>
           <Input
             id="careerDescription"
             type="text"
