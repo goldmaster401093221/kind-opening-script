@@ -456,7 +456,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Specialization/Keywords</Label>
+          <Label>Specialization/Keywords (Optional)</Label>
           <div className="flex gap-2">
             {showCustomSpecialization ? (
               <Input
@@ -520,7 +520,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Research Role </Label>
+          <Label>Research Role (Optional)</Label>
           <div className="flex gap-2">
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger className="flex-1">
@@ -556,7 +556,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Have</Label>
+          <Label>What I Have (Optional)</Label>
           <div className="flex gap-2">
             {showCustomWhatIHave ? (
               <Input
@@ -620,7 +620,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Need</Label>
+          <Label>What I Need (Optional)</Label>
           <div className="flex gap-2">
             {showCustomWhatINeed ? (
               <Input

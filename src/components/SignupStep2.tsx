@@ -15,9 +15,10 @@ interface SignupStep2Props {
   onChange: (field: string, value: string) => void;
   onNext: () => void;
   onCancel: () => void;
+  skipInstitutionFields?: boolean;
 }
 
-const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, onCancel }) => {
+const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, onCancel, skipInstitutionFields = false }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
@@ -30,47 +31,53 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
           Tell us more about you<br />
           to help you finding collaborators
         </h2>
-        <p className="text-lg text-muted-foreground">Institution Information</p>
+        <p className="text-lg text-muted-foreground">
+          {skipInstitutionFields ? "Location Information" : "Institution Information"}
+        </p>
       </div>
 
       <Progress value={66} className="w-full" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="institution">Institution</Label>
-          <Input
-            id="institution"
-            type="text"
-            value={formData.institution}
-            onChange={(e) => onChange('institution', e.target.value)}
-            required
-          />
-        </div>
+        {!skipInstitutionFields && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="institution">Institution *</Label>
+              <Input
+                id="institution"
+                type="text"
+                value={formData.institution}
+                onChange={(e) => onChange('institution', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="college">College *</Label>
+              <Input
+                id="college"
+                type="text"
+                value={formData.college}
+                onChange={(e) => onChange('college', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="department">Department *</Label>
+              <Input
+                id="department"
+                type="text"
+                value={formData.department}
+                onChange={(e) => onChange('department', e.target.value)}
+                required
+              />
+            </div>
+          </>
+        )}
 
         <div className="space-y-2">
-          <Label htmlFor="college">College</Label>
-          <Input
-            id="college"
-            type="text"
-            value={formData.college}
-            onChange={(e) => onChange('college', e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="department">Department</Label>
-          <Input
-            id="department"
-            type="text"
-            value={formData.department}
-            onChange={(e) => onChange('department', e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="countryCity">Country and City</Label>
+          <Label htmlFor="countryCity">Country and City *</Label>
           <Input
             id="countryCity"
             type="text"
@@ -81,13 +88,12 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="postcode">Postcode</Label>
+          <Label htmlFor="postcode">Postcode (Optional)</Label>
           <Input
             id="postcode"
             type="text"
             value={formData.postcode}
             onChange={(e) => onChange('postcode', e.target.value)}
-            required
           />
         </div>
 
