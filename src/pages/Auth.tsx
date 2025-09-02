@@ -14,6 +14,7 @@ import SignupStep3 from '@/components/SignupStep3';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -202,8 +203,40 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Reset email sent!",
+        description: "Please check your email for password reset instructions.",
+      });
+      
+      setIsForgotPassword(false);
+      setIsLogin(true);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCancel = () => {
     setIsLogin(true);
+    setIsForgotPassword(false);
     setCurrentStep(1);
   };
 
@@ -223,7 +256,54 @@ const Auth = () => {
 
         <Card>
           <CardContent className="pt-6">
-            {isLogin ? (
+            {isForgotPassword ? (
+              // Forgot Password Form
+              <>
+                <CardHeader className="space-y-1 px-0 pb-4">
+                  <CardTitle className="text-2xl font-bold text-center">
+                    Reset Password
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Enter your email address to receive password reset instructions
+                  </CardDescription>
+                </CardHeader>
+                
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Email'}
+                  </Button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Remember your password?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(false)}
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Back to login
+                    </button>
+                  </p>
+                </div>
+              </>
+            ) : isLogin ? (
               // Login Form
               <>
                 <CardHeader className="space-y-1 px-0 pb-4">
@@ -281,6 +361,16 @@ const Auth = () => {
                     {loading ? 'Loading...' : 'Sign In'}
                   </Button>
                 </form>
+
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
 
                 <div className="mt-6 text-center">
                   <p className="text-sm text-muted-foreground">
