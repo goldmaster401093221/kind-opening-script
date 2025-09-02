@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface SignupStep1Props {
   formData: {
@@ -22,12 +22,15 @@ interface SignupStep1Props {
     careerDescription: string;
     isIndependentResearcher: boolean;
     isRetiredResearcher: boolean;
+    researchStatus: string;
   };
   onChange: (field: string, value: string | boolean) => void;
   onNext: () => void;
 }
 
 const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
@@ -46,38 +49,44 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
       <Progress value={33} className="w-full" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Research Status Checkboxes */}
+        {/* Research Status Radio Buttons */}
         <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
           <Label className="text-base font-medium">Research Status</Label>
           <div className="flex flex-col space-y-2">
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="independentResearcher"
-                checked={formData.isIndependentResearcher}
-                onCheckedChange={(checked) => {
-                  onChange('isIndependentResearcher', !!checked);
-                  if (checked) {
-                    onChange('isRetiredResearcher', false);
-                  }
+              <input
+                type="radio"
+                id="independentRetiredResearcher"
+                name="researchStatus"
+                value="independent_retired"
+                checked={formData.isIndependentResearcher || formData.isRetiredResearcher}
+                onChange={() => {
+                  onChange('isIndependentResearcher', true);
+                  onChange('isRetiredResearcher', false);
+                  onChange('researchStatus', 'independent_retired');
                 }}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
               />
-              <Label htmlFor="independentResearcher" className="text-sm font-normal">
-                Independent researcher
+              <Label htmlFor="independentRetiredResearcher" className="text-sm font-normal">
+                Independent/Retired Researcher
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="retiredResearcher"
-                checked={formData.isRetiredResearcher}
-                onCheckedChange={(checked) => {
-                  onChange('isRetiredResearcher', !!checked);
-                  if (checked) {
-                    onChange('isIndependentResearcher', false);
-                  }
+              <input
+                type="radio"
+                id="affiliatedResearcher"
+                name="researchStatus"
+                value="affiliated"
+                checked={!formData.isIndependentResearcher && !formData.isRetiredResearcher}
+                onChange={() => {
+                  onChange('isIndependentResearcher', false);
+                  onChange('isRetiredResearcher', false);
+                  onChange('researchStatus', 'affiliated');
                 }}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
               />
-              <Label htmlFor="retiredResearcher" className="text-sm font-normal">
-                Retired researcher
+              <Label htmlFor="affiliatedResearcher" className="text-sm font-normal">
+                Affiliated Researcher
               </Label>
             </div>
           </div>
@@ -147,13 +156,26 @@ const SignupStep1: React.FC<SignupStep1Props> = ({ formData, onChange, onNext })
 
         <div className="space-y-2">
           <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
-          <Input
-            id="password"
-            type="password"
-            value={formData.password}
-            onChange={(e) => onChange('password', e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) => onChange('password', e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2">

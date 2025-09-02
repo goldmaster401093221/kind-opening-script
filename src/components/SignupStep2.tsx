@@ -9,16 +9,17 @@ interface SignupStep2Props {
     institution: string;
     college: string;
     department: string;
-    countryCity: string;
+    country: string;
+    city: string;
     postcode: string;
   };
   onChange: (field: string, value: string) => void;
   onNext: () => void;
-  onCancel: () => void;
+  onBack: () => void;
   skipInstitution?: boolean;
 }
 
-const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, onCancel, skipInstitution = false }) => {
+const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, onBack, skipInstitution = false }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
@@ -46,7 +47,7 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
                 type="text"
                 value={formData.institution}
                 onChange={(e) => onChange('institution', e.target.value)}
-                required
+                required={!skipInstitution}
               />
             </div>
 
@@ -57,7 +58,7 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
                 type="text"
                 value={formData.college}
                 onChange={(e) => onChange('college', e.target.value)}
-                required
+                required={!skipInstitution}
               />
             </div>
 
@@ -68,19 +69,30 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
                 type="text"
                 value={formData.department}
                 onChange={(e) => onChange('department', e.target.value)}
-                required
+                required={!skipInstitution}
               />
             </div>
           </>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="countryCity">Country and City <span className="text-destructive">*</span></Label>
+          <Label htmlFor="country">Country <span className="text-destructive">*</span></Label>
           <Input
-            id="countryCity"
+            id="country"
             type="text"
-            value={formData.countryCity}
-            onChange={(e) => onChange('countryCity', e.target.value)}
+            value={formData.country}
+            onChange={(e) => onChange('country', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="city">City <span className="text-destructive">*</span></Label>
+          <Input
+            id="city"
+            type="text"
+            value={formData.city}
+            onChange={(e) => onChange('city', e.target.value)}
             required
           />
         </div>
@@ -96,8 +108,8 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
         </div>
 
         <div className="flex gap-4">
-          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-            Cancel
+          <Button type="button" variant="outline" onClick={onBack} className="flex-1">
+            Back
           </Button>
           <Button type="submit" className="flex-1">
             Next
