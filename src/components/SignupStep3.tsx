@@ -438,9 +438,23 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
     }
   };
 
+  const isFormValid = () => {
+    return (
+      formData.experienceYears.trim() !== '' &&
+      formData.primaryResearchArea.trim() !== '' &&
+      formData.secondaryResearchArea.trim() !== '' &&
+      formData.specializationKeywords.length > 0 &&
+      formData.researchRoles.length > 0 &&
+      formData.whatIHave.length > 0 &&
+      formData.whatINeed.length > 0
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onFinish();
+    if (isFormValid()) {
+      onFinish();
+    }
   };
 
   return (
@@ -538,7 +552,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Specialization/Keywords <span className="text-muted-foreground text-sm">(Optional)</span></Label>
+          <Label>Specialization/Keywords <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">
             {showCustomSpecialization ? (
               <Input
@@ -602,7 +616,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Research Role <span className="text-muted-foreground text-sm">(Optional)</span></Label>
+          <Label>Research Role <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger className="flex-1">
@@ -638,7 +652,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Have <span className="text-muted-foreground text-sm">(Optional)</span></Label>
+          <Label>What I Have <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">
             {showCustomWhatIHave ? (
               <Input
@@ -702,7 +716,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Need <span className="text-muted-foreground text-sm">(Optional)</span></Label>
+          <Label>What I Need <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">
             {showCustomWhatINeed ? (
               <Input
@@ -769,7 +783,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
           <Button type="button" variant="outline" onClick={onBack} className="flex-1">
             Back
           </Button>
-          <Button type="submit" className="flex-1" disabled={loading}>
+          <Button type="submit" className="flex-1" disabled={loading || !isFormValid()}>
             {loading ? 'Creating Account...' : 'Finish'}
           </Button>
         </div>
