@@ -439,7 +439,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
   };
 
   const isFormValid = () => {
-    return (
+    const valid = (
       formData.experienceYears.trim() !== '' &&
       formData.primaryResearchArea.trim() !== '' &&
       formData.secondaryResearchArea.trim() !== '' &&
@@ -448,6 +448,20 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
       formData.whatIHave.length > 0 &&
       formData.whatINeed.length > 0
     );
+    
+    // Debug logging
+    console.log('Form validation:', {
+      experienceYears: formData.experienceYears.trim() !== '',
+      primaryResearchArea: formData.primaryResearchArea.trim() !== '',
+      secondaryResearchArea: formData.secondaryResearchArea.trim() !== '',
+      specializationKeywords: formData.specializationKeywords.length > 0,
+      researchRoles: formData.researchRoles.length > 0,
+      whatIHave: formData.whatIHave.length > 0,
+      whatINeed: formData.whatINeed.length > 0,
+      overall: valid
+    });
+    
+    return valid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
