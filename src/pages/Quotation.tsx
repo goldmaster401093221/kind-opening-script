@@ -27,6 +27,7 @@ const Quotation = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -37,19 +38,76 @@ const Quotation = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Initialize with welcome message
+  // Load existing conversation or create new one
   useEffect(() => {
-    setMessages([
-      {
-        id: 1,
-        sender: 'Bot',
-        content: '👋 Hi! I\'m here to help you with quotation services. What type of quote are you looking for today? I can assist with pricing, estimates, and quotation requests.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isOwn: false,
-        avatar: 'AI'
+    const loadConversation = async () => {
+      if (!user) return;
+
+      try {
+        // Try to find existing conversation
+        const { data: existingConversations, error: fetchError } = await supabase
+          .from('ai_conversations' as any)
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('conversation_type', 'quotation')
+          .order('updated_at', { ascending: false })
+          .limit(1);
+
+        if (fetchError) {
+          console.error('Error fetching conversation:', fetchError);
+          return;
+        }
+
+        if (existingConversations && existingConversations.length > 0) {
+          // Load existing conversation
+          const conversation = existingConversations[0] as any;
+          setConversationId(conversation.id);
+          setMessages(conversation.messages || []);
+        } else {
+          // Create new conversation with welcome message
+          const welcomeMessage = {
+            id: 1,
+            sender: 'Bot',
+            content: '👋 Hi! I\'m here to help you with quotation services. What type of quote are you looking for today? I can assist with pricing, estimates, and quotation requests.',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isOwn: false,
+            avatar: 'AI'
+          };
+
+          const { data: newConversation, error: createError } = await supabase
+            .from('ai_conversations' as any)
+            .insert({
+              user_id: user.id,
+              conversation_type: 'quotation',
+              messages: [welcomeMessage]
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Error creating conversation:', createError);
+            setMessages([welcomeMessage]);
+          } else {
+            setConversationId((newConversation as any).id);
+            setMessages([welcomeMessage]);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading conversation:', error);
+        // Fallback to local welcome message
+        setMessages([{
+          id: 1,
+          sender: 'Bot',
+          content: '👋 Hi! I\'m here to help you with quotation services. What type of quote are you looking for today? I can assist with pricing, estimates, and quotation requests.',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isOwn: false,
+          avatar: 'AI'
+        }]);
       }
-    ]);
-  }, []);
+    };
+
+    loadConversation();
+  }, [user]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -109,7 +167,8 @@ const Quotation = () => {
     };
 
     // Add user message to chat
-    setMessages(prev => [...prev, userMessage]);
+    const updatedMessagesWithUser = [...messages, userMessage];
+    setMessages(updatedMessagesWithUser);
     setMessage('');
     setIsLoading(true);
 
@@ -127,7 +186,19 @@ const Quotation = () => {
       };
 
       // Add AI response to chat
-      setMessages(prev => [...prev, aiMessage]);
+      const finalMessages = [...updatedMessagesWithUser, aiMessage];
+      setMessages(finalMessages);
+
+      // Save to database
+      if (conversationId) {
+        await supabase
+          .from('ai_conversations' as any)
+          .update({ 
+            messages: finalMessages,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', conversationId);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {
