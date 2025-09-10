@@ -1,8 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
+import { useAIChat } from '@/hooks/useAIChat';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,8 +24,8 @@ import {
 const Shipment = () => {
   const navigate = useNavigate();
   const { user, profile, loading: profileLoading, getDisplayName, getInitials } = useProfile();
+  const { messages, loading: chatLoading, addMessage } = useAIChat('shipment');
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -37,41 +37,38 @@ const Shipment = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Initialize with welcome message
-  useEffect(() => {
-    setMessages([
-      {
-        id: 1,
-        sender: 'Bot',
-        content: '👋 Hi, for what are you looking for shipment service today? Let me know so that I can help you.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isOwn: false,
-        avatar: 'AI'
-      }
-    ]);
-  }, []);
-
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+    } else {
+      navigate('/auth');
+    }
   };
 
   const sendMessageToOpenAI = async (userMessage) => {
-    const OPENAI_API_KEY = import.meta.env.VITE_OPENAI;
-    
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
+          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY || 'your-api-key-here'}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'system',
-              content: 'You are a helpful shipment service assistant. You help users with shipping inquiries, provide information about different shipping services, and assist with logistics questions. Be friendly, professional, and provide practical advice.'
+              content: `You are a helpful assistant specializing in shipment services. You help users with:
+              - Shipping quotes and rates
+              - Package tracking
+              - Shipping methods and delivery options
+              - International shipping regulations
+              - Packaging requirements
+              - Insurance options
+              - Delivery scheduling
+              
+              Always be professional, helpful, and provide accurate shipment-related information.`
             },
             {
               role: 'user',
@@ -83,10 +80,6 @@ const Shipment = () => {
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
       return data.choices[0].message.content;
     } catch (error) {
@@ -96,49 +89,41 @@ const Shipment = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isLoading) return;
 
     const userMessage = {
-      id: Date.now(),
-      sender: 'User',
-      content: message,
+      sender: 'User' as const,
+      content: message.trim(),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isOwn: true,
-      avatar: profile?.avatar_url || null,
-      initials: getInitials()
+      avatar: getInitials()
     };
 
-    // Add user message to chat
-    setMessages(prev => [...prev, userMessage]);
+    await addMessage(userMessage);
+    const currentMessage = message.trim();
     setMessage('');
     setIsLoading(true);
 
     try {
-      // Get AI response
-      const aiResponse = await sendMessageToOpenAI(message);
-      
-      const aiMessage = {
-        id: Date.now() + 1,
-        sender: 'Bot',
+      const aiResponse = await sendMessageToOpenAI(currentMessage);
+      const botMessage = {
+        sender: 'Bot' as const,
         content: aiResponse,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isOwn: false,
         avatar: 'AI'
       };
-
-      // Add AI response to chat
-      setMessages(prev => [...prev, aiMessage]);
+      await addMessage(botMessage);
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {
-        id: Date.now() + 1,
-        sender: 'Bot',
+        sender: 'Bot' as const,
         content: 'Sorry, I encountered an error. Please try again.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isOwn: false,
         avatar: 'AI'
       };
-      setMessages(prev => [...prev, errorMessage]);
+      await addMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -151,284 +136,184 @@ const Shipment = () => {
     }
   };
 
-  const home = [
-    { icon: Users, label: 'Dashboard', active: false },
-    { icon: Users, label: 'Discover Collaborators', active: false },
-    { icon: Bookmark, label: 'Saved Collaborators', active: false },
+  if (profileLoading || chatLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const navigationItems = [
+    { icon: Home, label: 'Home', path: '/dashboard' },
+    { icon: MessageSquare, label: 'Collaborations', path: '/collaboration' },
+    { 
+      icon: MoreHorizontal, 
+      label: 'Supporting Services',
+      subItems: [
+        { icon: Database, label: 'Data Center', path: '/data-center' },
+        { icon: Ship, label: 'Shipment', path: '/shipment', isActive: true },
+        { icon: FileText, label: 'Quotation', path: '/quotation' },
+        { icon: Wrench, label: 'Equipment', path: '/equipment' }
+      ]
+    }
   ];
 
-  const collaborationItems = [
-    { icon: MessageSquare, label: 'Collaboration', active: false },
-    { icon: MessageSquare, label: 'Chat', active: false },
-    { icon: Database, label: 'Data Center', active: false },
-  ];
+  const renderNavigationItem = (item, index) => {
+    if (item.subItems) {
+      return (
+        <div key={index} className="space-y-2">
+          <div className="flex items-center space-x-3 px-4 py-2 text-muted-foreground">
+            <item.icon className="h-5 w-5" />
+            <span className="text-sm font-medium">{item.label}</span>
+          </div>
+          <div className="ml-6 space-y-1">
+            {item.subItems.map((subItem, subIndex) => (
+              <button
+                key={subIndex}
+                onClick={() => navigate(subItem.path)}
+                className={`flex items-center space-x-3 px-4 py-2 rounded-lg w-full text-left transition-colors ${
+                  subItem.isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                <subItem.icon className="h-4 w-4" />
+                <span className="text-sm">{subItem.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
 
-  const supportingServices = [
-    { icon: Ship, label: 'Shipment', active: true },
-    { icon: FileText, label: 'Quotation', active: false },
-    { icon: Wrench, label: 'Equipment', active: false },
-  ];
-
-
+    return (
+      <button
+        key={index}
+        onClick={() => navigate(item.path)}
+        className="flex items-center space-x-3 px-4 py-2 rounded-lg w-full text-left text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+      >
+        <item.icon className="h-5 w-5" />
+        <span className="text-sm font-medium">{item.label}</span>
+      </button>
+    );
+  };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
+      <div className="w-64 border-r border-border bg-card flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.avatar_url || ''} alt={getDisplayName()} />
+              <AvatarFallback>{getInitials()}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-foreground truncate">
+                {getDisplayName()}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                {profile?.title || 'Research Collaborator'}
+              </div>
             </div>
-            <span className="font-semibold text-lg">AIRCollab</span>
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 p-4 space-y-6 overflow-y-auto">
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-              Home
-            </div>
-            {home.map((item, index) => (
-              <div
-                key={index}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
-                  item.active 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-                onClick={() => {
-                  if (item.label === 'Dashboard') {
-                    navigate('/dashboard');
-                  } else if (item.label === 'Discover Collaborators') {
-                    navigate('/discover-collaborators');
-                  } else if (item.label === 'Saved Collaborators') {
-                    navigate('/saved-collaborators');
-                  } else if (item.label === 'Home') {
-                    navigate('/');
-                  }
-                }}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="text-sm">{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-              Collaborations
-            </div>
-            {collaborationItems.map((item, index) => (
-              <div
-                key={index}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
-                  item.active 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-                onClick={() => {
-                  if (item.label === 'Collaboration') {
-                    navigate('/collaboration');
-                  } else if (item.label === 'Chat') {
-                    navigate('/chat');
-                  } else if (item.label === 'Data Center') {
-                    navigate('/data-center');
-                  }
-                }}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="text-sm">{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-              Supporting Services
-            </div>
-            {supportingServices.map((item, index) => (
-              <div
-                key={index}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer ${
-                  item.active 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-                onClick={() => {
-                  if (item.label === 'Shipment') {
-                    navigate('/shipment');
-                  } else if (item.label === 'Quotation') {
-                    navigate('/quotation');
-                  } else if (item.label === 'Equipment') {
-                    navigate('/equipment');
-                  }
-                }}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="text-sm">{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <nav className="flex-1 p-4 space-y-2">
+          {navigationItems.map(renderNavigationItem)}
+        </nav>
 
         {/* Settings */}
-        <div className="p-4 border-t border-gray-200">
-          <div 
-            className="flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer text-gray-700 hover:bg-gray-100"
+        <div className="p-4 border-t border-border">
+          <button
             onClick={() => navigate('/settings')}
+            className="flex items-center space-x-3 px-4 py-2 rounded-lg w-full text-left text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
-            <Settings className="w-5 h-5" />
-            <span className="text-sm">Settings</span>
-          </div>
-        </div>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3">
-            <Avatar className="w-8 h-8">
-              {profile?.avatar_url ? (
-                <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
-              ) : (
-                <AvatarFallback className="bg-gray-800 text-white text-sm">
-                  {getInitials()}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {getDisplayName()}
-              </div>
-              <div className="text-xs text-gray-500">{profile?.email}</div>
-            </div>
-            <button className="text-gray-400 hover:text-gray-600">
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </div>
+            <Settings className="h-5 w-5" />
+            <span className="text-sm font-medium">Settings</span>
+          </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">Shipment</h1>
-            <Button onClick={handleSignOut} variant="outline" size="sm">
-              Sign Out
-            </Button>
-          </div>
+        <div className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
+          <h1 className="text-xl font-semibold text-foreground">Shipment</h1>
+          <Button 
+            onClick={handleSignOut} 
+            variant="outline"
+            className="text-sm"
+          >
+            Sign Out
+          </Button>
         </div>
 
-        {/* Chat Content */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {messages.map((msg, index) => (
-              <div key={index}>
-                {msg.isService ? (
-                  <div className="flex justify-start">
-                    <div className="max-w-2xl">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Avatar className="w-12 h-12">
-                          <AvatarFallback className="bg-gray-800 text-white text-sm">
-                            {msg.avatar}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium text-gray-900">{msg.content}</div>
-                      </div>
-                      <div className="ml-10">
-                        <a href={msg.serviceInfo?.website} className="text-blue-600 hover:underline text-sm">
-                          {msg.serviceInfo?.website}
-                        </a>
-                        <div className="mt-2 space-y-1">
-                          {msg.serviceInfo?.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-start space-x-2">
-                              <span className="text-gray-600 mt-1">•</span>
-                              <span className="text-sm text-gray-700">{feature}</span>
-                              {idx === 0 && (
-                                <button className="ml-2 text-gray-400 hover:text-gray-600">
-                                  <Copy className="w-4 h-4" />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'} items-end space-x-2`}>
-                    {!msg.isOwn && (
-                      <Avatar className="w-8 h-8 flex-shrink-0">
-                        {msg.avatar && msg.avatar !== 'AI' && msg.avatar !== 'AL' ? (
-                          <AvatarImage src={msg.avatar} alt="Bot avatar" />
-                        ) : (
-                          <AvatarFallback className="bg-gray-800 text-white text-xs">
-                            {msg.avatar}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                    )}
-                    <div className="max-w-xs lg:max-w-md">
-                      <div
-                        className={`px-4 py-2 rounded-lg ${
-                          msg.isOwn
-                            ? 'bg-gray-200 text-gray-900'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}
-                      >
-                        <div className="text-sm">{msg.content}</div>
-                        {msg.time && (
-                          <div className={`text-xs mt-1 ${msg.isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
-                            {msg.time}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {msg.isOwn && (
-                      <Avatar className="w-8 h-8 flex-shrink-0">
-                        {msg.avatar ? (
-                          <AvatarImage src={msg.avatar} alt="User avatar" />
-                        ) : (
-                          <AvatarFallback className="bg-gray-800 text-white text-xs">
-                            {msg.initials}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                    )}
-                  </div>
-                )}
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {messages.map((msg, index) => (
+            <div
+              key={msg.id || index}
+              className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`flex space-x-3 max-w-[70%] ${msg.isOwn ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarImage src={msg.avatar === 'AI' ? '' : profile?.avatar_url} />
+                  <AvatarFallback>
+                    {msg.avatar === 'AI' ? 'AI' : msg.avatar}
+                  </AvatarFallback>
+                </Avatar>
+                <div className={`rounded-lg p-3 ${
+                  msg.isOwn 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-secondary text-secondary-foreground'
+                }`}>
+                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <span className="text-xs opacity-70 mt-1 block">{msg.time}</span>
+                </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Message Input */}
-          <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
-            <div className="flex items-center space-x-2">
-              <Input
-                placeholder="Enter Message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-                disabled={isLoading}
-              />
-              <Button 
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={handleSendMessage}
-                disabled={isLoading || !message.trim()}
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
             </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="flex space-x-3 max-w-[70%]">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>AI</AvatarFallback>
+                </Avatar>
+                <div className="bg-secondary text-secondary-foreground rounded-lg p-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Message Input */}
+        <div className="border-t border-border bg-card p-4">
+          <div className="flex space-x-2">
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask about shipment services..."
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={isLoading || !message.trim()}
+              size="icon"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
