@@ -20,11 +20,11 @@ interface SignupStep3Props {
   };
   onChange: (field: string, value: string | string[]) => void;
   onFinish: () => void;
-  onBack: () => void;
+  onCancel: () => void;
   loading?: boolean;
 }
 
-const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish, onBack, loading }) => {
+const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish, onCancel, loading }) => {
   const [selectedKeyword, setSelectedKeyword] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
@@ -51,92 +51,54 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
   const researchAreas = [
 'Addiction Psychiatry',
 'Adolescent and Youth Health',
-'Aerospace Engineering',
 'Aging and Geriatric Health',
-'Aging & Regeneration',
-'Agrobiodiversity',
 'Alzheimer\'s Disease and Dementia',
-'Anatomy',
-'Arts',
 'Artificial Intelligence in Medicine',
 'Autism Spectrum Disorder (ASD)',
 'Behavioral Neurology',
 'Bipolar Disorder',
-'Biodiversity',
-'Biofabrication',
-'Biology',
-'Biochemical Engineering',
 'Biomedical Ethics / Bioethics',
 'Biomarkers',
-'Biomaterials',
-'Biomaterials Science',
-'Bioprinting',
 'Brain Tumors (e.g., Glioblastoma)',
 'Breast Cancer',
-'Business',
 'Cancer Biology',
 'Cardiology (Heart)',
 'Cardiovascular Disease',
-'Cell-Based Therapies',
-'Cellular Reprogramming',
-'Chemistry',
 'Child and Adolescent Psychiatry',
 'Chronic Disease Management',
 'Chronic Obstructive Pulmonary Disease',
-'Civil Engineering',
-'Clinical Nutrition',
-'Clinical Regenerative Medicine',
 'Cystic Fibrosis',
-'Cybersecurity',
 'Colorectal Cancer',
 'Colorectal Surgery',
-'Communication',
 'Community Health Nursing',
-'Community Nutrition',
 'Complementary and Alternative Medicine (CAM)',
-'Computer Science',
 'Consultation-Liaison Psychiatry',
-'Conservation & Applied Biodiversity',
 'Critical Care Nursing',
-'Cultural Studies',
 'Cytopathology',
 'Depression and Anxiety Disorders',
 'Dermatopathology',
 'Diabetes',
 'Digital Health / eHealth / mHealth',
 'Disaster and Emergency Preparedness',
-'Eating Behavior',
-'Ecosystem Diversity',
-'Education',
-'Electrical Engineering',
 'Electrophysiology',
 'Endodontics',
 'Endocrinology (Hormones)',
-'Environmental Engineering',
 'Environmental Health',
 'Epidemiology',
 'Epilepsy Research',
 'Epileptology',
 'Evidence-Based Practice',
-'Food Policy',
-'Food Security',
-'Food Science',
 'Forensic Pathology',
 'Forensic Psychiatry',
-'Functional Foods & Nutraceuticals',
 'Gastroenterology (Digestive System)',
 'Gender and Women\'s Health',
 'Gene Therapy',
 'Genetics',
-'Genetic Diversity',
-'Genome Editing',
 'Genomics',
 'Geriatric Medicine',
 'Geriatric Psychiatry',
 'Geriatrics and Aging Research',
-'Gerontological Nutrition',
 'Global Health',
-'Global Nutrition',
 'Gynecologic Oncology',
 'Health Communication and Literacy',
 'Health Equity / Social Determinants of Health',
@@ -148,30 +110,16 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
 'Hematologic Disorders',
 'Hematology (Blood)',
 'Hematopathology',
-'History',
-'Humanities',
 'Huntington\'s Disease',
 'Hypertension',
-'Immunology',
-'Immune Engineering',
-'Immunomodulation',
 'Immunotherapy',
 'Infectious Diseases',
 'Interventional Cardiology',
-'Languages',
 'Leukemia and Lymphoma',
-'Linguistics',
-'Literature',
 'Lung Cancer',
 'Lysosomal Storage Disorders',
-'Management',
-'Marine & Ocean Science',
-'Materials Engineering',
 'Maternal and Child Health',
-'Maternal & Child Nutrition',
 'Maternal-Fetal Medicine',
-'Mathematics',
-'Mechanical Engineering',
 'Medical Device Research',
 'Medical Education and Training',
 'Medical Humanities',
@@ -179,17 +127,13 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
 'Melanoma',
 'Mental Health Nursing',
 'Metabolomics',
-'Microbiology',
 'Midwifery',
-'Media',
 'Molecular Biology',
 'Molecular Genetic Pathology',
-'Molecular Nutrition',
 'Movement Disorders',
 'Multiple Sclerosis (MS)',
 'Multiple Sclerosis and Neuroimmunology',
 'Muscular Dystrophies',
-'Nanotechnology',
 'Nephrology (Kidneys)',
 'Neonatology',
 'Neurobiology',
@@ -202,19 +146,12 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
 'Neuroscience',
 'Neurosurgery',
 'Noncommunicable Diseases (NCDs) Prevention',
-'Nuclear Engineering',
 'Nurse Practitioner Roles',
-'Nutrigenomics',
-'Nutrition',
-'Nutrition Education',
-'Nutritional Biochemistry',
 'Obesity and Metabolic Syndrome',
 'Occupational Health',
 'One Health (human-animal-environment interface)',
 'Oncology Nursing',
 'Oral and Maxillofacial Surgery',
-'Organoids',
-'Organs-on-Chips',
 'Orthodontics',
 'Orthopedic Surgery',
 'Palliative and End-of-Life Care',
@@ -230,51 +167,32 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
 'Pediatric Surgery',
 'Periodontics',
 'Pharmacogenomics',
-'Pharmacological Regeneration',
-'Pharmacology',
-'Philosophy',
-'Physiology',
-'Physics',
 'Plastic and Reconstructive Surgery',
 'Prostate Cancer',
 'Proteomics',
 'Prosthodontics',
-'Psychology of Eating',
-'Public Health Nutrition',
 'Pulmonology (Lungs)',
 'Rare Disease Research (general category)',
 'Rare Diseases',
 'Refugee and Migrant Health',
-'Regenerative Medicine',
-'Rehabilitation & Biointegration',
 'Rehabilitation Technologies',
 'Reproductive Endocrinology and Infertility',
 'Respiratory diseases',
 'Rheumatology (Joints and Autoimmune Diseases)',
 'Schizophrenia Research',
 'Sickle Cell Disease',
-'Social Studies',
-'Software Engineering',
-'Spatial Diversity',
-'Species Diversity',
-'Sports & Exercise Nutrition',
 'Stem Cell Biology',
-'Stem Cell Therapy',
 'Stroke',
 'Structural Biology',
-'Structural Diversity',
 'Surgical Oncology',
-'Taxonomic Diversity',
 'Telemedicine / Telehealth',
-'Temporal Diversity',
 'Thyroid abnormalities',
-'Tissue Engineering',
 'Transplant Surgery',
 'Urogynecology',
 'Vaccine Development',
 'Vascular Neurology',
-'Other'
-];
+    'Other'
+  ];
 
   const keywordOptions = [
 'Big Data',
@@ -438,37 +356,9 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
     }
   };
 
-  const isFormValid = () => {
-    const valid = (
-      formData.experienceYears.trim() !== '' &&
-      formData.primaryResearchArea.trim() !== '' &&
-      formData.secondaryResearchArea.trim() !== '' &&
-      formData.specializationKeywords.length > 0 &&
-      formData.researchRoles.length > 0 &&
-      formData.whatIHave.length > 0 &&
-      formData.whatINeed.length > 0
-    );
-    
-    // Debug logging
-    console.log('Form validation:', {
-      experienceYears: formData.experienceYears.trim() !== '',
-      primaryResearchArea: formData.primaryResearchArea.trim() !== '',
-      secondaryResearchArea: formData.secondaryResearchArea.trim() !== '',
-      specializationKeywords: formData.specializationKeywords.length > 0,
-      researchRoles: formData.researchRoles.length > 0,
-      whatIHave: formData.whatIHave.length > 0,
-      whatINeed: formData.whatINeed.length > 0,
-      overall: valid
-    });
-    
-    return valid;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isFormValid()) {
-      onFinish();
-    }
+    onFinish();
   };
 
   return (
@@ -485,7 +375,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="experienceYears">Research Experience in Years <span className="text-destructive">*</span></Label>
+          <Label htmlFor="experienceYears">Research Experience in Years *</Label>
           <Select 
             value={formData.experienceYears} 
             onValueChange={(value) => onChange('experienceYears', value)}
@@ -504,7 +394,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryResearchArea">Primary Research Area <span className="text-destructive">*</span></Label>
+          <Label htmlFor="primaryResearchArea">Primary Research Area *</Label>
           {showCustomPrimary ? (
             <Input
               value={customPrimaryArea}
@@ -535,7 +425,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="secondaryResearchArea">Secondary Research Area <span className="text-destructive">*</span></Label>
+          <Label htmlFor="secondaryResearchArea">Secondary Research Area *</Label>
           {showCustomSecondary ? (
             <Input
               value={customSecondaryArea}
@@ -566,7 +456,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Specialization/Keywords <span className="text-destructive">*</span></Label>
+          <Label>Specialization/Keywords</Label>
           <div className="flex gap-2">
             {showCustomSpecialization ? (
               <Input
@@ -630,7 +520,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>Research Role <span className="text-destructive">*</span></Label>
+          <Label>Research Role </Label>
           <div className="flex gap-2">
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger className="flex-1">
@@ -666,7 +556,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Have <span className="text-destructive">*</span></Label>
+          <Label>What I Have</Label>
           <div className="flex gap-2">
             {showCustomWhatIHave ? (
               <Input
@@ -730,7 +620,7 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="space-y-2">
-          <Label>What I Need <span className="text-destructive">*</span></Label>
+          <Label>What I Need</Label>
           <div className="flex gap-2">
             {showCustomWhatINeed ? (
               <Input
@@ -794,10 +684,10 @@ const SignupStep3: React.FC<SignupStep3Props> = ({ formData, onChange, onFinish,
         </div>
 
         <div className="flex gap-4">
-          <Button type="button" variant="outline" onClick={onBack} className="flex-1">
-            Back
+          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+            Cancel
           </Button>
-          <Button type="submit" className="flex-1" disabled={loading || !isFormValid()}>
+          <Button type="submit" className="flex-1" disabled={loading}>
             {loading ? 'Creating Account...' : 'Finish'}
           </Button>
         </div>

@@ -245,7 +245,6 @@ export type Database = {
           secondary_research_area: string | null
           specialization_keywords: string[] | null
           state_city: string | null
-          title: string | null
           updated_at: string
           user_id_number: string | null
           username: string | null
@@ -283,7 +282,6 @@ export type Database = {
           secondary_research_area?: string | null
           specialization_keywords?: string[] | null
           state_city?: string | null
-          title?: string | null
           updated_at?: string
           user_id_number?: string | null
           username?: string | null
@@ -321,7 +319,6 @@ export type Database = {
           secondary_research_area?: string | null
           specialization_keywords?: string[] | null
           state_city?: string | null
-          title?: string | null
           updated_at?: string
           user_id_number?: string | null
           username?: string | null

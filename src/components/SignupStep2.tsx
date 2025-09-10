@@ -9,17 +9,15 @@ interface SignupStep2Props {
     institution: string;
     college: string;
     department: string;
-    country: string;
-    city: string;
+    countryCity: string;
     postcode: string;
   };
   onChange: (field: string, value: string) => void;
   onNext: () => void;
-  onBack: () => void;
-  skipInstitution?: boolean;
+  onCancel: () => void;
 }
 
-const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, onBack, skipInstitution = false }) => {
+const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, onCancel }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
@@ -38,78 +36,64 @@ const SignupStep2: React.FC<SignupStep2Props> = ({ formData, onChange, onNext, o
       <Progress value={66} className="w-full" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {!skipInstitution && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="institution">Institution <span className="text-destructive">*</span></Label>
-              <Input
-                id="institution"
-                type="text"
-                value={formData.institution}
-                onChange={(e) => onChange('institution', e.target.value)}
-                required={!skipInstitution}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="college">College <span className="text-destructive">*</span></Label>
-              <Input
-                id="college"
-                type="text"
-                value={formData.college}
-                onChange={(e) => onChange('college', e.target.value)}
-                required={!skipInstitution}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="department">Department <span className="text-destructive">*</span></Label>
-              <Input
-                id="department"
-                type="text"
-                value={formData.department}
-                onChange={(e) => onChange('department', e.target.value)}
-                required={!skipInstitution}
-              />
-            </div>
-          </>
-        )}
-
         <div className="space-y-2">
-          <Label htmlFor="country">Country <span className="text-destructive">*</span></Label>
+          <Label htmlFor="institution">Institution</Label>
           <Input
-            id="country"
+            id="institution"
             type="text"
-            value={formData.country}
-            onChange={(e) => onChange('country', e.target.value)}
+            value={formData.institution}
+            onChange={(e) => onChange('institution', e.target.value)}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="city">City <span className="text-destructive">*</span></Label>
+          <Label htmlFor="college">College</Label>
           <Input
-            id="city"
+            id="college"
             type="text"
-            value={formData.city}
-            onChange={(e) => onChange('city', e.target.value)}
+            value={formData.college}
+            onChange={(e) => onChange('college', e.target.value)}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="postcode">Postcode <span className="text-muted-foreground text-sm">(Optional)</span></Label>
+          <Label htmlFor="department">Department</Label>
+          <Input
+            id="department"
+            type="text"
+            value={formData.department}
+            onChange={(e) => onChange('department', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="countryCity">Country and City</Label>
+          <Input
+            id="countryCity"
+            type="text"
+            value={formData.countryCity}
+            onChange={(e) => onChange('countryCity', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="postcode">Postcode</Label>
           <Input
             id="postcode"
             type="text"
             value={formData.postcode}
             onChange={(e) => onChange('postcode', e.target.value)}
+            required
           />
         </div>
 
         <div className="flex gap-4">
-          <Button type="button" variant="outline" onClick={onBack} className="flex-1">
-            Back
+          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+            Cancel
           </Button>
           <Button type="submit" className="flex-1">
             Next
