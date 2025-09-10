@@ -7,14 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff } from 'lucide-react';
 import SignupStep1 from '@/components/SignupStep1';
 import SignupStep2 from '@/components/SignupStep2';
 import SignupStep3 from '@/components/SignupStep3';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const navigate = useNavigate();
@@ -35,11 +38,15 @@ const Auth = () => {
     researchgateUrl: '',
     googleScholarUrl: '',
     careerDescription: '',
+    isIndependentResearcher: false,
+    isRetiredResearcher: false,
+    researchStatus: 'affiliated',
     // Step 2 - Institution Information
     institution: '',
     college: '',
     department: '',
-    countryCity: '',
+    country: '',
+    city: '',
     postcode: '',
     // Step 3 - Research Interest
     experienceYears: '',
@@ -99,7 +106,7 @@ const Auth = () => {
     }
   };
 
-  const handleSignupFieldChange = (field: string, value: string | string[]) => {
+  const handleSignupFieldChange = (field: string, value: string | string[] | boolean) => {
     setSignupData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -129,7 +136,8 @@ const Auth = () => {
             institution: signupData.institution,
             college: signupData.college,
             department: signupData.department,
-            state_city: signupData.countryCity,
+            country: signupData.country,
+            state_city: signupData.city,
             postcode: signupData.postcode,
             experience: signupData.experienceYears,
             primary_research_area: signupData.primaryResearchArea,
@@ -166,10 +174,14 @@ const Auth = () => {
         researchgateUrl: '',
         googleScholarUrl: '',
         careerDescription: '',
+        isIndependentResearcher: false,
+        isRetiredResearcher: false,
+        researchStatus: 'affiliated',
         institution: '',
         college: '',
         department: '',
-        countryCity: '',
+        country: '',
+        city: '',
         postcode: '',
         experienceYears: '',
         primaryResearchArea: '',
@@ -191,8 +203,40 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Reset email sent!",
+        description: "Please check your email for password reset instructions.",
+      });
+      
+      setIsForgotPassword(false);
+      setIsLogin(true);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCancel = () => {
     setIsLogin(true);
+    setIsForgotPassword(false);
     setCurrentStep(1);
   };
 
@@ -212,7 +256,54 @@ const Auth = () => {
 
         <Card>
           <CardContent className="pt-6">
-            {isLogin ? (
+            {isForgotPassword ? (
+              // Forgot Password Form
+              <>
+                <CardHeader className="space-y-1 px-0 pb-4">
+                  <CardTitle className="text-2xl font-bold text-center">
+                    Reset Password
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Enter your email address to receive password reset instructions
+                  </CardDescription>
+                </CardHeader>
+                
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Email'}
+                  </Button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Remember your password?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(false)}
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Back to login
+                    </button>
+                  </p>
+                </div>
+              </>
+            ) : isLogin ? (
               // Login Form
               <>
                 <CardHeader className="space-y-1 px-0 pb-4">
@@ -239,14 +330,27 @@ const Auth = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <Button 
@@ -257,6 +361,16 @@ const Auth = () => {
                     {loading ? 'Loading...' : 'Sign In'}
                   </Button>
                 </form>
+
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
 
                 <div className="mt-6 text-center">
                   <p className="text-sm text-muted-foreground">
@@ -289,6 +403,9 @@ const Auth = () => {
                       researchgateUrl: signupData.researchgateUrl,
                       googleScholarUrl: signupData.googleScholarUrl,
                       careerDescription: signupData.careerDescription,
+                      isIndependentResearcher: signupData.isIndependentResearcher,
+                      isRetiredResearcher: signupData.isRetiredResearcher,
+                      researchStatus: signupData.researchStatus,
                     }}
                     onChange={handleSignupFieldChange}
                     onNext={() => setCurrentStep(2)}
@@ -301,12 +418,14 @@ const Auth = () => {
                       institution: signupData.institution,
                       college: signupData.college,
                       department: signupData.department,
-                      countryCity: signupData.countryCity,
+                      country: signupData.country,
+                      city: signupData.city,
                       postcode: signupData.postcode,
                     }}
                     onChange={handleSignupFieldChange}
                     onNext={() => setCurrentStep(3)}
-                    onCancel={handleCancel}
+                    onBack={() => setCurrentStep(1)}
+                    skipInstitution={signupData.isIndependentResearcher || signupData.isRetiredResearcher}
                   />
                 )}
                 
@@ -324,7 +443,7 @@ const Auth = () => {
                     }}
                     onChange={handleSignupFieldChange}
                     onFinish={handleSignupFinish}
-                    onCancel={handleCancel}
+                    onBack={() => setCurrentStep(2)}
                     loading={loading}
                   />
                 )}

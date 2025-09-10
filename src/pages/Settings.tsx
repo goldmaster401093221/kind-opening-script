@@ -594,13 +594,16 @@ const Settings = () => {
                   <Input {...register('department')} placeholder="Department name" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Post Code</label>
-                  <Input {...register('postcode')} placeholder="Post code" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <Input {...register('country')} placeholder="Country" />
                 </div>
-              
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">State/City</label>
                   <Input {...register('state_city')} placeholder="State/City" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Post Code</label>
+                  <Input {...register('postcode')} placeholder="Post code" />
                 </div>
               </div>
             </div>

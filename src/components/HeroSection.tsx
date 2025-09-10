@@ -28,7 +28,7 @@ const HeroSection = () => {
                 Discover
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
-                AIRcollab is a platform designed to facilitate collaborations among researchers worldwide. It does so by creating an environment for real time communication, document sharing, virtual meetings and project management.
+                AIRCollab is a platform designed to facilitate collaborations among researchers worldwide. It does so by creating an environment for real time communication, document sharing, virtual meetings and project management.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
                 Join the world's largest network of researchers, share your work, find collaborators, and accelerate scientific discovery together.
