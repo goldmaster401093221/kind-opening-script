@@ -33,7 +33,7 @@ const collaborators = [
     institution: "Google DeepMind Research",
     location: "London, UK",
     tags: ["Large Language Models", "Computer Vision", "Reinforcement Learning", "AI Ethics"],
-    avatar: "/lovable-uploads/avatar1.jpg"
+    avatar: "/lovable-uploads/avatar3.jpg"
   }
 ];
 
