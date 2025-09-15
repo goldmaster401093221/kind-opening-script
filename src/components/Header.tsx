@@ -36,7 +36,7 @@ const Header = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <button onClick={() => handleNavigation('/')} className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
+          <button onClick={() => navigate('/')} className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
             Home
           </button>
           <button onClick={() => handleNavigation('/dashboard')} className="text-gray-600 hover:text-blue-600 transition-colors">
