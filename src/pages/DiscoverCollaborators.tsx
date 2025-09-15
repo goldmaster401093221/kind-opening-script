@@ -63,6 +63,7 @@ const DiscoverCollaborators = () => {
   const [activeTab, setActiveTab] = useState('Best Matching');
   const [sortBy, setSortBy] = useState('Relevant');
   const [resultsPerPage, setResultsPerPage] = useState('10');
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -135,6 +136,54 @@ const DiscoverCollaborators = () => {
         return 0;
     }
   });
+
+  // Reset to first page when search query or results per page changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, resultsPerPage]);
+
+  // Calculate pagination
+  const itemsPerPage = parseInt(resultsPerPage);
+  const totalPages = Math.ceil(sortedCollaborators.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageCollaborators = sortedCollaborators.slice(startIndex, endIndex);
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push('...');
+        pageNumbers.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pageNumbers.push(1);
+        pageNumbers.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } else {
+        pageNumbers.push(1);
+        pageNumbers.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push('...');
+        pageNumbers.push(totalPages);
+      }
+    }
+    
+    return pageNumbers;
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -505,8 +554,8 @@ const DiscoverCollaborators = () => {
                       <TableHead className="min-w-[120px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
-                     {sortedCollaborators.length === 0 ? (
+                   <TableBody>
+                     {currentPageCollaborators.length === 0 ? (
                        <TableRow>
                          <TableCell colSpan={5} className="text-center py-8">
                            <div className="text-gray-500">
@@ -515,7 +564,7 @@ const DiscoverCollaborators = () => {
                          </TableCell>
                        </TableRow>
                      ) : (
-                       sortedCollaborators.map((collaborator, index) => (
+                       currentPageCollaborators.map((collaborator, index) => (
                          <TableRow key={collaborator.id} className="hover:bg-gray-50">
                          <TableCell>
                            <div className="flex items-center space-x-3">
@@ -606,30 +655,43 @@ const DiscoverCollaborators = () => {
             </Card>
 
             {/* Pagination */}
-            <div className="mt-6 flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious href="#" />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink href="#" isActive>1</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink href="#">2</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink href="#">3</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <span className="px-4 py-2">...</span>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext href="#" />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+            {sortedCollaborators.length > 0 && totalPages > 1 && (
+              <div className="mt-6 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {getPageNumbers().map((pageNum, index) => (
+                      <PaginationItem key={index}>
+                        {pageNum === '...' ? (
+                          <span className="px-4 py-2">...</span>
+                        ) : (
+                          <PaginationLink
+                            onClick={() => setCurrentPage(pageNum as number)}
+                            isActive={currentPage === pageNum}
+                            className="cursor-pointer"
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
 
           {/* Profile Modal */}
         <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
