@@ -6,34 +6,34 @@ import { useProfile } from "@/hooks/useProfile";
 
 const collaborators = [
   {
-    name: "Kevin Rashy",
-    title: "Professor of Artificial Intelligence",
-    rating: "4.9/5.0",
-    collaborations: "89 Collaborations",
-    institution: "MIT Computer Science",
-    location: "Cambridge, MA",
-    tags: ["Machine Learning", "Neural Networks", "Computer Vision", "Machine Learning"],
-    avatar: "/lovable-uploads/avatar2.jpg"
-  },
-  {
-    name: "Anna Ryan",
-    title: "Professor of Artificial Intelligence",
-    rating: "4.9/5.0",
-    collaborations: "89 Collaborations",
-    institution: "MIT Computer Science",
-    location: "Cambridge, MA",
-    tags: ["Machine Learning", "Neural Networks", "Computer Vision"],
+    name: "Dr. Sarah Chen",
+    title: "Senior Research Scientist in Biotechnology",
+    rating: "4.8/5.0",
+    collaborations: "127 Collaborations",
+    institution: "Stanford University Medical School",
+    location: "Palo Alto, CA",
+    tags: ["CRISPR Gene Editing", "Synthetic Biology", "Bioengineering", "Drug Discovery"],
     avatar: "/lovable-uploads/avatar1.jpg"
   },
   {
-    name: "Kevin Rashy",
-    title: "Professor of Artificial Intelligence",
-    rating: "4.9/5.0",
-    collaborations: "89 Collaborations",
-    institution: "MIT Computer Science",
-    location: "Cambridge, MA",
-    tags: ["Machine Learning", "Neural Networks", "Computer Vision"],
+    name: "Prof. Marcus Rodriguez",
+    title: "Professor of Environmental Engineering",
+    rating: "4.7/5.0",
+    collaborations: "93 Collaborations",
+    institution: "University of California, Berkeley",
+    location: "Berkeley, CA",
+    tags: ["Climate Change", "Renewable Energy", "Water Treatment", "Sustainability"],
     avatar: "/lovable-uploads/avatar2.jpg"
+  },
+  {
+    name: "Dr. Elena Petrov",
+    title: "Principal Data Scientist & AI Researcher",
+    rating: "4.9/5.0",
+    collaborations: "156 Collaborations",
+    institution: "Google DeepMind Research",
+    location: "London, UK",
+    tags: ["Large Language Models", "Computer Vision", "Reinforcement Learning", "AI Ethics"],
+    avatar: "/lovable-uploads/avatar1.jpg"
   }
 ];
 
