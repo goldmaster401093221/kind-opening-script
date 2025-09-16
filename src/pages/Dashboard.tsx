@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { usePendingRequests } from '@/hooks/usePendingRequests';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 interface Collaborator {
   id: string;
@@ -38,6 +39,7 @@ interface Collaborator {
 const Dashboard = () => {
   const { user, profile, loading, getDisplayName, getInitials, getUserRole } = useProfile();
   const { pendingCount } = usePendingRequests();
+  const { stats, loading: statsLoading } = useDashboardStats();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [collaboratorLoading, setCollaboratorLoading] = useState(true);
@@ -348,7 +350,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Collaborations</div>
-                  <div className="text-3xl font-bold">12</div>
+                  <div className="text-3xl font-bold">{statsLoading ? '...' : stats.totalCollaborations}</div>
                 </div>
               </div>
             </Card>
@@ -364,7 +366,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Collaborators</div>
-                  <div className="text-3xl font-bold">16</div>
+                  <div className="text-3xl font-bold">{statsLoading ? '...' : stats.totalCollaborators}</div>
                 </div>
               </div>
             </Card>
@@ -380,7 +382,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Collaboration Days</div>
-                  <div className="text-3xl font-bold">322</div>
+                  <div className="text-3xl font-bold">{statsLoading ? '...' : stats.totalCollaborationDays}</div>
                 </div>
               </div>
             </Card>
@@ -396,7 +398,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Meetings</div>
-                  <div className="text-3xl font-bold">322</div>
+                  <div className="text-3xl font-bold">{statsLoading ? '...' : stats.totalMeetings}</div>
                 </div>
               </div>
             </Card>
