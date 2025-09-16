@@ -260,7 +260,7 @@ const Auth = () => {
                     className="w-full"
                     disabled={loading}
                   >
-                    {loading ? 'Sending...' : 'Send Reset Email'}
+                    {loading ? 'Loading...' : 'Yes, I want to reset with this email'}
                   </Button>
                 </form>
 
