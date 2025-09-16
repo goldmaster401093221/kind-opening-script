@@ -20,15 +20,40 @@ const PasswordReset = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate('/dashboard');
+    // Handle password reset flow from email link
+    const handlePasswordResetFlow = async () => {
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      const type = searchParams.get('type');
+      
+      // If this is a password recovery flow, exchange tokens for session
+      if (accessToken && refreshToken && type === 'recovery') {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        
+        if (error) {
+          toast({
+            title: "Error",
+            description: "Invalid or expired reset link. Please request a new password reset.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+          return;
+        }
+      } else {
+        // Check if user has a regular session (not password reset)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && !accessToken && !refreshToken) {
+          // User is already logged in with regular session, redirect to dashboard
+          navigate('/dashboard');
+        }
       }
     };
-    checkUser();
-  }, [navigate]);
+    
+    handlePasswordResetFlow();
+  }, [navigate, searchParams, toast]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
