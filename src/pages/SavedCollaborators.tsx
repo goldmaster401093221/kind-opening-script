@@ -44,7 +44,7 @@ const SavedCollaborators = () => {
   const { pendingCount } = usePendingRequests();
   const [activeTab, setActiveTab] = useState('Saved');
   const [sortBy, setSortBy] = useState('Relevant');
-  const [resultsPerPage, setResultsPerPage] = useState('10');
+  const [resultsPerPage, setResultsPerPage] = useState('5');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
