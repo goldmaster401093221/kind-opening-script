@@ -19,15 +19,17 @@ const PasswordReset = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if user is already logged in with a regular session (not password reset)
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      // Only redirect if user has a regular session and not in password reset flow
+      // Password reset sessions will have specific recovery-related metadata
+      if (session && !searchParams.get('access_token') && !searchParams.get('refresh_token')) {
         navigate('/dashboard');
       }
     };
     checkUser();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
