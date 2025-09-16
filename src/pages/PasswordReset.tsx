@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff } from 'lucide-react';
 
 const PasswordReset = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +33,15 @@ const PasswordReset = () => {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -53,20 +63,22 @@ const PasswordReset = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
+      // Store the new password temporarily and send confirmation email
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/confirm-password-reset?newPassword=${encodeURIComponent(password)}`,
       });
       
       if (error) throw error;
       
       toast({
-        title: "Password updated!",
-        description: "Your password has been successfully updated. Please log in with your new password.",
+        title: "Confirmation email sent!",
+        description: "Please check your email and click the confirmation link to apply your new password.",
       });
       
-      // Sign out user and redirect to login page
-      await supabase.auth.signOut();
-      navigate('/auth');
+      // Clear form
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -104,6 +116,18 @@ const PasswordReset = () => {
             </CardHeader>
             
             <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password">New Password</Label>
                 <div className="relative">

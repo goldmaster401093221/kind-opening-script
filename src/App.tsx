@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PasswordReset from "./pages/PasswordReset";
+import ConfirmPasswordReset from "./pages/ConfirmPasswordReset";
 import EmailConfirm from "./pages/EmailConfirm";
 import Dashboard from "./pages/Dashboard";
 import DiscoverCollaborators from "./pages/DiscoverCollaborators";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<PasswordReset />} />
+          <Route path="/confirm-password-reset" element={<ConfirmPasswordReset />} />
           <Route path="/email-confirm" element={<EmailConfirm />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/discover-collaborators" element={<DiscoverCollaborators />} />

@@ -203,35 +203,9 @@ const Auth = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const redirectUrl = `${window.location.origin}/reset-password`;
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Reset email sent!",
-        description: "Please check your email for password reset instructions.",
-      });
-      
-      setIsForgotPassword(false);
-      setIsLogin(true);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleForgotPassword = () => {
+    // Redirect to reset password page
+    navigate('/reset-password');
   };
 
   const handleCancel = () => {
