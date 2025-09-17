@@ -75,34 +75,84 @@ const DiscoverCollaborators = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { toast } = useToast();
 
-  // Filter collaborators based on search query
-  const filteredCollaborators = collaborators.filter(collaborator => {
-    if (!searchQuery) return true;
-    const searchLower = searchQuery.toLowerCase();
-    const displayName = getCollaboratorDisplayName(collaborator).toLowerCase();
-    const role = getUserRole(collaborator).toLowerCase();
-    const institution = collaborator.institution?.toLowerCase() || '';
-    const department = collaborator.department?.toLowerCase() || '';
-    const primaryResearch = collaborator.primary_research_area?.toLowerCase() || '';
-    const secondaryResearch = collaborator.secondary_research_area?.toLowerCase() || '';
-    const keywords = collaborator.keywords?.join(' ').toLowerCase() || '';
-    const specializationKeywords = collaborator.specialization_keywords?.join(' ').toLowerCase() || '';
-    const whatIHave = collaborator.what_i_have?.join(' ').toLowerCase() || '';
-    const researchRole = collaborator.research_roles?.join(' ').toLowerCase() || '';
-    const bio = collaborator.career_description?.toLowerCase() || '';
+  // Get matching collaborators based on "What I have" similarity
+  const getMatchingCollaborators = () => {
+    if (!profile?.what_i_have || profile.what_i_have.length === 0) {
+      // If user has no "what_i_have" items, return random subset
+      const shuffled = [...collaborators].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, Math.floor(Math.random() * collaborators.length) + 1);
+    }
+
+    const userWhatIHave = profile.what_i_have.map(item => item.toLowerCase());
     
-    return displayName.includes(searchLower) || 
-           role.includes(searchLower) || 
-           institution.includes(searchLower) ||
-           department.includes(searchLower) ||
-           primaryResearch.includes(searchLower) ||
-           secondaryResearch.includes(searchLower) ||
-           keywords.includes(searchLower) ||
-           specializationKeywords.includes(searchLower) ||
-           whatIHave.includes(searchLower) ||
-           researchRole.includes(searchLower) ||
-           bio.includes(searchLower);
-  });
+    const matchingCollaborators = collaborators.filter(collaborator => {
+      if (!collaborator.what_i_have || collaborator.what_i_have.length === 0) return false;
+      
+      const collaboratorWhatIHave = collaborator.what_i_have.map(item => item.toLowerCase());
+      
+      // Check if there's any overlap between user's and collaborator's "What I have"
+      return userWhatIHave.some(userItem => 
+        collaboratorWhatIHave.some(collabItem => 
+          collabItem.includes(userItem) || userItem.includes(collabItem)
+        )
+      );
+    });
+
+    // If no exact matches, return a random subset
+    if (matchingCollaborators.length === 0) {
+      const shuffled = [...collaborators].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, Math.floor(Math.random() * collaborators.length) + 1);
+    }
+
+    // Return a random number of matching collaborators
+    const shuffled = [...matchingCollaborators].sort(() => 0.5 - Math.random());
+    const randomCount = Math.floor(Math.random() * matchingCollaborators.length) + 1;
+    return shuffled.slice(0, randomCount);
+  };
+
+  // Filter collaborators based on active tab and search query
+  const getTabFilteredCollaborators = () => {
+    let baseCollaborators;
+    
+    if (activeTab === 'Best Matching') {
+      baseCollaborators = getMatchingCollaborators();
+    } else {
+      // Search More - show all collaborators
+      baseCollaborators = collaborators;
+    }
+
+    // Apply search filter
+    if (!searchQuery) return baseCollaborators;
+    
+    const searchLower = searchQuery.toLowerCase();
+    return baseCollaborators.filter(collaborator => {
+      const displayName = getCollaboratorDisplayName(collaborator).toLowerCase();
+      const role = getUserRole(collaborator).toLowerCase();
+      const institution = collaborator.institution?.toLowerCase() || '';
+      const department = collaborator.department?.toLowerCase() || '';
+      const primaryResearch = collaborator.primary_research_area?.toLowerCase() || '';
+      const secondaryResearch = collaborator.secondary_research_area?.toLowerCase() || '';
+      const keywords = collaborator.keywords?.join(' ').toLowerCase() || '';
+      const specializationKeywords = collaborator.specialization_keywords?.join(' ').toLowerCase() || '';
+      const whatIHave = collaborator.what_i_have?.join(' ').toLowerCase() || '';
+      const researchRole = collaborator.research_roles?.join(' ').toLowerCase() || '';
+      const bio = collaborator.career_description?.toLowerCase() || '';
+      
+      return displayName.includes(searchLower) || 
+             role.includes(searchLower) || 
+             institution.includes(searchLower) ||
+             department.includes(searchLower) ||
+             primaryResearch.includes(searchLower) ||
+             secondaryResearch.includes(searchLower) ||
+             keywords.includes(searchLower) ||
+             specializationKeywords.includes(searchLower) ||
+             whatIHave.includes(searchLower) ||
+             researchRole.includes(searchLower) ||
+             bio.includes(searchLower);
+    });
+  };
+
+  const filteredCollaborators = getTabFilteredCollaborators();
 
   // Sort collaborators based on selected sort option
   const sortedCollaborators = [...filteredCollaborators].sort((a, b) => {
@@ -137,10 +187,10 @@ const DiscoverCollaborators = () => {
     }
   });
 
-  // Reset to first page when search query or results per page changes
+  // Reset to first page when search query, results per page, or active tab changes
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, resultsPerPage]);
+  }, [searchQuery, resultsPerPage, activeTab]);
 
   // Calculate pagination
   const itemsPerPage = parseInt(resultsPerPage);
