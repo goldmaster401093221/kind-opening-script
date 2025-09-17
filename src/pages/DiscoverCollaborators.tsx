@@ -75,39 +75,46 @@ const DiscoverCollaborators = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { toast } = useToast();
 
-  // Get matching collaborators based on "What I have" similarity
+  // Get matching collaborators based on "What I have" and "What I need" similarity
   const getMatchingCollaborators = () => {
-    if (!profile?.what_i_have || profile.what_i_have.length === 0) {
-      // If user has no "what_i_have" items, return random subset
-      const shuffled = [...collaborators].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, Math.floor(Math.random() * collaborators.length) + 1);
+    if ((!profile?.what_i_have || profile.what_i_have.length === 0) && 
+        (!profile?.what_i_need || profile.what_i_need.length === 0)) {
+      // If user has no items in either field, return empty array
+      return [];
     }
 
-    const userWhatIHave = profile.what_i_have.map(item => item.toLowerCase());
+    const userWhatIHave = profile?.what_i_have?.map(item => item.toLowerCase()) || [];
+    const userWhatINeed = profile?.what_i_need?.map(item => item.toLowerCase()) || [];
     
     const matchingCollaborators = collaborators.filter(collaborator => {
-      if (!collaborator.what_i_have || collaborator.what_i_have.length === 0) return false;
-      
-      const collaboratorWhatIHave = collaborator.what_i_have.map(item => item.toLowerCase());
-      
-      // Check if there's any overlap between user's and collaborator's "What I have"
-      return userWhatIHave.some(userItem => 
-        collaboratorWhatIHave.some(collabItem => 
-          collabItem.includes(userItem) || userItem.includes(collabItem)
-        )
-      );
+      let hasWhatIHaveMatch = false;
+      let hasWhatINeedMatch = false;
+
+      // Check "What I have" matches
+      if (userWhatIHave.length > 0 && collaborator.what_i_have && collaborator.what_i_have.length > 0) {
+        const collaboratorWhatIHave = collaborator.what_i_have.map(item => item.toLowerCase());
+        hasWhatIHaveMatch = userWhatIHave.some(userItem => 
+          collaboratorWhatIHave.some(collabItem => 
+            collabItem.includes(userItem) || userItem.includes(collabItem)
+          )
+        );
+      }
+
+      // Check "What I need" matches
+      if (userWhatINeed.length > 0 && collaborator.what_i_need && collaborator.what_i_need.length > 0) {
+        const collaboratorWhatINeed = collaborator.what_i_need.map(item => item.toLowerCase());
+        hasWhatINeedMatch = userWhatINeed.some(userItem => 
+          collaboratorWhatINeed.some(collabItem => 
+            collabItem.includes(userItem) || userItem.includes(collabItem)
+          )
+        );
+      }
+
+      // Return collaborators that match either "What I have" or "What I need"
+      return hasWhatIHaveMatch || hasWhatINeedMatch;
     });
 
-    // If no exact matches, return a random subset
-    if (matchingCollaborators.length === 0) {
-      const shuffled = [...collaborators].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, Math.floor(Math.random() * collaborators.length) + 1);
-    }
-
-    // Return a random number of matching collaborators
-    const shuffled = [...matchingCollaborators].sort(() => 0.5 - Math.random());
-    const randomCount = Math.floor(Math.random() * matchingCollaborators.length) + 1;
-    return shuffled.slice(0, randomCount);
+    return matchingCollaborators;
   };
 
   // Filter collaborators based on active tab and search query
